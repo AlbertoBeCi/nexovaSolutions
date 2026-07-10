@@ -29,5 +29,5 @@ Elegí Nexova Solutions porque aquí la IA no es un adorno ni un bot "tonto" de 
   El acceso: Conexión exclusiva a su carpeta correspondiente (Drive/Base de datos).
 
   # Capa de Análisis (Gestión de Tickets)
-  Detección de sentimiento: La IA analiza el texto del cliente en tiempo real. Si detecta que está enfadado o frustrado, salta una alerta para priorizar el ticket y pasarlo de inmediato a un humano.
+  Detección de sentimiento: La IA analiza el texto del cliente en tiempo real. Si detecta que está enfadado o frustrado, salta una alerta para priorizar el ticket y pasarlo de inmediato a un humano.!
 
