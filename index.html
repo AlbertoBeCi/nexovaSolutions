@@ -7,8 +7,10 @@
 <meta name="description" content="12 años de experiencia humana en RRHH combinados con scoring algorítmico de CVs, búsqueda semántica RAG y automatización inteligente para medianas empresas Tech, Retail y Servicios Financieros.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Tailwind se sirve vía CDN (sin paso de build); el proyecto no cuenta con un pipeline de bundling -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
+  // Mapea las utilidades font-sans / font-manrope a las tipografías cargadas arriba
   tailwind.config = {
     theme: {
       extend: {
@@ -25,6 +27,7 @@
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
   .animate-fade-up { animation: fadeUp 0.6s ease both; }
 </style>
+<!-- Datos estructurados Schema.org para mejorar el SEO local en Valencia y Miami -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -42,6 +45,7 @@
 </head>
 <body class="min-h-screen w-full bg-slate-950 font-sans text-slate-50">
 
+<!-- Enlace de salto para usuarios de teclado/lector de pantalla; invisible salvo al recibir foco -->
 <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white">Saltar al contenido principal</a>
 
 <header class="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/85 backdrop-blur-md">
@@ -60,6 +64,7 @@
 
 <main id="main-content">
 
+<!-- Hero: propuesta de valor principal, visible sin scroll -->
 <section id="inicio" aria-labelledby="inicio-heading" class="animate-fade-up mx-auto grid max-w-7xl gap-5 px-5 pb-14 pt-16 md:pt-20">
   <div class="flex flex-wrap gap-2.5">
     <span class="rounded-full border border-slate-700 px-3.5 py-1.5 text-sm font-semibold text-indigo-300">📍 Valencia, España</span>
@@ -82,8 +87,8 @@
     <p class="m-0 text-sm font-bold uppercase tracking-wider text-emerald-400">Servicios</p>
     <h2 id="servicios-heading" class="m-0 font-manrope text-[28px] font-extrabold tracking-tight">Tres líneas de negocio, una sola inteligencia</h2>
   </div>
+  <!-- Tarjetas generadas dinámicamente por renderServices() a partir de SERVICES en validation.js -->
   <div id="services-list" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-    <!-- Rendered by validation.js -->
   </div>
 </section>
 
@@ -92,11 +97,12 @@
     <p class="m-0 text-sm font-bold uppercase tracking-wider text-indigo-400">Beneficios</p>
     <h2 id="beneficios-heading" class="m-0 font-manrope text-[28px] font-extrabold tracking-tight">Por qué las empresas eligen Nexova</h2>
   </div>
+  <!-- Tarjetas generadas dinámicamente por renderStats() a partir de STATS en validation.js -->
   <div id="stats-list" class="grid grid-cols-2 gap-5 md:grid-cols-4">
-    <!-- Rendered by validation.js -->
   </div>
 </section>
 
+<!-- Formulario de registro/lead: estados manejados por validation.js (oculto -> formulario -> confirmación) -->
 <section id="aplicar" aria-labelledby="aplicar-heading" class="border-y border-slate-800 bg-slate-950/60 px-5 py-14">
   <div class="mx-auto grid max-w-2xl gap-6">
     <div class="grid gap-2">
@@ -104,11 +110,13 @@
       <p class="m-0 text-[15px] text-slate-400">Cuéntanos sobre tu empresa y te contactaremos en menos de 24h.</p>
     </div>
 
+    <!-- El formulario arranca oculto por defecto (patrón "progressive disclosure"); showForm() en validation.js lo revela -->
     <button id="show-form-btn" type="button" class="justify-self-start rounded-xl bg-indigo-600 px-6.5 py-3.5 text-[15px] font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">
       Mostrar formulario
     </button>
 
     <div id="registration-form-wrapper" class="hidden grid gap-6">
+      <!-- role="status" anuncia la confirmación a lectores de pantalla sin robar el foco -->
       <div id="success-message" class="hidden grid gap-1.5 rounded-xl border border-emerald-500 bg-emerald-500/10 p-6" role="status">
         <p class="m-0 text-base font-bold text-emerald-400">✓ Registro recibido correctamente</p>
         <p class="m-0 text-sm text-emerald-200">Un miembro de nuestro equipo se pondrá en contacto contigo pronto.</p>
@@ -117,7 +125,9 @@
         </button>
       </div>
 
+      <!-- novalidate desactiva la validación nativa del navegador: validation.js aplica sus propias reglas y mensajes en español -->
       <form id="registration-form" novalidate class="grid gap-4.5">
+        <!-- data-field marca los campos que validation.js engancha por delegación de eventos (change/input) -->
         <div class="grid grid-cols-1 gap-4.5">
           <div class="grid gap-1.5">
             <label for="fullName" class="text-[13px] font-semibold text-slate-300">Nombre completo</label>
@@ -155,6 +165,7 @@
             </select>
             <p id="sector-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
           </div>
+          <!-- fieldset/legend agrupa los checkboxes como una sola pregunta accesible en lugar de tres controles sueltos -->
           <fieldset id="interests-fieldset" class="m-0 grid gap-2.5 rounded-lg border border-slate-800 p-3.5">
             <legend class="px-1 text-[13px] font-semibold text-slate-300">Línea de interés principal</legend>
             <label class="flex items-center gap-2.5 text-sm text-slate-200">

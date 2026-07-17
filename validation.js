@@ -1,5 +1,7 @@
 'use strict';
 
+// Contenido de negocio (servicios y estadísticas) vive aquí, no en el HTML,
+// para que renderServices()/renderStats() sean la única fuente de verdad al pintar las tarjetas.
 const SERVICES = [
   {
     title: 'Operaciones de Selección Inteligente',
@@ -38,6 +40,8 @@ const EMPTY_VALUES = {
   teamSize: '',
 };
 
+// Estado en memoria del formulario. El DOM se actualiza a partir de este objeto
+// (no al revés), evitando leer valores directamente de los inputs al validar o enviar.
 const state = {
   values: { ...EMPTY_VALUES },
   errors: {},
@@ -45,6 +49,10 @@ const state = {
   showForm: false,
 };
 
+/**
+ * Valida los datos del formulario y devuelve un mapa { campo: mensaje } solo con los campos inválidos.
+ * Un objeto vacío significa que el formulario es válido.
+ */
 function validate(values) {
   const errors = {};
   if (!values.fullName.trim()) errors.fullName = 'Este campo es obligatorio.';
@@ -60,6 +68,7 @@ function validate(values) {
   return errors;
 }
 
+/** Pinta las tarjetas de SERVICES dentro de #services-list. */
 function renderServices() {
   const container = document.getElementById('services-list');
   if (!container) return;
@@ -72,6 +81,7 @@ function renderServices() {
   `).join('');
 }
 
+/** Pinta las tarjetas de STATS dentro de #stats-list. */
 function renderStats() {
   const container = document.getElementById('stats-list');
   if (!container) return;
@@ -91,6 +101,10 @@ function fieldInputEl(field) {
   return document.getElementById(field);
 }
 
+/**
+ * Sincroniza el error de un campo con el DOM: alterna aria-invalid, el borde rojo
+ * y el texto del <p role="alert"> asociado (referenciado vía aria-describedby).
+ */
 function applyFieldError(field) {
   const input = fieldInputEl(field);
   const errorEl = fieldErrorEl(field);
@@ -106,6 +120,10 @@ function applyFieldError(field) {
   }
 }
 
+/**
+ * Aplica todos los errores actuales al DOM. Los checkboxes de interés se tratan aparte
+ * porque el error pertenece al <fieldset> del grupo, no a un input individual.
+ */
 function applyAllFieldErrors() {
   ['fullName', 'email', 'phone', 'company', 'role', 'sector'].forEach(applyFieldError);
   const interestsFieldset = document.getElementById('interests-fieldset');
@@ -121,12 +139,14 @@ function applyAllFieldErrors() {
   }
 }
 
+/** Revela el formulario y oculta el botón "Mostrar formulario" que lo activó. */
 function showForm() {
   state.showForm = true;
   document.getElementById('show-form-btn')?.classList.add('hidden');
   document.getElementById('registration-form-wrapper')?.classList.remove('hidden');
 }
 
+/** Limpia estado y DOM para permitir un nuevo envío tras un registro exitoso. */
 function resetForm() {
   state.values = { ...EMPTY_VALUES };
   state.errors = {};
@@ -140,11 +160,16 @@ function resetForm() {
   document.getElementById('registration-form')?.classList.remove('hidden');
 }
 
+/** Mantiene state.values sincronizado con cada input/checkbox marcado como data-field. */
 function onField(e) {
   const { name, type, checked, value } = e.target;
   state.values[name] = type === 'checkbox' ? checked : value;
 }
 
+/**
+ * Valida en el envío (no en cada tecla) y, si falla, mueve el foco al primer campo
+ * con error para que el flujo de teclado/lector de pantalla sea inmediato.
+ */
 function onSubmit(e) {
   e.preventDefault();
   state.errors = validate(state.values);
@@ -162,6 +187,7 @@ function onSubmit(e) {
   document.getElementById('success-message')?.classList.remove('hidden');
 }
 
+/** Cablea los listeners una sola vez al cargar el DOM. */
 function initEventListeners() {
   document.getElementById('show-form-btn')?.addEventListener('click', showForm);
   document.getElementById('registration-form')?.addEventListener('submit', onSubmit);
