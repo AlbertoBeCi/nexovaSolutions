@@ -22,11 +22,7 @@
     },
   };
 </script>
-<style>
-  ::selection { background: #4f46e5; color: #fff; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-  .animate-fade-up { animation: fadeUp 0.6s ease both; }
-</style>
+<link rel="stylesheet" href="./styles.css">
 <!-- Datos estructurados Schema.org para mejorar el SEO local en Valencia y Miami -->
 <script type="application/ld+json">
 {
@@ -43,7 +39,7 @@
 }
 </script>
 </head>
-<body class="min-h-screen w-full bg-slate-950 font-sans text-slate-50">
+<body class="min-h-screen w-full bg-slate-950 font-sans text-slate-50 selection:bg-indigo-600 selection:text-white">
 
 <!-- Enlace de salto para usuarios de teclado/lector de pantalla; invisible salvo al recibir foco -->
 <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white">Saltar al contenido principal</a>
@@ -58,7 +54,7 @@
       <a href="#servicios" class="text-sm font-medium text-slate-300 no-underline hover:text-indigo-300 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Servicios</a>
       <a href="#beneficios" class="text-sm font-medium text-slate-300 no-underline hover:text-indigo-300 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Beneficios</a>
     </div>
-    <a href="#aplicar" aria-label="Aplicar ahora, ir al formulario de registro" class="whitespace-nowrap rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Aplicar Ahora</a>
+    <a href="application.html" aria-label="Aplicar ahora, ir al formulario de registro" class="whitespace-nowrap rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Aplicar Ahora</a>
   </nav>
 </header>
 
@@ -77,7 +73,7 @@
     12 años de experiencia humana en RRHH combinados con scoring algorítmico de CVs, búsqueda semántica RAG y automatización inteligente para medianas empresas Tech, Retail y Servicios Financieros.
   </p>
   <div class="mt-2 flex flex-wrap gap-3">
-    <a href="#aplicar" class="rounded-xl bg-indigo-600 px-6.5 py-3.5 text-[15px] font-semibold text-white no-underline hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Aplicar Ahora / Registrarse</a>
+    <a href="application.html" class="rounded-xl bg-indigo-600 px-6.5 py-3.5 text-[15px] font-semibold text-white no-underline hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Aplicar Ahora / Registrarse</a>
     <a href="#servicios" class="rounded-xl border border-slate-700 px-6.5 py-3.5 text-[15px] font-semibold text-slate-50 no-underline hover:border-slate-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Ver Servicios</a>
   </div>
 </section>
@@ -99,96 +95,6 @@
   </div>
   <!-- Tarjetas generadas dinámicamente por renderStats() a partir de STATS en validation.js -->
   <div id="stats-list" class="grid grid-cols-2 gap-5 md:grid-cols-4">
-  </div>
-</section>
-
-<!-- Formulario de registro/lead: estados manejados por validation.js (oculto -> formulario -> confirmación) -->
-<section id="aplicar" aria-labelledby="aplicar-heading" class="border-y border-slate-800 bg-slate-950/60 px-5 py-14">
-  <div class="mx-auto grid max-w-2xl gap-6">
-    <div class="grid gap-2">
-      <h2 id="aplicar-heading" class="m-0 font-manrope text-[26px] font-extrabold">Solicita tu diagnóstico gratuito</h2>
-      <p class="m-0 text-[15px] text-slate-400">Cuéntanos sobre tu empresa y te contactaremos en menos de 24h.</p>
-    </div>
-
-    <!-- El formulario arranca oculto por defecto (patrón "progressive disclosure"); showForm() en validation.js lo revela -->
-    <button id="show-form-btn" type="button" class="justify-self-start rounded-xl bg-indigo-600 px-6.5 py-3.5 text-[15px] font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">
-      Mostrar formulario
-    </button>
-
-    <div id="registration-form-wrapper" class="hidden grid gap-6">
-      <!-- role="status" anuncia la confirmación a lectores de pantalla sin robar el foco -->
-      <div id="success-message" class="hidden grid gap-1.5 rounded-xl border border-emerald-500 bg-emerald-500/10 p-6" role="status">
-        <p class="m-0 text-base font-bold text-emerald-400">✓ Registro recibido correctamente</p>
-        <p class="m-0 text-sm text-emerald-200">Un miembro de nuestro equipo se pondrá en contacto contigo pronto.</p>
-        <button id="reset-form-btn" type="button" class="mt-2.5 justify-self-start rounded-lg border border-emerald-500 bg-transparent px-4 py-2 text-[13px] font-semibold text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">
-          Enviar otro registro
-        </button>
-      </div>
-
-      <!-- novalidate desactiva la validación nativa del navegador: validation.js aplica sus propias reglas y mensajes en español -->
-      <form id="registration-form" novalidate class="grid gap-4.5">
-        <!-- data-field marca los campos que validation.js engancha por delegación de eventos (change/input) -->
-        <div class="grid grid-cols-1 gap-4.5">
-          <div class="grid gap-1.5">
-            <label for="fullName" class="text-[13px] font-semibold text-slate-300">Nombre completo</label>
-            <input id="fullName" name="fullName" type="text" data-field autocomplete="name" aria-invalid="false" aria-describedby="fullName-err" class="rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 text-[15px] text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50" />
-            <p id="fullName-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
-          </div>
-          <div class="grid gap-1.5">
-            <label for="email" class="text-[13px] font-semibold text-slate-300">Email corporativo</label>
-            <input id="email" name="email" type="email" data-field autocomplete="email" aria-invalid="false" aria-describedby="email-err" class="rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 text-[15px] text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50" />
-            <p id="email-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
-          </div>
-          <div class="grid gap-1.5">
-            <label for="phone" class="text-[13px] font-semibold text-slate-300">Teléfono</label>
-            <input id="phone" name="phone" type="tel" data-field autocomplete="tel" aria-invalid="false" aria-describedby="phone-err" class="rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 text-[15px] text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50" />
-            <p id="phone-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
-          </div>
-          <div class="grid gap-1.5">
-            <label for="company" class="text-[13px] font-semibold text-slate-300">Nombre de la empresa</label>
-            <input id="company" name="company" type="text" data-field autocomplete="organization" aria-invalid="false" aria-describedby="company-err" class="rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 text-[15px] text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50" />
-            <p id="company-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
-          </div>
-          <div class="grid gap-1.5">
-            <label for="role" class="text-[13px] font-semibold text-slate-300">Cargo</label>
-            <input id="role" name="role" type="text" data-field autocomplete="organization-title" aria-invalid="false" aria-describedby="role-err" class="rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 text-[15px] text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50" />
-            <p id="role-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
-          </div>
-          <div class="grid gap-1.5">
-            <label for="sector" class="text-[13px] font-semibold text-slate-300">Sector</label>
-            <select id="sector" name="sector" data-field aria-invalid="false" aria-describedby="sector-err" class="rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 text-[15px] text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">
-              <option value="">Selecciona un sector</option>
-              <option value="tecnologico">Tecnológico</option>
-              <option value="retail">Retail</option>
-              <option value="financiero">Servicios Financieros</option>
-              <option value="otro">Otro</option>
-            </select>
-            <p id="sector-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
-          </div>
-          <!-- fieldset/legend agrupa los checkboxes como una sola pregunta accesible en lugar de tres controles sueltos -->
-          <fieldset id="interests-fieldset" class="m-0 grid gap-2.5 rounded-lg border border-slate-800 p-3.5">
-            <legend class="px-1 text-[13px] font-semibold text-slate-300">Línea de interés principal</legend>
-            <label class="flex items-center gap-2.5 text-sm text-slate-200">
-              <input type="checkbox" name="interestSeleccion" data-field class="h-4.5 w-4.5 accent-indigo-600" /> Selección de Personal con IA
-            </label>
-            <label class="flex items-center gap-2.5 text-sm text-slate-200">
-              <input type="checkbox" name="interestOutsourcing" data-field class="h-4.5 w-4.5 accent-indigo-600" /> Outsourcing de Soporte
-            </label>
-            <label class="flex items-center gap-2.5 text-sm text-slate-200">
-              <input type="checkbox" name="interestFormacion" data-field class="h-4.5 w-4.5 accent-indigo-600" /> Formación Corporativa
-            </label>
-            <p id="interests-err" class="hidden m-0 text-[13px] text-red-400" role="alert"></p>
-          </fieldset>
-          <div class="grid gap-1.5">
-            <label for="teamSize" class="text-[13px] font-semibold text-slate-300">Tamaño del equipo / necesidad estimada</label>
-            <textarea id="teamSize" name="teamSize" data-field rows="3" placeholder="Ej: equipo de soporte de 8 personas para turno nocturno" class="resize-y rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-3 font-sans text-[15px] text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50"></textarea>
-          </div>
-        </div>
-        <button type="submit" class="justify-self-start rounded-xl bg-indigo-600 px-6.5 py-3.5 text-[15px] font-bold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">
-          Enviar registro
-        </button>
-      </form>
-    </div>
   </div>
 </section>
 
@@ -219,7 +125,7 @@
       <a href="#inicio" class="text-indigo-400 no-underline hover:text-indigo-300">Inicio</a>
       <a href="#servicios" class="text-indigo-400 no-underline hover:text-indigo-300">Servicios</a>
       <a href="#beneficios" class="text-indigo-400 no-underline hover:text-indigo-300">Beneficios</a>
-      <a href="#aplicar" class="text-indigo-400 no-underline hover:text-indigo-300">Aplicar Ahora</a>
+      <a href="application.html" class="text-indigo-400 no-underline hover:text-indigo-300">Aplicar Ahora</a>
     </nav>
     <p class="m-0 text-[13px] text-slate-600 md:col-span-2">© 2026 Nexova Solutions. Todos los derechos reservados.</p>
   </div>
