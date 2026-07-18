@@ -1,136 +1,202 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nexova Solutions — Selección de talento y outsourcing potenciados por IA</title>
-<meta name="description" content="12 años de experiencia humana en RRHH combinados con scoring algorítmico de CVs, búsqueda semántica RAG y automatización inteligente para medianas empresas Tech, Retail y Servicios Financieros.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- Tailwind se sirve vía CDN (sin paso de build); el proyecto no cuenta con un pipeline de bundling -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  // Mapea las utilidades font-sans / font-manrope a las tipografías cargadas arriba
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: {
-          sans: ['Inter', 'sans-serif'],
-          manrope: ['Manrope', 'sans-serif'],
-        },
-      },
-    },
-  };
-</script>
-<link rel="stylesheet" href="./styles.css">
-<!-- Datos estructurados Schema.org para mejorar el SEO local en Valencia y Miami -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "CorporateService",
-  "name": "Nexova Solutions",
-  "foundingDate": "2011",
-  "numberOfEmployees": 120,
-  "location": [
-    {"@type": "LocalBusiness", "name": "Nexova Solutions Valencia", "address": {"@type": "PostalAddress", "addressLocality": "Valencia", "addressCountry": "ES"}},
-    {"@type": "LocalBusiness", "name": "Nexova Solutions Miami", "address": {"@type": "PostalAddress", "addressLocality": "Miami", "addressRegion": "FL", "addressCountry": "US"}}
-  ],
-  "serviceType": ["Selección de Talento con IA", "Outsourcing de Soporte", "Formación Corporativa"]
-}
-</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nexova Solutions — Selección de talento y externalización potenciados por IA</title>
+  <meta name="description" content="12 años de experiencia humana en RRHH combinados con puntuación algorítmica de CV, búsqueda semántica RAG y automatización inteligente para medianas empresas Tech, Retail y Servicios Financieros.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Usamos la misma inyección limpia de Tailwind CDN compatible con la estructura corporativa -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <link rel="stylesheet" href="./styles.css">
+  
+  <!-- Datos estructurados Schema.org para mejorar el SEO local en Valencia y Miami -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CorporateService",
+    "name": "Nexova Solutions",
+    "foundingDate": "2011",
+    "numberOfEmployees": 120,
+    "location": [
+      {"@type": "LocalBusiness", "name": "Nexova Solutions Valencia", "address": {"@type": "PostalAddress", "addressLocality": "Valencia", "addressCountry": "ES"}},
+      {"@type": "LocalBusiness", "name": "Nexova Solutions Miami", "address": {"@type": "PostalAddress", "addressLocality": "Miami", "addressRegion": "FL", "addressCountry": "US"}}
+    ],
+    "serviceType": ["Selección de Talento con IA", "Externalización de Soporte", "Formación Corporativa"]
+  }
+  </script>
 </head>
-<body class="min-h-screen w-full bg-slate-950 font-sans text-slate-50 selection:bg-indigo-600 selection:text-white">
+<body class="min-h-screen w-full bg-slate-950 font-sans text-slate-100 antialiased selection:bg-indigo-600 selection:text-white">
 
-<!-- Enlace de salto para usuarios de teclado/lector de pantalla; invisible salvo al recibir foco -->
-<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white">Saltar al contenido principal</a>
+  <!-- Enlace de salto accesible para lectores de pantalla y teclado -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    Saltar al contenido principal
+  </a>
 
-<header class="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/85 backdrop-blur-md">
-  <nav aria-label="Navegación principal" class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-    <a href="#inicio" aria-label="Nexova Solutions, inicio" class="font-manrope text-xl font-extrabold tracking-tight text-slate-50 no-underline hover:text-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">
-      Nexova<span class="text-indigo-400">.</span>
-    </a>
-    <div class="hidden items-center gap-8 md:flex">
-      <a href="#inicio" class="text-sm font-medium text-slate-300 no-underline hover:text-indigo-300 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Inicio</a>
-      <a href="#servicios" class="text-sm font-medium text-slate-300 no-underline hover:text-indigo-300 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Servicios</a>
-      <a href="#beneficios" class="text-sm font-medium text-slate-300 no-underline hover:text-indigo-300 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Beneficios</a>
-    </div>
-    <a href="application.html" aria-label="Aplicar ahora, ir al formulario de registro" class="whitespace-nowrap rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Aplicar Ahora</a>
-  </nav>
-</header>
-
-<main id="main-content">
-
-<!-- Hero: propuesta de valor principal, visible sin scroll -->
-<section id="inicio" aria-labelledby="inicio-heading" class="animate-fade-up mx-auto grid max-w-7xl gap-5 px-5 pb-14 pt-16 md:pt-20">
-  <div class="flex flex-wrap gap-2.5">
-    <span class="rounded-full border border-slate-700 px-3.5 py-1.5 text-sm font-semibold text-indigo-300">📍 Valencia, España</span>
-    <span class="rounded-full border border-slate-700 px-3.5 py-1.5 text-sm font-semibold text-indigo-300">📍 Miami, USA</span>
-  </div>
-  <h1 id="inicio-heading" class="m-0 max-w-[20ch] font-manrope text-[38px] font-extrabold leading-tight tracking-tight md:text-[52px]">
-    Selección de talento y outsourcing, <span class="text-indigo-400">potenciados por Ingeniería de IA</span>
-  </h1>
-  <p class="m-0 max-w-prose text-lg leading-relaxed text-slate-400">
-    12 años de experiencia humana en RRHH combinados con scoring algorítmico de CVs, búsqueda semántica RAG y automatización inteligente para medianas empresas Tech, Retail y Servicios Financieros.
-  </p>
-  <div class="mt-2 flex flex-wrap gap-3">
-    <a href="application.html" class="rounded-xl bg-indigo-600 px-6.5 py-3.5 text-[15px] font-semibold text-white no-underline hover:bg-indigo-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Aplicar Ahora / Registrarse</a>
-    <a href="#servicios" class="rounded-xl border border-slate-700 px-6.5 py-3.5 text-[15px] font-semibold text-slate-50 no-underline hover:border-slate-500 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-500/50">Ver Servicios</a>
-  </div>
-</section>
-
-<section id="servicios" aria-labelledby="servicios-heading" class="mx-auto grid max-w-7xl gap-7 px-5 py-12">
-  <div class="grid max-w-prose gap-2">
-    <p class="m-0 text-sm font-bold uppercase tracking-wider text-emerald-400">Servicios</p>
-    <h2 id="servicios-heading" class="m-0 font-manrope text-[28px] font-extrabold tracking-tight">Tres líneas de negocio, una sola inteligencia</h2>
-  </div>
-  <!-- Tarjetas generadas dinámicamente por renderServices() a partir de SERVICES en validation.js -->
-  <div id="services-list" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-  </div>
-</section>
-
-<section id="beneficios" aria-labelledby="beneficios-heading" class="mx-auto grid max-w-7xl gap-7 px-5 pb-14 pt-12">
-  <div class="grid max-w-prose gap-2">
-    <p class="m-0 text-sm font-bold uppercase tracking-wider text-indigo-400">Beneficios</p>
-    <h2 id="beneficios-heading" class="m-0 font-manrope text-[28px] font-extrabold tracking-tight">Por qué las empresas eligen Nexova</h2>
-  </div>
-  <!-- Tarjetas generadas dinámicamente por renderStats() a partir de STATS en validation.js -->
-  <div id="stats-list" class="grid grid-cols-2 gap-5 md:grid-cols-4">
-  </div>
-</section>
-
-</main>
-
-<footer aria-label="Pie de página" class="border-t border-slate-800 px-5 pb-8 pt-12">
-  <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-[2fr_1fr]">
-    <div class="grid gap-2.5">
-      <span class="font-manrope text-lg font-extrabold">Nexova Solutions</span>
-      <p class="m-0 max-w-[40ch] text-sm text-slate-500">Selección de talento, outsourcing y formación corporativa potenciados por IA desde 2011.</p>
-    </div>
-    <div class="grid grid-cols-2 gap-5">
-      <address class="grid gap-1 text-sm not-italic text-slate-400">
-        <strong class="text-slate-200">Valencia, España</strong>
-        Av. de Francia 12, 46023<br />Valencia, España
-      </address>
-      <address class="grid gap-1 text-sm not-italic text-slate-400">
-        <strong class="text-slate-200">Miami, USA</strong>
-        1450 Brickell Ave, Suite 900<br />Miami, FL 33131
-      </address>
-      <address class="grid gap-1 text-sm not-italic text-slate-400">
-        <strong class="text-slate-200">Contacto</strong>
-        <a href="mailto:info@nexovasolutions.com" class="text-slate-400 no-underline hover:text-indigo-300">info@nexovasolutions.com</a>
-        <a href="tel:+34960000000" class="text-slate-400 no-underline hover:text-indigo-300">+34 960 00 00 00</a>
-      </address>
-    </div>
-    <nav aria-label="Enlaces corporativos" class="flex flex-wrap gap-5 text-sm md:col-span-2">
-      <a href="#inicio" class="text-indigo-400 no-underline hover:text-indigo-300">Inicio</a>
-      <a href="#servicios" class="text-indigo-400 no-underline hover:text-indigo-300">Servicios</a>
-      <a href="#beneficios" class="text-indigo-400 no-underline hover:text-indigo-300">Beneficios</a>
-      <a href="application.html" class="text-indigo-400 no-underline hover:text-indigo-300">Aplicar Ahora</a>
+  <!-- ENCABEZADO: Sincronizado estéticamente con el formulario (Mismo blur, paddings y ring de foco) -->
+  <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
+    <nav aria-label="Navegación principal" class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-16">
+      <a href="#inicio" aria-label="Nexova Solutions, inicio" class="font-manrope text-xl font-extrabold tracking-tight text-white no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">
+        NEXOVA<span class="text-indigo-400">SOLUTIONS</span>
+      </a>
+      
+      <div class="hidden items-center gap-8 md:flex">
+        <a href="#inicio" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Inicio</a>
+        <a href="#servicios" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Servicios</a>
+        <a href="#beneficios" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Beneficios</a>
+      </div>
+      
+      <a href="application.html" aria-label="Solicitar ahora, ir al formulario de registro" class="whitespace-nowrap rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 shadow-lg shadow-indigo-600/20">
+        Solicitar Ahora
+      </a>
     </nav>
-    <p class="m-0 text-[13px] text-slate-600 md:col-span-2">© 2026 Nexova Solutions. Todos los derechos reservados.</p>
-  </div>
-</footer>
+  </header>
 
-<script src="./validation.js"></script>
+  <main id="main-content" class="flex-grow">
+
+    <!-- HERO SECTION: Estructura fluida con malla geométrica nativa de fondo y acentos de luz (Glow Effect) -->
+    <section id="inicio" aria-labelledby="inicio-heading" class="relative min-h-[85vh] flex items-center overflow-hidden py-20 lg:py-24">
+      <!-- Malla geométrica atenuada (Estilo SaaS Premium de Alta Gama) -->
+      <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25"></div>
+      
+      <!-- Resplandores de IA controlados para contraste estricto (WCAG 2.1 AA) -->
+      <div class="absolute top-0 right-0 -translate-y-12 translate-x-12 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none hidden lg:block"></div>
+      <div class="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-[400px] h-[400px] bg-emerald-600/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <!-- Lado Izquierdo: Mensajes estratégicos y CTAs -->
+        <div class="selection:bg-indigo-600 selection:text-white">
+          <div class="flex flex-wrap gap-2.5 mb-6">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-3 py-1 text-xs font-semibold text-indigo-400 tracking-wide uppercase">
+              <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span> 📍 Valencia, España
+            </span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-3 py-1 text-xs font-semibold text-indigo-400 tracking-wide uppercase">
+              <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span> 📍 Miami, USA
+            </span>
+          </div>
+          
+          <h1 id="inicio-heading" class="font-manrope text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+            Selección de talento y externalización, <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-400 to-emerald-400">potenciados por Ingeniería de IA</span>
+          </h1>
+          
+          <p class="text-base sm:text-lg text-slate-400 mb-8 max-w-xl leading-relaxed">
+            12 años de experiencia humana en RRHH combinados con scoring algorítmico de CV, búsqueda semántica RAG y automatización inteligente para medianas empresas Tech, Retail y Servicios Financieros.
+          </p>
+          
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="application.html" class="inline-flex justify-center items-center px-6 py-3.5 text-sm font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 shadow-lg shadow-indigo-600/20">
+              Solicitar Ahora / Registrarse
+            </a>
+            <a href="#servicios" class="inline-flex justify-center items-center px-6 py-3.5 text-sm font-semibold rounded-lg text-slate-300 bg-slate-900/50 border border-slate-800 hover:bg-slate-900 hover:text-white transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-500 backdrop-blur-sm">
+              Ver Servicios
+            </a>
+          </div>
+        </div>
+
+        <!-- Lado Derecho: Interfaz simulada (Mockup de Clasificación y SLAs) para sustituir imágenes pesadas -->
+        <div class="hidden lg:block relative">
+          <div class="absolute inset-0 bg-gradient-to-tr from-indigo-600/10 to-emerald-600/10 rounded-2xl blur-2xl"></div>
+          <div class="relative bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-md select-none">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500/40"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-500/40"></span>
+                <span class="w-3 h-3 rounded-full bg-green-500/40"></span>
+                <span class="text-xs text-slate-500 font-mono ml-2">motor-ia-clasificacion.js</span>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">SLA Activo &lt; 24h</span>
+            </div>
+            <div class="space-y-3 font-mono text-xs">
+              <p class="text-slate-400">&gt; Iniciando cribado semántico en base de datos de candidatos...</p>
+              <p class="text-indigo-400">&gt; Buscando: [Perfil Tecnológico + Ventas B2B + Inglés C1]</p>
+              <div class="p-3 bg-slate-950/80 rounded-lg border border-slate-800/60 flex items-center justify-between">
+                <div>
+                  <p class="text-slate-200 font-sans font-semibold">Candidato ID: #9842</p>
+                  <p class="text-slate-500 text-[11px]">Coincidencia de perfil algorítmico</p>
+                </div>
+                <span class="text-emerald-400 font-bold text-sm bg-emerald-500/5 px-2 py-1 rounded">98% Coincidencia</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN SERVICIOS: Tarjetas estructuradas con rejilla adaptativa moderna -->
+    <section id="servicios" aria-labelledby="servicios-heading" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-900">
+      <div class="max-w-3xl mb-10">
+        <p class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">Servicios Avanzados</p>
+        <h2 id="servicios-heading" class="font-manrope text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          Tres líneas de negocio, una sola inteligencia
+        </h2>
+      </div>
+      <!-- Listado dinámico inyectado por validation.js -->
+      <div id="services-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Renderizado dinámico -->
+      </div>
+    </section>
+
+    <!-- SECCIÓN BENEFICIOS: Estadísticas y valor de negocio -->
+    <section id="beneficios" aria-labelledby="beneficios-heading" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-900">
+      <div class="max-w-3xl mb-10">
+        <p class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-2">Beneficios Estratégicos</p>
+        <h2 id="beneficios-heading" class="font-manrope text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          Por qué las empresas eligen Nexova
+        </h2>
+      </div>
+      <!-- Listado dinámico de estadísticas inyectado por validation.js -->
+      <div id="stats-list" class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Renderizado dinámico -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PIE DE PÁGINA: Reforzado estructuralmente e igualado al de application.html -->
+  <footer aria-label="Pie de página" class="border-t border-slate-900 bg-slate-950 px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mx-auto max-w-7xl grid grid-cols-1 gap-10 md:grid-cols-[2fr_1fr]">
+      <div class="space-y-4">
+        <span class="font-manrope text-lg font-extrabold text-white">NEXOVA<span class="text-indigo-400">SOLUTIONS</span></span>
+        <p class="max-w-md text-sm text-slate-400 leading-relaxed">
+          Selección de talento, externalización y formación corporativa potenciados por infraestructura de Inteligencia Artificial desde 2011.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <address class="space-y-1.5 text-sm not-italic text-slate-400">
+          <strong class="text-slate-200 block border-b border-slate-900 pb-1 mb-1">Valencia, España</strong>
+          Av. de Francia 12, 46023<br />Valencia, España[cite: 1]
+        </address>
+        <address class="space-y-1.5 text-sm not-italic text-slate-400">
+          <strong class="text-slate-200 block border-b border-slate-900 pb-1 mb-1">Miami, USA</strong>
+          1450 Brickell Ave, Suite 900<br />Miami, FL 33131[cite: 1]
+        </address>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 md:col-span-2 border-t border-slate-900 pt-8">
+        <nav aria-label="Enlaces corporativos" class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <a href="#inicio" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Inicio</a>
+          <a href="#servicios" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Servicios</a>
+          <a href="#beneficios" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Beneficios</a>
+          <a href="application.html" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Solicitar Ahora</a>
+        </nav>
+        
+        <div class="text-xs text-slate-500 space-y-2 sm:space-y-0 sm:text-right">
+          <p class="text-sm text-slate-400 block mb-1">
+            <a href="mailto:info@nexovasolutions.com" class="hover:text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1">info@nexovasolutions.com</a> | 
+            <a href="tel:+34960000000" class="hover:text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1">+34 960 00 00 00</a>[cite: 1]
+          </p>
+          <p>© 2026 Nexova Solutions. Todos los derechos reservados.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./validation.js"></script>
 </body>
 </html>

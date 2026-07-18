@@ -5,12 +5,12 @@
 const SERVICES = [
   {
     title: 'Operaciones de Selección Inteligente',
-    desc: 'Reclutamiento con scoring algorítmico de candidatos y base de datos RAG semántica para encontrar el mejor talento en horas, no semanas.',
+    desc: 'Reclutamiento con puntuación algorítmica de candidatos y base de datos RAG semántica para encontrar el mejor talento en horas, no semanas.',
     color: '#4f46e5',
   },
   {
-    title: 'Outsourcing de Soporte al Cliente',
-    desc: 'Equipos dedicados con bases de conocimiento avanzadas para cumplir estrictamente SLAs menores a 24h.',
+    title: 'Externalización de Soporte al Cliente',
+    desc: 'Equipos dedicados con bases de conocimiento avanzadas para cumplir estrictamente los SLA en menos de 24h.',
     color: '#10b981',
   },
   {
