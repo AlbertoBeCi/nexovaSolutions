@@ -26,59 +26,57 @@ const EMPTY_VALUES = {
 const state = {
   values: { ...EMPTY_VALUES },
   errors: {},
+  touched: new Set(),
+  submitAttempted: false,
   submitted: false,
 };
 
-/** Valida los datos del formulario de solicitud y devuelve un mapa { campo: mensaje } con los campos inválidos. */
+/** Valida los datos del formulario de solicitud y devuelve un mapa { campo: mensaje } con los campos inválidos.
+ *  Los textos coinciden literalmente con "Mensajes de error esperados" en CONTEXT.md. */
 function validate(values) {
   const errors = {};
 
   const fullNameWords = values.fullName.trim().split(/\s+/).filter(Boolean);
-  if (!values.fullName.trim()) {
-    errors.fullName = 'El nombre completo es obligatorio.';
-  } else if (fullNameWords.length < 2) {
-    errors.fullName = 'Introduce nombre y apellido (mínimo 2 palabras).';
+  if (!values.fullName.trim() || fullNameWords.length < 2) {
+    errors.fullName = 'El nombre debe contener al menos nombre y apellido';
   }
 
-  if (!values.email.trim()) {
-    errors.email = 'El correo electrónico es obligatorio.';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = 'Introduce un correo electrónico con formato válido.';
+  if (!values.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+    errors.email = 'Ingresa un email válido (ejemplo: nombre@empresa.com)';
   }
 
-  if (!values.phone.trim()) {
-    errors.phone = 'El teléfono de contacto es obligatorio.';
-  } else if (!/^\+\d{1,3}[\d\s-]{6,14}$/.test(values.phone.trim())) {
-    errors.phone = 'El teléfono debe comenzar con + seguido del código de país (ej: +34 612 345 678).';
+  if (!values.phone.trim() || !/^\+\d{1,3}[\d\s-]{6,14}$/.test(values.phone.trim())) {
+    errors.phone = 'El teléfono debe incluir código de país (ejemplo: +34 612 345 678)';
   }
 
-  if (!values.country) errors.country = 'Selecciona tu país de residencia.';
+  if (!values.country) errors.country = 'Selecciona tu país de residencia';
 
-  if (!String(values.yearsExperience).trim()) {
-    errors.yearsExperience = 'Indica tus años de experiencia.';
-  } else {
-    const years = Number(values.yearsExperience);
-    if (Number.isNaN(years) || years < 0 || years > 50) {
-      errors.yearsExperience = 'Introduce un valor entre 0 y 50.';
-    }
+  const years = Number(values.yearsExperience);
+  if (!String(values.yearsExperience).trim() || Number.isNaN(years) || years < 0 || years > 50) {
+    errors.yearsExperience = 'Los años de experiencia deben estar entre 0 y 50';
   }
 
-  if (!values.sector) errors.sector = 'Selecciona tu sector de interés.';
-  if (!values.englishLevel) errors.englishLevel = 'Selecciona tu nivel de inglés.';
-  if (!values.availability) errors.availability = 'Selecciona tu disponibilidad.';
+  if (!values.sector) errors.sector = 'Selecciona el sector de tu interés';
+  if (!values.englishLevel) errors.englishLevel = 'Indica tu nivel de inglés';
+  if (!values.availability) errors.availability = 'Selecciona tu disponibilidad';
 
   if (values.linkedin.trim()) {
+    let validUrl = false;
     try {
       const url = new URL(values.linkedin.trim());
-      if (!/^https?:$/.test(url.protocol)) throw new Error('protocolo no soportado');
+      validUrl = /^https?:$/.test(url.protocol);
     } catch {
-      errors.linkedin = 'Introduce una URL válida (ej: https://www.linkedin.com/in/tu-perfil).';
+      validUrl = false;
     }
+    if (!validUrl) errors.linkedin = 'Si incluyes LinkedIn, debe ser una URL válida';
   }
 
-  if (values.comments.length > 500) errors.comments = 'Máximo 500 caracteres.';
+  if (values.comments.length > 500) {
+    const remaining = Math.max(0, 500 - values.comments.length);
+    errors.comments = `Los comentarios no pueden exceder 500 caracteres (quedan ${remaining})`;
+  }
 
-  if (!values.terms) errors.terms = 'Debes aceptar la política de tratamiento de datos para continuar.';
+  if (!values.terms) errors.terms = 'Debes aceptar la política de tratamiento de datos para continuar';
 
   return errors;
 }
@@ -91,11 +89,13 @@ function fieldInputEl(field) {
   return document.getElementById(field);
 }
 
-/** Sincroniza el estado de error de un campo con el DOM: aria-invalid, borde rojo y su <p role="status">. */
+/** Sincroniza el estado de error de un campo con el DOM: aria-invalid, borde rojo y su <p role="status">.
+ *  Solo se muestra el error si el campo ya fue tocado (blur/change) o se intentó enviar el formulario. */
 function applyFieldError(field) {
   const input = fieldInputEl(field);
   const errorEl = fieldErrorEl(field);
-  const message = state.errors[field] || '';
+  const shouldShow = state.touched.has(field) || state.submitAttempted;
+  const message = shouldShow ? (state.errors[field] || '') : '';
 
   if (input) {
     input.setAttribute('aria-invalid', message ? 'true' : 'false');
@@ -134,6 +134,7 @@ function showSuccessMessage() {
   success.innerHTML = `
     <p class="m-0 text-base font-bold text-emerald-400">¡Gracias por tu interés en Nexova!</p>
     <p class="m-0 text-sm text-emerald-200">Hemos recibido tu información. Nuestro equipo de selección la revisará y te contactaremos en caso de que tu perfil encaje con alguna de nuestras oportunidades actuales o futuras.</p>
+    <p class="m-0 text-sm text-emerald-200">Mientras tanto, síguenos en <a href="https://linkedin.com/company/nexova" target="_blank" rel="noopener noreferrer" class="font-semibold underline hover:text-emerald-100">LinkedIn</a> para estar al día de nuestras vacantes y contenido sobre desarrollo profesional.</p>
     <button type="button" id="reset-application-btn" class="mt-1 justify-self-start rounded-lg border border-emerald-500 bg-transparent px-4 py-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500">
       Enviar otra solicitud
     </button>
@@ -144,7 +145,16 @@ function showSuccessMessage() {
   document.getElementById('reset-application-btn')?.addEventListener('click', () => window.location.reload());
 }
 
-/** Mantiene state.values sincronizado con cada campo con [name] dentro de #applicationForm. */
+/** Marca un campo como "tocado", revalida todo el formulario y refleja los errores en el DOM. */
+function touchAndValidate(name) {
+  state.touched.add(name);
+  state.errors = validate(state.values);
+  applyAllFieldErrors();
+}
+
+/** Mantiene state.values sincronizado con cada campo con [name] dentro de #applicationForm.
+ *  En selects/checkbox/radio, el "change" ya es la interacción completa: validamos ahí mismo.
+ *  En campos de texto, solo revalidamos en vivo mientras escribe si el campo ya fue tocado (blur previo). */
 function onField(e) {
   const { name, type, checked, value } = e.target;
   if (!name) return;
@@ -155,16 +165,23 @@ function onField(e) {
     if (counter) counter.textContent = `${value.length}/500`;
   }
 
-  // Limpieza en tiempo real: si el campo se corrige, quitamos el error visual de inmediato
-  if (state.errors[name]) {
-    state.errors = validate(state.values);
-    applyAllFieldErrors();
+  const isDiscreteControl = type === 'checkbox' || type === 'radio' || e.target.tagName === 'SELECT';
+  if (isDiscreteControl || state.touched.has(name)) {
+    touchAndValidate(name);
   }
+}
+
+/** Validación al perder el foco: primera vez que se revisa un campo de texto/número/url/textarea. */
+function onBlur(e) {
+  const { name } = e.target;
+  if (!name) return;
+  touchAndValidate(name);
 }
 
 /** Valida en el envío y, si falla, mueve el foco al primer campo con error. */
 function onSubmit(e) {
   e.preventDefault();
+  state.submitAttempted = true;
   state.errors = validate(state.values);
   applyAllFieldErrors();
 
@@ -178,15 +195,35 @@ function onSubmit(e) {
   showSuccessMessage();
 }
 
+/** Restablece el formulario y el estado a sus valores iniciales, sin recargar la página. */
+function onClear() {
+  const form = document.getElementById('applicationForm');
+  if (!form) return;
+
+  form.reset();
+  state.values = { ...EMPTY_VALUES };
+  state.errors = {};
+  state.touched = new Set();
+  state.submitAttempted = false;
+  applyAllFieldErrors();
+
+  const counter = document.getElementById('commentsCounter');
+  if (counter) counter.textContent = '0/500';
+
+  fieldInputEl(FIELDS[0])?.focus();
+}
+
 /** Cablea los listeners una sola vez al cargar el DOM. */
 function initEventListeners() {
   document.getElementById('applicationForm')?.addEventListener('submit', onSubmit);
+  document.getElementById('clear-form-btn')?.addEventListener('click', onClear);
 
   document.querySelectorAll('#applicationForm [name]').forEach((el) => {
     if (el.type === 'checkbox' || el.type === 'radio' || el.tagName === 'SELECT') {
       el.addEventListener('change', onField);
     } else {
       el.addEventListener('input', onField);
+      el.addEventListener('blur', onBlur);
     }
   });
 }

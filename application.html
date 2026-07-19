@@ -205,11 +205,17 @@
             </div>
           </div>
 
-          <!-- Botón de Envío con foco visible reforzado -->
-          <button type="submit"
-                  class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 py-3.5 rounded-lg shadow-lg shadow-indigo-600/20 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 cursor-pointer text-center">
-            Enviar Formulario a Nexova
-          </button>
+          <!-- Botones de Envío y Limpieza con foco visible reforzado -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button type="submit"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 py-3.5 rounded-lg shadow-lg shadow-indigo-600/20 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 cursor-pointer text-center">
+              Enviar Formulario a Nexova
+            </button>
+            <button type="button" id="clear-form-btn"
+                    class="sm:w-auto bg-transparent border border-slate-700 text-slate-300 font-semibold text-sm px-6 py-3.5 rounded-lg transition-all hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-500 cursor-pointer text-center">
+              Limpiar Formulario
+            </button>
+          </div>
         </div>
 
       </form>
