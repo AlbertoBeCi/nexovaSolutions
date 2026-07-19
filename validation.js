@@ -6,16 +6,19 @@
  */
 
 // Campos reales del formulario de application.html (#applicationForm)
-const FIELDS = ['fullName', 'companyName', 'email', 'phone', 'industry', 'serviceType', 'companySize', 'terms'];
+const FIELDS = ['fullName', 'email', 'phone', 'country', 'yearsExperience', 'sector', 'englishLevel', 'availability', 'linkedin', 'comments', 'terms'];
 
 const EMPTY_VALUES = {
   fullName: '',
-  companyName: '',
   email: '',
   phone: '',
-  industry: '',
-  serviceType: '',
-  companySize: '',
+  country: '',
+  yearsExperience: '',
+  sector: '',
+  englishLevel: '',
+  availability: '',
+  linkedin: '',
+  comments: '',
   terms: false,
 };
 
@@ -30,8 +33,12 @@ const state = {
 function validate(values) {
   const errors = {};
 
-  if (!values.fullName.trim()) errors.fullName = 'El nombre completo es obligatorio.';
-  if (!values.companyName.trim()) errors.companyName = 'El nombre de la empresa es obligatorio.';
+  const fullNameWords = values.fullName.trim().split(/\s+/).filter(Boolean);
+  if (!values.fullName.trim()) {
+    errors.fullName = 'El nombre completo es obligatorio.';
+  } else if (fullNameWords.length < 2) {
+    errors.fullName = 'Introduce nombre y apellido (mínimo 2 palabras).';
+  }
 
   if (!values.email.trim()) {
     errors.email = 'El correo electrónico es obligatorio.';
@@ -41,14 +48,37 @@ function validate(values) {
 
   if (!values.phone.trim()) {
     errors.phone = 'El teléfono de contacto es obligatorio.';
-  } else if (!/^\+?[0-9\s-]{7,15}$/.test(values.phone.trim())) {
-    errors.phone = 'Introduce un teléfono válido (entre 7 y 15 dígitos).';
+  } else if (!/^\+\d{1,3}[\d\s-]{6,14}$/.test(values.phone.trim())) {
+    errors.phone = 'El teléfono debe comenzar con + seguido del código de país (ej: +34 612 345 678).';
   }
 
-  if (!values.industry) errors.industry = 'Selecciona el sector económico de tu empresa.';
-  if (!values.serviceType) errors.serviceType = 'Selecciona la línea operativa que necesitas.';
-  if (!values.companySize) errors.companySize = 'Indica el tamaño de tu organización.';
-  if (!values.terms) errors.terms = 'Debes aceptar el tratamiento de datos para continuar.';
+  if (!values.country) errors.country = 'Selecciona tu país de residencia.';
+
+  if (!String(values.yearsExperience).trim()) {
+    errors.yearsExperience = 'Indica tus años de experiencia.';
+  } else {
+    const years = Number(values.yearsExperience);
+    if (Number.isNaN(years) || years < 0 || years > 50) {
+      errors.yearsExperience = 'Introduce un valor entre 0 y 50.';
+    }
+  }
+
+  if (!values.sector) errors.sector = 'Selecciona tu sector de interés.';
+  if (!values.englishLevel) errors.englishLevel = 'Selecciona tu nivel de inglés.';
+  if (!values.availability) errors.availability = 'Selecciona tu disponibilidad.';
+
+  if (values.linkedin.trim()) {
+    try {
+      const url = new URL(values.linkedin.trim());
+      if (!/^https?:$/.test(url.protocol)) throw new Error('protocolo no soportado');
+    } catch {
+      errors.linkedin = 'Introduce una URL válida (ej: https://www.linkedin.com/in/tu-perfil).';
+    }
+  }
+
+  if (values.comments.length > 500) errors.comments = 'Máximo 500 caracteres.';
+
+  if (!values.terms) errors.terms = 'Debes aceptar la política de tratamiento de datos para continuar.';
 
   return errors;
 }
@@ -102,8 +132,8 @@ function showSuccessMessage() {
   success.setAttribute('tabindex', '-1');
   success.className = 'grid gap-3 rounded-xl border border-emerald-500 bg-emerald-500/10 p-6';
   success.innerHTML = `
-    <p class="m-0 text-base font-bold text-emerald-400">✓ Solicitud recibida correctamente</p>
-    <p class="m-0 text-sm text-emerald-200">Un miembro de nuestro equipo se pondrá en contacto contigo en menos de 24h.</p>
+    <p class="m-0 text-base font-bold text-emerald-400">¡Gracias por tu interés en Nexova!</p>
+    <p class="m-0 text-sm text-emerald-200">Hemos recibido tu información. Nuestro equipo de selección la revisará y te contactaremos en caso de que tu perfil encaje con alguna de nuestras oportunidades actuales o futuras.</p>
     <button type="button" id="reset-application-btn" class="mt-1 justify-self-start rounded-lg border border-emerald-500 bg-transparent px-4 py-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500">
       Enviar otra solicitud
     </button>
@@ -119,6 +149,11 @@ function onField(e) {
   const { name, type, checked, value } = e.target;
   if (!name) return;
   state.values[name] = type === 'checkbox' ? checked : value;
+
+  if (name === 'comments') {
+    const counter = document.getElementById('commentsCounter');
+    if (counter) counter.textContent = `${value.length}/500`;
+  }
 
   // Limpieza en tiempo real: si el campo se corrige, quitamos el error visual de inmediato
   if (state.errors[name]) {
@@ -148,7 +183,7 @@ function initEventListeners() {
   document.getElementById('applicationForm')?.addEventListener('submit', onSubmit);
 
   document.querySelectorAll('#applicationForm [name]').forEach((el) => {
-    if (el.type === 'checkbox' || el.tagName === 'SELECT') {
+    if (el.type === 'checkbox' || el.type === 'radio' || el.tagName === 'SELECT') {
       el.addEventListener('change', onField);
     } else {
       el.addEventListener('input', onField);
