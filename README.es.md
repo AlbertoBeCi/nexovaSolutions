@@ -30,6 +30,18 @@ Este repositorio es la **plantilla de inicio** para los proyectos transversales.
 
 ---
 
+## Cómo ejecutar la landing page (Hito 1)
+
+`index.html` y `application.html` son HTML/CSS/JS estático, sin build ni dependencias. Para servirlos localmente (funciona igual en local que en Codespaces, que reenvía el puerto automáticamente):
+
+```bash
+npx serve .
+```
+
+Abre la URL que indique la terminal (por defecto `http://localhost:3000`) y navega a `index.html`.
+
+---
+
 ## Cómo entender este monorepo
 
 Estás construyendo **una sola empresa** a lo largo de muchos hitos y proyectos. Cada carpeta de primer nivel tiene **una responsabilidad clara** — como en un repositorio real de un equipo de ingeniería.

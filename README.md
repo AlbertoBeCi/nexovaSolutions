@@ -30,6 +30,18 @@ This repository is the **starter template** for transversal projects. You will w
 
 ---
 
+## How to run the landing page (Milestone 1)
+
+`index.html` and `application.html` are static HTML/CSS/JS with no build step or dependencies. To serve them locally (works the same in Codespaces, which forwards the port automatically):
+
+```bash
+npx serve .
+```
+
+Open the URL printed in the terminal (defaults to `http://localhost:3000`) and navigate to `index.html`.
+
+---
+
 ## How to think about this monorepo
 
 You are building **one company** across many milestones and projects. Each top-level folder has a **single responsibility** — like a real engineering team repo.
