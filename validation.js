@@ -110,11 +110,14 @@ function applyFieldError(field) {
   }
 }
 
-/** Aplica todos los errores actuales a los campos y al resumen global (#errorSummary/#errorList). */
+/** Aplica todos los errores actuales a los campos y al resumen global (#errorSummary/#errorList).
+ *  El resumen solo lista errores de campos ya tocados (o todos tras un intento de envío), igual que
+ *  los mensajes individuales, para no abrumar al usuario con errores de campos que aún no ha visitado. */
 function applyAllFieldErrors() {
   FIELDS.forEach(applyFieldError);
 
-  const messages = Object.values(state.errors);
+  const visibleFields = state.submitAttempted ? FIELDS : FIELDS.filter((field) => state.touched.has(field));
+  const messages = visibleFields.map((field) => state.errors[field]).filter(Boolean);
   const errorSummary = document.getElementById('errorSummary');
   const errorList = document.getElementById('errorList');
 
