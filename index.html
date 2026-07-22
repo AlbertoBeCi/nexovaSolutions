@@ -58,8 +58,17 @@
 
   <!-- ENCABEZADO: Sincronizado estéticamente con el formulario (Mismo blur, paddings y ring de foco) -->
   <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
-    <nav aria-label="Navegación principal" class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-16">
-      <a href="#inicio" aria-label="Nexova, inicio" class="font-manrope text-xl font-extrabold tracking-tight text-white no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">
+    <nav aria-label="Navegación principal" class="mx-auto grid grid-cols-3 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8 h-16 md:flex md:justify-between">
+      <button id="menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Abrir menú de navegación" class="justify-self-start inline-flex items-center justify-center rounded-lg p-2 -ml-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 md:hidden">
+        <svg id="icon-menu-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+        <svg id="icon-menu-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="hidden h-6 w-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <a href="#inicio" aria-label="Nexova, inicio" class="justify-self-center font-manrope text-xl font-extrabold tracking-tight text-white no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1 md:justify-self-auto">
         NEXOVA
       </a>
 
@@ -69,11 +78,21 @@
         <a href="#talento" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Talento</a>
         <a href="#contacto" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Contacto</a>
       </div>
-      
-      <a href="application.html" aria-label="Solicitar ahora, ir al formulario de registro" class="whitespace-nowrap rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 shadow-lg shadow-indigo-600/20">
+
+      <a href="application.html" aria-label="Solicitar ahora, ir al formulario de registro" class="justify-self-end whitespace-nowrap rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 shadow-lg shadow-indigo-600/20 md:justify-self-auto">
         Solicitar Ahora
       </a>
     </nav>
+
+    <!-- Menú móvil desplegable (Se muestra/oculta con JS al pulsar el botón hamburguesa) -->
+    <div id="mobile-menu" class="hidden border-t border-slate-800 bg-slate-900/95 backdrop-blur-md md:hidden">
+      <div class="flex flex-col gap-1 px-4 py-4 sm:px-6">
+        <a href="#inicio" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Inicio</a>
+        <a href="#servicios" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Servicios</a>
+        <a href="#talento" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Talento</a>
+        <a href="#contacto" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Contacto</a>
+      </div>
+    </div>
   </header>
 
   <main id="main-content" class="flex-grow">
@@ -294,5 +313,40 @@
   </footer>
 
   <script src="./validation.js"></script>
+  <script>
+    (function () {
+      const toggleBtn = document.getElementById('menu-toggle');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const iconOpen = document.getElementById('icon-menu-open');
+      const iconClose = document.getElementById('icon-menu-close');
+
+      function closeMenu() {
+        mobileMenu.classList.add('hidden');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+
+      function openMenu() {
+        mobileMenu.classList.remove('hidden');
+        iconOpen.classList.add('hidden');
+        iconClose.classList.remove('hidden');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+      }
+
+      toggleBtn.addEventListener('click', function () {
+        const isOpen = toggleBtn.getAttribute('aria-expanded') === 'true';
+        isOpen ? closeMenu() : openMenu();
+      });
+
+      mobileMenu.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', closeMenu);
+      });
+
+      window.addEventListener('resize', function () {
+        if (window.innerWidth >= 768) closeMenu();
+      });
+    })();
+  </script>
 </body>
 </html>
