@@ -5,9 +5,12 @@ export function filterCandidatesBySkills(candidates: Candidate[], requiredSkills
     return candidates;
   }
 
-  return candidates.filter((candidate) =>
-    requiredSkills.every((requiredSkill) => candidate.skills.includes(requiredSkill)),
-  );
+  const normalizedRequiredSkills = requiredSkills.map((skill) => skill.toLowerCase());
+
+  return candidates.filter((candidate) => {
+    const normalizedCandidateSkills = candidate.skills.map((skill) => skill.toLowerCase());
+    return normalizedRequiredSkills.every((requiredSkill) => normalizedCandidateSkills.includes(requiredSkill));
+  });
 }
 
 export function filterCandidatesBySeniority(candidates: Candidate[], seniority: SeniorityLevel): Candidate[] {
