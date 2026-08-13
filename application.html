@@ -5,229 +5,278 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Formulario de Registro de Talento | Nexova Solutions</title>
   <meta name="description" content="Regístrate en la bolsa de talento de Nexova Solutions. Comparte tu perfil profesional y te contactaremos cuando encaje con una oportunidad en tecnología, retail o servicios financieros en Valencia y Miami.">
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-</head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-600 selection:text-white">
 
-  <!-- ENCABEZADO ACCESIBLE (Navegación unificada con el Hito 1) -->
-  <header class="w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <a href="index.html" class="text-xl font-extrabold tracking-tight text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <style>
+    :root {
+      --bg: #F6F1E7;
+      --bg-alt: #EEE6D4;
+      --ink: #1C1A16;
+      --ink-muted: #6B6355;
+      --accent: #2F5233;
+      --accent-strong: #25401F;
+      --accent-soft: #E3E8D9;
+      --line: #DCD3BE;
+    }
+    body { font-family: 'Public Sans', system-ui, sans-serif; }
+    .font-display { font-family: 'Fraunces', Georgia, serif; }
+    ::selection { background: var(--accent); color: #fff; }
+  </style>
+</head>
+<body class="bg-[var(--bg)] text-[var(--ink)] min-h-screen flex flex-col antialiased">
+
+  <header class="w-full bg-[var(--bg)]/95 backdrop-blur-sm border-b border-[var(--line)] sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="font-display text-xl font-semibold tracking-tight text-[var(--ink)] no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] px-2 py-1">
         NEXOVA
       </a>
       <nav aria-label="Navegación principal">
-        <a href="index.html" class="text-sm font-medium text-slate-300 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-3 py-2">
+        <a href="index.html" class="text-sm font-medium text-[var(--ink-muted)] no-underline hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] px-3 py-2">
           ← Volver a Inicio
         </a>
       </nav>
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL: Enfoque Mobile-First -->
-  <main class="flex-grow w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    
-    <!-- Encabezado de Sección con Animación Novedosa Descriptiva -->
+  <!-- CONTENIDO DE LA PÁGINA: introducción + disparador del modal de pasos -->
+  <main class="flex-grow w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-10">
-      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-4">
-        Para Profesionales
-      </span>
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-        Formulario de Registro de Talento
+      <p class="font-display text-sm tracking-[0.2em] uppercase text-[var(--accent)] mb-4">Para profesionales</p>
+      <h1 class="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--ink)]">
+        Registro de Talento
       </h1>
-      <p class="mt-3 text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
-        Completa tus datos profesionales para unirte a nuestra bolsa de talento. Evaluaremos tu perfil y te contactaremos cuando surja una oportunidad que encaje contigo.
+      <p class="mt-4 text-sm sm:text-base text-[var(--ink-muted)] max-w-xl mx-auto leading-relaxed">
+        Completa tus datos profesionales en 3 pasos para unirte a nuestra bolsa de talento. Evaluaremos tu perfil y te contactaremos cuando surja una oportunidad que encaje contigo.
       </p>
     </div>
 
-    <!-- Aviso para empresas: este formulario es para profesionales, no para contratar servicios de Nexova -->
-    <div class="mb-6 flex items-start gap-3 rounded-xl border border-indigo-500/20 bg-indigo-500/10 p-4 text-sm text-indigo-200">
-      <span aria-hidden="true">🏢</span>
-      <p class="m-0">¿Eres una empresa buscando talento? Escríbenos a <a href="mailto:contacto@nexova.com" class="font-semibold text-indigo-300 underline hover:text-indigo-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-0.5">contacto@nexova.com</a></p>
+    <div class="mb-10 flex items-start gap-3 border border-[var(--line)] bg-[var(--bg-alt)] p-4 text-sm text-[var(--ink-muted)]">
+      <p class="m-0">¿Eres una empresa buscando talento? Escríbenos a <a href="mailto:contacto@nexova.com" class="font-semibold text-[var(--accent)] underline hover:text-[var(--accent-strong)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] px-0.5">contacto@nexova.com</a></p>
     </div>
 
-    <!-- CONTENEDOR DEL FORMULARIO CON MARCADORES DE ACCESIBILIDAD ARIA -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-      
-      <!-- Indicador global de errores para accesibilidad cognitiva y lectores de pantalla -->
-      <div id="errorSummary" class="hidden mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400" role="alert" aria-live="assertive">
-        <p class="font-bold flex items-center gap-2">
-          ❌ Por favor, corrija los errores del formulario antes de continuar:
-        </p>
-        <ul id="errorList" class="list-disc list-inside mt-2 text-xs space-y-1 text-red-300/90"></ul>
-      </div>
-
-      <form id="applicationForm" action="#" method="POST" novalidate class="space-y-6">
-
-        <!-- SECCIÓN 1: DATOS DE CONTACTO -->
-        <fieldset class="space-y-4 border-b border-slate-800 pb-6">
-          <legend class="text-lg font-bold text-slate-200 tracking-wide mb-2">1. Datos de Contacto</legend>
-
-          <div>
-            <label for="fullName" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Nombre Completo <span class="text-red-400">*</span></label>
-            <input type="text" id="fullName" name="fullName" required aria-required="true" aria-describedby="fullNameError"
-                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600" placeholder="Ej. Carlos Mendoza">
-            <p id="fullNameError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Campo: Email -->
-            <div>
-              <label for="email" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Correo Electrónico <span class="text-red-400">*</span></label>
-              <input type="email" id="email" name="email" required aria-required="true" aria-describedby="emailError"
-                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600" placeholder="nombre@empresa.com">
-              <p id="emailError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-            </div>
-
-            <!-- Campo: Teléfono -->
-            <div>
-              <label for="phone" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Teléfono <span class="text-red-400">*</span></label>
-              <input type="tel" id="phone" name="phone" required aria-required="true" aria-describedby="phoneError"
-                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600" placeholder="+34 612 345 678">
-              <p id="phoneError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-            </div>
-          </div>
-
-          <!-- Dropdown País de Residencia -->
-          <div>
-            <label for="country" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">País de Residencia <span class="text-red-400">*</span></label>
-            <select id="country" name="country" required aria-required="true" aria-describedby="countryError"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="" disabled selected hidden>Seleccione su país...</option>
-              <option value="espana">España</option>
-              <option value="estados_unidos">Estados Unidos</option>
-              <option value="otro">Otro</option>
-            </select>
-            <p id="countryError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-          </div>
-        </fieldset>
-
-        <!-- SECCIÓN 2: PERFIL PROFESIONAL -->
-        <fieldset class="space-y-4 border-b border-slate-800 pb-6">
-          <legend class="text-lg font-bold text-slate-200 tracking-wide mb-2">2. Perfil Profesional</legend>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Campo: Años de Experiencia -->
-            <div>
-              <label for="yearsExperience" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Años de Experiencia <span class="text-red-400">*</span></label>
-              <input type="number" id="yearsExperience" name="yearsExperience" min="0" max="50" required aria-required="true" aria-describedby="yearsExperienceError"
-                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600" placeholder="Ej. 5">
-              <p id="yearsExperienceError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-            </div>
-
-            <!-- Dropdown Nivel de Inglés -->
-            <div>
-              <label for="englishLevel" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Nivel de Inglés <span class="text-red-400">*</span></label>
-              <select id="englishLevel" name="englishLevel" required aria-required="true" aria-describedby="englishLevelError"
-                      class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
-                <option value="" disabled selected hidden>Seleccione su nivel...</option>
-                <option value="basico">Básico</option>
-                <option value="intermedio">Intermedio</option>
-                <option value="avanzado">Avanzado</option>
-                <option value="nativo">Nativo</option>
-              </select>
-              <p id="englishLevelError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-            </div>
-          </div>
-
-          <!-- Dropdown Sector de Interés -->
-          <div>
-            <label for="sector" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Sector de Interés <span class="text-red-400">*</span></label>
-            <select id="sector" name="sector" required aria-required="true" aria-describedby="sectorError"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all appearance-none cursor-pointer">
-              <option value="" disabled selected hidden>Seleccione un sector...</option>
-              <option value="tecnologia">Tecnología</option>
-              <option value="retail">Retail</option>
-              <option value="financiero">Servicios Financieros</option>
-              <option value="consultoria">Consultoría</option>
-              <option value="otro">Otro</option>
-            </select>
-            <p id="sectorError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-          </div>
-
-          <!-- Grupo de radios: Disponibilidad -->
-          <div>
-            <fieldset id="availability" aria-describedby="availabilityError" class="border border-slate-800 rounded-lg px-4 py-3">
-              <legend class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">Disponibilidad <span class="text-red-400">*</span></legend>
-              <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                  <input type="radio" name="availability" value="inmediata" required class="text-indigo-600 bg-slate-950 border-slate-800 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                  Inmediata
-                </label>
-                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                  <input type="radio" name="availability" value="1_mes" class="text-indigo-600 bg-slate-950 border-slate-800 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                  1 mes
-                </label>
-                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                  <input type="radio" name="availability" value="2_3_meses" class="text-indigo-600 bg-slate-950 border-slate-800 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                  2-3 meses
-                </label>
-                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                  <input type="radio" name="availability" value="explorando" class="text-indigo-600 bg-slate-950 border-slate-800 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                  Solo explorando
-                </label>
-              </div>
-            </fieldset>
-            <p id="availabilityError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-          </div>
-
-          <!-- Campo: LinkedIn (opcional) -->
-          <div>
-            <label for="linkedin" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">LinkedIn (URL de perfil)</label>
-            <input type="url" id="linkedin" name="linkedin" aria-describedby="linkedinError"
-                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600" placeholder="https://www.linkedin.com/in/tu-perfil">
-            <p id="linkedinError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-          </div>
-        </fieldset>
-
-        <!-- SECCIÓN 3: CONFIRMACIÓN Y ENVÍO -->
-        <div class="flex flex-col space-y-4">
-          <!-- Campo: Comentarios adicionales (opcional) -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="comments" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Comentarios Adicionales</label>
-              <span id="commentsCounter" class="text-xs text-slate-500" aria-live="polite">0/500</span>
-            </div>
-            <textarea id="comments" name="comments" maxlength="500" rows="4" aria-describedby="commentsError commentsCounter"
-                      class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-600 resize-none" placeholder="Cuéntanos algo más sobre tu perfil (máx. 500 caracteres)..."></textarea>
-            <p id="commentsError" class="hidden mt-1.5 text-xs text-red-400" role="status"></p>
-          </div>
-
-          <!-- Cuadro de verificación accesible para políticas -->
-          <div class="flex items-start">
-            <div class="flex items-center h-5">
-              <input id="terms" name="terms" type="checkbox" required aria-required="true" aria-describedby="termsError"
-                     class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900 focus:outline-none cursor-pointer">
-            </div>
-            <div class="ml-3 text-sm">
-              <label for="terms" class="font-medium text-slate-400 cursor-pointer">Acepto el tratamiento de datos para la evaluación operativa entre las sedes de Valencia y Miami. <span class="text-red-400">*</span></label>
-              <p id="termsError" class="hidden mt-1 text-xs text-red-400" role="status"></p>
-            </div>
-          </div>
-
-          <!-- Botones de Envío y Limpieza con foco visible reforzado -->
-          <div class="flex flex-col sm:flex-row gap-3">
-            <button type="submit"
-                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 py-3.5 rounded-lg shadow-lg shadow-indigo-600/20 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 cursor-pointer text-center">
-              Enviar Formulario a Nexova
-            </button>
-            <button type="button" id="clear-form-btn"
-                    class="sm:w-auto bg-transparent border border-slate-700 text-slate-300 font-semibold text-sm px-6 py-3.5 rounded-lg transition-all hover:bg-slate-800 hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-500 cursor-pointer text-center">
-              Limpiar Formulario
-            </button>
-          </div>
-        </div>
-
-      </form>
+    <div class="border border-[var(--line)] bg-[var(--bg-alt)]/60 p-8 sm:p-10 text-center">
+      <p class="font-mono text-[11px] tracking-widest uppercase text-[var(--ink-muted)] mb-3">Proceso en 3 pasos</p>
+      <h2 class="font-display text-2xl font-semibold text-[var(--ink)] mb-3">Empieza tu solicitud</h2>
+      <p class="text-sm text-[var(--ink-muted)] mb-8 max-w-md mx-auto leading-relaxed">
+        Datos de contacto, perfil profesional y confirmación. Puedes ir hacia atrás en cualquier momento antes de enviar.
+      </p>
+      <button type="button" data-open-modal class="inline-flex items-center px-6 py-3.5 text-sm font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-strong)] transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent)]/30">
+        Comenzar solicitud
+      </button>
     </div>
   </main>
 
-  <!-- PIE DE PÁGINA PROFESIONAL -->
-  <footer class="w-full bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
+  <footer class="w-full bg-[var(--bg-alt)] border-t border-[var(--line)] py-6 text-center text-xs text-[var(--ink-muted)]">
     <p>&copy; 2026 Nexova Solutions S.A. Valencia — Miami. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ENLACE AL SCRIPT DE VALIDACIÓN EXIGIDO -->
+  <!-- MODAL DE PASOS: overlay + panel. Oculto por defecto, controlado por form-modal.js -->
+  <div id="applicationModal" class="hidden fixed inset-0 z-50">
+    <div id="modalBackdrop" class="absolute inset-0 bg-[var(--ink)]/50 backdrop-blur-sm"></div>
+
+    <div class="relative h-full overflow-y-auto flex items-start sm:items-center justify-center p-4 py-8">
+      <div role="dialog" aria-modal="true" aria-labelledby="modalTitle" class="relative w-full max-w-2xl bg-[var(--bg)] border border-[var(--line)] shadow-2xl">
+
+        <!-- Cabecera del modal: título, progreso y cierre -->
+        <div class="flex items-start justify-between gap-4 border-b border-[var(--line)] px-6 sm:px-10 py-6">
+          <div>
+            <h2 id="modalTitle" class="font-display text-xl font-semibold text-[var(--ink)]">Registro de Talento</h2>
+            <p id="stepProgressLabel" class="mt-1 text-xs font-semibold uppercase tracking-wider text-[var(--accent)]" aria-live="polite">Paso 1 de 3 — Datos de contacto</p>
+          </div>
+          <button type="button" id="modalCloseBtn" aria-label="Cerrar formulario" class="text-[var(--ink-muted)] hover:text-[var(--ink)] p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Indicador de pasos (solo visual, la navegación va por los botones Atrás/Siguiente) -->
+        <div class="flex items-center gap-2 px-6 sm:px-10 pt-6" aria-hidden="true">
+          <span data-step-dot class="h-1 flex-1 bg-[var(--accent)]"></span>
+          <span data-step-dot class="h-1 flex-1 bg-[var(--line)]"></span>
+          <span data-step-dot class="h-1 flex-1 bg-[var(--line)]"></span>
+        </div>
+
+        <div class="px-6 sm:px-10 py-8">
+          <div id="errorSummary" class="hidden mb-6 p-4 bg-red-50 border border-red-300 text-sm text-red-700" role="alert" aria-live="assertive">
+            <p class="font-bold flex items-center gap-2">
+              Por favor, corrige los errores antes de continuar:
+            </p>
+            <ul id="errorList" class="list-disc list-inside mt-2 text-xs space-y-1 text-red-600"></ul>
+          </div>
+
+          <form id="applicationForm" action="#" method="POST" novalidate>
+
+            <!-- PASO 1: DATOS DE CONTACTO -->
+            <div data-step-panel class="space-y-4">
+              <h3 data-step-heading tabindex="-1" class="font-display text-lg font-semibold text-[var(--ink)] mb-2 focus:outline-none">1. Datos de Contacto</h3>
+
+              <div>
+                <label for="fullName" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">Nombre Completo <span class="text-red-600">*</span></label>
+                <input type="text" id="fullName" name="fullName" required aria-required="true" aria-describedby="fullNameError"
+                       class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder-[var(--ink-muted)]/50" placeholder="Ej. Carlos Mendoza">
+                <p id="fullNameError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="email" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">Correo Electrónico <span class="text-red-600">*</span></label>
+                  <input type="email" id="email" name="email" required aria-required="true" aria-describedby="emailError"
+                         class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder-[var(--ink-muted)]/50" placeholder="nombre@empresa.com">
+                  <p id="emailError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+                </div>
+
+                <div>
+                  <label for="phone" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">Teléfono <span class="text-red-600">*</span></label>
+                  <input type="tel" id="phone" name="phone" required aria-required="true" aria-describedby="phoneError"
+                         class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder-[var(--ink-muted)]/50" placeholder="+34 612 345 678">
+                  <p id="phoneError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+                </div>
+              </div>
+
+              <div>
+                <label for="country" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">País de Residencia <span class="text-red-600">*</span></label>
+                <select id="country" name="country" required aria-required="true" aria-describedby="countryError"
+                        class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all appearance-none cursor-pointer">
+                  <option value="" disabled selected hidden>Seleccione su país...</option>
+                  <option value="espana">España</option>
+                  <option value="estados_unidos">Estados Unidos</option>
+                  <option value="otro">Otro</option>
+                </select>
+                <p id="countryError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+              </div>
+            </div>
+
+            <!-- PASO 2: PERFIL PROFESIONAL -->
+            <div data-step-panel class="hidden space-y-4">
+              <h3 data-step-heading tabindex="-1" class="font-display text-lg font-semibold text-[var(--ink)] mb-2 focus:outline-none">2. Perfil Profesional</h3>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="yearsExperience" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">Años de Experiencia <span class="text-red-600">*</span></label>
+                  <input type="number" id="yearsExperience" name="yearsExperience" min="0" max="50" required aria-required="true" aria-describedby="yearsExperienceError"
+                         class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder-[var(--ink-muted)]/50" placeholder="Ej. 5">
+                  <p id="yearsExperienceError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+                </div>
+
+                <div>
+                  <label for="englishLevel" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">Nivel de Inglés <span class="text-red-600">*</span></label>
+                  <select id="englishLevel" name="englishLevel" required aria-required="true" aria-describedby="englishLevelError"
+                          class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all appearance-none cursor-pointer">
+                    <option value="" disabled selected hidden>Seleccione su nivel...</option>
+                    <option value="basico">Básico</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="avanzado">Avanzado</option>
+                    <option value="nativo">Nativo</option>
+                  </select>
+                  <p id="englishLevelError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+                </div>
+              </div>
+
+              <div>
+                <label for="sector" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">Sector de Interés <span class="text-red-600">*</span></label>
+                <select id="sector" name="sector" required aria-required="true" aria-describedby="sectorError"
+                        class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all appearance-none cursor-pointer">
+                  <option value="" disabled selected hidden>Seleccione un sector...</option>
+                  <option value="tecnologia">Tecnología</option>
+                  <option value="retail">Retail</option>
+                  <option value="financiero">Servicios Financieros</option>
+                  <option value="consultoria">Consultoría</option>
+                  <option value="otro">Otro</option>
+                </select>
+                <p id="sectorError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+              </div>
+
+              <div>
+                <fieldset id="availability" aria-describedby="availabilityError" class="border border-[var(--line)] px-4 py-3">
+                  <legend class="text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider px-1">Disponibilidad <span class="text-red-600">*</span></legend>
+                  <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label class="flex items-center gap-2 text-sm text-[var(--ink)] cursor-pointer">
+                      <input type="radio" name="availability" value="inmediata" required class="text-[var(--accent)] bg-[var(--bg)] border-[var(--line)] focus:ring-[var(--accent)] focus:outline-none cursor-pointer">
+                      Inmediata
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-[var(--ink)] cursor-pointer">
+                      <input type="radio" name="availability" value="1_mes" class="text-[var(--accent)] bg-[var(--bg)] border-[var(--line)] focus:ring-[var(--accent)] focus:outline-none cursor-pointer">
+                      1 mes
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-[var(--ink)] cursor-pointer">
+                      <input type="radio" name="availability" value="2_3_meses" class="text-[var(--accent)] bg-[var(--bg)] border-[var(--line)] focus:ring-[var(--accent)] focus:outline-none cursor-pointer">
+                      2-3 meses
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-[var(--ink)] cursor-pointer">
+                      <input type="radio" name="availability" value="explorando" class="text-[var(--accent)] bg-[var(--bg)] border-[var(--line)] focus:ring-[var(--accent)] focus:outline-none cursor-pointer">
+                      Solo explorando
+                    </label>
+                  </div>
+                </fieldset>
+                <p id="availabilityError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+              </div>
+
+              <div>
+                <label for="linkedin" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider mb-1.5">LinkedIn (URL de perfil)</label>
+                <input type="url" id="linkedin" name="linkedin" aria-describedby="linkedinError"
+                       class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder-[var(--ink-muted)]/50" placeholder="https://www.linkedin.com/in/tu-perfil">
+                <p id="linkedinError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+              </div>
+            </div>
+
+            <!-- PASO 3: CONFIRMACIÓN Y ENVÍO -->
+            <div data-step-panel class="hidden space-y-4">
+              <h3 data-step-heading tabindex="-1" class="font-display text-lg font-semibold text-[var(--ink)] mb-2 focus:outline-none">3. Confirmación y Envío</h3>
+
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="comments" class="block text-xs font-semibold text-[var(--ink-muted)] uppercase tracking-wider">Comentarios Adicionales</label>
+                  <span id="commentsCounter" class="text-xs text-[var(--ink-muted)]" aria-live="polite">0/500</span>
+                </div>
+                <textarea id="comments" name="comments" maxlength="500" rows="4" aria-describedby="commentsError commentsCounter"
+                          class="w-full bg-[var(--bg)] border border-[var(--line)] px-4 py-2.5 text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder-[var(--ink-muted)]/50 resize-none" placeholder="Cuéntanos algo más sobre tu perfil (máx. 500 caracteres)..."></textarea>
+                <p id="commentsError" class="hidden mt-1.5 text-xs text-red-600" role="status"></p>
+              </div>
+
+              <div class="flex items-start">
+                <div class="flex items-center h-5">
+                  <input id="terms" name="terms" type="checkbox" required aria-required="true" aria-describedby="termsError"
+                         class="w-4 h-4 bg-[var(--bg)] border-[var(--line)] text-[var(--accent)] focus:ring-[var(--accent)] focus:outline-none cursor-pointer">
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="terms" class="font-medium text-[var(--ink-muted)] cursor-pointer">Acepto el tratamiento de datos para la evaluación operativa entre las sedes de Valencia y Miami. <span class="text-red-600">*</span></label>
+                  <p id="termsError" class="hidden mt-1 text-xs text-red-600" role="status"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- NAVEGACIÓN DEL WIZARD: Atrás / Siguiente / Enviar, común a los 3 pasos -->
+            <div class="mt-8 pt-6 border-t border-[var(--line)] flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <button type="button" id="clear-form-btn" class="text-xs font-semibold text-[var(--ink-muted)] hover:text-[var(--ink)] underline underline-offset-2 self-start sm:self-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
+                Limpiar formulario
+              </button>
+
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button type="button" id="stepBackBtn" class="invisible px-6 py-3 text-sm font-semibold text-[var(--ink)] border border-[var(--ink)]/25 hover:border-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--ink)]/10">
+                  Atrás
+                </button>
+                <button type="button" id="stepNextBtn" class="px-6 py-3 text-sm font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-strong)] transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent)]/30">
+                  Siguiente
+                </button>
+                <button type="submit" id="stepSubmitBtn" class="hidden px-6 py-3 text-sm font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-strong)] transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent)]/30">
+                  Enviar Formulario a Nexova
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="validation.js"></script>
+  <script src="form-modal.js"></script>
 </body>
 </html>
