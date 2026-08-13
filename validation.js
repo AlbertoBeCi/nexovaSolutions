@@ -133,12 +133,12 @@ function showSuccessMessage() {
   const success = document.createElement('div');
   success.setAttribute('role', 'status');
   success.setAttribute('tabindex', '-1');
-  success.className = 'grid gap-3 rounded-xl border border-emerald-500 bg-emerald-500/10 p-6';
+  success.className = 'grid gap-3 border border-emerald-300 bg-emerald-50 p-6';
   success.innerHTML = `
-    <p class="m-0 text-base font-bold text-emerald-400">¡Gracias por tu interés en Nexova!</p>
-    <p class="m-0 text-sm text-emerald-200">Hemos recibido tu información. Nuestro equipo de selección la revisará y te contactaremos en caso de que tu perfil encaje con alguna de nuestras oportunidades actuales o futuras.</p>
-    <p class="m-0 text-sm text-emerald-200">Mientras tanto, síguenos en <a href="https://linkedin.com/company/nexova" target="_blank" rel="noopener noreferrer" class="font-semibold underline hover:text-emerald-100">LinkedIn</a> para estar al día de nuestras vacantes y contenido sobre desarrollo profesional.</p>
-    <button type="button" id="reset-application-btn" class="mt-1 justify-self-start rounded-lg border border-emerald-500 bg-transparent px-4 py-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500">
+    <p class="m-0 text-base font-bold text-emerald-800">¡Gracias por tu interés en Nexova!</p>
+    <p class="m-0 text-sm text-emerald-700">Hemos recibido tu información. Nuestro equipo de selección la revisará y te contactaremos en caso de que tu perfil encaje con alguna de nuestras oportunidades actuales o futuras.</p>
+    <p class="m-0 text-sm text-emerald-700">Mientras tanto, síguenos en <a href="https://linkedin.com/company/nexova" target="_blank" rel="noopener noreferrer" class="font-semibold underline hover:text-emerald-900">LinkedIn</a> para estar al día de nuestras vacantes y contenido sobre desarrollo profesional.</p>
+    <button type="button" id="reset-application-btn" class="mt-1 justify-self-start border border-emerald-600 bg-transparent px-4 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500">
       Enviar otra solicitud
     </button>
   `;

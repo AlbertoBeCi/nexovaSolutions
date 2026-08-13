@@ -5,15 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Nexova Solutions — Selección de talento y externalización potenciados por IA</title>
   <meta name="description" content="12 años de experiencia humana en RRHH combinados con puntuación algorítmica de CV, búsqueda semántica RAG y automatización inteligente para medianas empresas Tech, Retail y Servicios Financieros.">
-  
+  <meta name="theme-color" id="theme-color-meta" content="#F6F1E7">
+
+  <script>
+    (function () {
+      var stored = localStorage.getItem('nexova-theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Usamos la misma inyección limpia de Tailwind CDN compatible con la estructura corporativa -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  
-  <!-- Datos estructurados Schema.org para mejorar el SEO local en Valencia y Miami -->
+
+  <style>
+    :root {
+      --bg: #F6F1E7;
+      --bg-alt: #EEE6D4;
+      --ink: #1C1A16;
+      --ink-muted: #6B6355;
+      --accent: #2F5233;
+      --accent-strong: #25401F;
+      --accent-soft: #E3E8D9;
+      --accent-ink: #FFFFFF;
+      --line: #DCD3BE;
+    }
+    :root[data-theme="dark"] {
+      --bg: #16130E;
+      --bg-alt: #201B13;
+      --ink: #F2ECDD;
+      --ink-muted: #B7AD97;
+      --accent: #86C695;
+      --accent-strong: #A3DDB0;
+      --accent-soft: #1F2E1D;
+      --accent-ink: #14120C;
+      --line: #362F20;
+    }
+    body { font-family: 'Public Sans', system-ui, sans-serif; }
+    .font-display { font-family: 'Fraunces', Georgia, serif; }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    body, header, .transition-colors { transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease; }
+    @media (prefers-reduced-motion: reduce) {
+      body, header, .transition-colors { transition: none; }
+    }
+  </style>
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -49,246 +88,221 @@
   }
   </script>
 </head>
-<body class="min-h-screen w-full bg-slate-950 font-sans text-slate-100 antialiased selection:bg-indigo-600 selection:text-white">
+<body class="min-h-screen w-full bg-[var(--bg)] text-[var(--ink)] antialiased">
 
-  <!-- Enlace de salto accesible para lectores de pantalla y teclado -->
-  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-[var(--accent)] focus:px-4 focus:py-2 focus:text-[var(--accent-ink)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--accent)]">
     Saltar al contenido principal
   </a>
 
-  <!-- ENCABEZADO: Sincronizado estéticamente con el formulario (Mismo blur, paddings y ring de foco) -->
-  <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
-    <nav aria-label="Navegación principal" class="mx-auto grid grid-cols-[auto_1fr_auto] max-w-7xl items-center gap-2 px-4 sm:px-6 lg:px-8 h-16 md:flex md:justify-between md:gap-4">
-      <button id="menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Abrir menú de navegación" class="justify-self-start inline-flex items-center justify-center rounded-lg p-2 -ml-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 md:hidden">
-        <svg id="icon-menu-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+  <header class="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--bg)]/95 backdrop-blur-sm">
+    <nav aria-label="Navegación principal" class="mx-auto grid grid-cols-[auto_1fr_auto] max-w-6xl items-center gap-2 px-4 sm:px-6 lg:px-8 h-16 md:flex md:justify-between md:gap-4">
+      <button id="menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Abrir menú de navegación" class="justify-self-start inline-flex items-center justify-center p-2 -ml-2 text-[var(--ink)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:hidden">
+        <svg id="icon-menu-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
-        <svg id="icon-menu-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="hidden h-6 w-6">
+        <svg id="icon-menu-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="hidden h-6 w-6" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
         </svg>
       </button>
 
-      <a href="#inicio" aria-label="Nexova, inicio" class="justify-self-center font-manrope text-xl font-extrabold tracking-tight text-white no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1 md:justify-self-auto">
+      <a href="#inicio" aria-label="Nexova, inicio" class="justify-self-center font-display text-xl font-semibold tracking-tight text-[var(--ink)] no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] px-2 py-1 md:justify-self-auto">
         NEXOVA
       </a>
 
       <div class="hidden items-center gap-8 md:flex">
-        <a href="#inicio" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Inicio</a>
-        <a href="#servicios" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Servicios</a>
-        <a href="#talento" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Talento</a>
-        <a href="#contacto" class="text-sm font-medium text-slate-300 no-underline hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded px-2 py-1">Contacto</a>
+        <a href="#inicio" class="text-sm font-medium text-[var(--ink-muted)] no-underline hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] px-2 py-1">Inicio</a>
+        <a href="#servicios" class="text-sm font-medium text-[var(--ink-muted)] no-underline hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] px-2 py-1">Servicios</a>
+        <a href="#talento" class="text-sm font-medium text-[var(--ink-muted)] no-underline hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] px-2 py-1">Talento</a>
+        <a href="#contacto" class="text-sm font-medium text-[var(--ink-muted)] no-underline hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] px-2 py-1">Contacto</a>
       </div>
 
-      <a href="application.html" aria-label="Solicitar ahora, ir al formulario de registro" class="justify-self-end whitespace-nowrap rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 shadow-lg shadow-indigo-600/20 md:justify-self-auto">
-        Solicitar Ahora
-      </a>
+      <div class="flex items-center gap-2 justify-self-end md:justify-self-auto">
+        <button id="theme-toggle" type="button" aria-pressed="false" aria-label="Cambiar a modo oscuro" class="inline-flex items-center justify-center p-2.5 text-[var(--ink)] hover:bg-[var(--accent-soft)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">
+          <svg id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+          </svg>
+          <svg id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="hidden h-5 w-5" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path stroke-linecap="round" d="M12 2.5v2M12 19.5v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2.5 12h2M19.5 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+        </button>
+
+        <a href="application.html" aria-label="Solicitar ahora, ir al formulario de registro" class="whitespace-nowrap px-5 py-2.5 text-sm font-semibold text-[var(--accent-ink)] no-underline bg-[var(--accent)] hover:bg-[var(--accent-strong)] transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent)]/30">
+          Solicitar Ahora
+        </a>
+      </div>
     </nav>
 
-    <!-- Menú móvil desplegable (Se muestra/oculta con JS al pulsar el botón hamburguesa) -->
-    <div id="mobile-menu" class="hidden border-t border-slate-800 bg-slate-900/95 backdrop-blur-md md:hidden">
+    <div id="mobile-menu" class="hidden border-t border-[var(--line)] bg-[var(--bg)] md:hidden">
       <div class="flex flex-col gap-1 px-4 py-4 sm:px-6">
-        <a href="#inicio" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Inicio</a>
-        <a href="#servicios" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Servicios</a>
-        <a href="#talento" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Talento</a>
-        <a href="#contacto" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 no-underline hover:bg-slate-800/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">Contacto</a>
+        <a href="#inicio" class="px-3 py-2.5 text-sm font-medium text-[var(--ink-muted)] no-underline hover:bg-[var(--accent-soft)] hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Inicio</a>
+        <a href="#servicios" class="px-3 py-2.5 text-sm font-medium text-[var(--ink-muted)] no-underline hover:bg-[var(--accent-soft)] hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Servicios</a>
+        <a href="#talento" class="px-3 py-2.5 text-sm font-medium text-[var(--ink-muted)] no-underline hover:bg-[var(--accent-soft)] hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Talento</a>
+        <a href="#contacto" class="px-3 py-2.5 text-sm font-medium text-[var(--ink-muted)] no-underline hover:bg-[var(--accent-soft)] hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Contacto</a>
       </div>
     </div>
   </header>
 
   <main id="main-content" class="flex-grow">
 
-    <!-- HERO SECTION: Estructura fluida con malla geométrica nativa de fondo y acentos de luz (Glow Effect) -->
-    <section id="inicio" aria-labelledby="inicio-heading" class="relative min-h-[85vh] flex items-center overflow-hidden py-20 lg:py-24">
-      <!-- Malla geométrica atenuada (Estilo SaaS Premium de Alta Gama) -->
-      <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25"></div>
-      
-      <!-- Resplandores de IA controlados para contraste estricto (WCAG 2.1 AA) -->
-      <div class="absolute top-0 right-0 -translate-y-12 translate-x-12 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none hidden lg:block"></div>
-      <div class="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-[400px] h-[400px] bg-emerald-600/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <!-- HERO: composición asimétrica editorial. Panel derecho estilo "ficha de candidato" sustituye el mockup de terminal glassmorphism. -->
+    <section id="inicio" aria-labelledby="inicio-heading" class="relative overflow-hidden py-20 lg:py-28 border-b border-[var(--line)]">
+      <div class="relative w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-start">
+        <div>
+          <p class="font-display text-sm tracking-[0.2em] uppercase text-[var(--accent)] mb-6">Valencia, España — Miami, EE. UU.</p>
 
-      <div class="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <!-- Lado Izquierdo: Mensajes estratégicos y CTAs -->
-        <div class="selection:bg-indigo-600 selection:text-white">
-          <div class="flex flex-wrap gap-2.5 mb-6">
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-3 py-1 text-xs font-semibold text-indigo-400 tracking-wide uppercase">
-              <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span> 📍 Valencia, España
-            </span>
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-3 py-1 text-xs font-semibold text-indigo-400 tracking-wide uppercase">
-              <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span> 📍 Miami, USA
-            </span>
-          </div>
-          
-          <h1 id="inicio-heading" class="font-manrope text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+          <h1 id="inicio-heading" class="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-[var(--ink)] mb-6 leading-[1.05]">
             Construimos equipos excepcionales para empresas en crecimiento
           </h1>
 
-          <p class="text-base sm:text-lg text-slate-300 mb-8 max-w-xl leading-relaxed">
+          <p class="text-base sm:text-lg text-[var(--ink-muted)] mb-10 max-w-lg leading-relaxed">
             Consultora de recursos humanos y adquisición de talento con más de 10 años ayudando a empresas de tecnología, retail y servicios financieros a encontrar y desarrollar el mejor talento.
           </p>
 
           <div class="flex flex-col sm:flex-row gap-4">
-            <a href="application.html" class="inline-flex justify-center items-center px-6 py-3.5 text-sm font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 shadow-lg shadow-indigo-600/20">
+            <a href="application.html" class="inline-flex justify-center items-center px-6 py-3.5 text-sm font-semibold text-[var(--accent-ink)] bg-[var(--accent)] hover:bg-[var(--accent-strong)] transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent)]/30">
               Únete a nuestro banco de talento
             </a>
-            <a href="#servicios" class="inline-flex justify-center items-center px-6 py-3.5 text-sm font-semibold rounded-lg text-white bg-slate-900/50 border border-slate-800 hover:bg-slate-900 hover:text-white transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-500 backdrop-blur-sm">
-              Ver Servicios
+            <a href="#servicios" class="inline-flex justify-center items-center px-6 py-3.5 text-sm font-semibold text-[var(--ink)] border border-[var(--ink)]/25 hover:border-[var(--ink)] transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--ink)]/10">
+              Ver servicios
             </a>
           </div>
         </div>
 
-        <!-- Lado Derecho: Interfaz simulada (Mockup de Clasificación y SLAs) para sustituir imágenes pesadas -->
-        <div class="hidden lg:block relative">
-          <div class="absolute inset-0 bg-gradient-to-tr from-indigo-600/10 to-emerald-600/10 rounded-2xl blur-2xl"></div>
-          <div class="relative bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-md select-none">
-            <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-4">
-              <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-red-500/40"></span>
-                <span class="w-3 h-3 rounded-full bg-yellow-500/40"></span>
-                <span class="w-3 h-3 rounded-full bg-green-500/40"></span>
-                <span class="text-xs text-slate-400 font-mono ml-2">motor-ia-clasificacion.js</span>
-              </div>
-              <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">SLA Activo &lt; 24h</span>
+        <div class="relative border border-[var(--line)] bg-[var(--bg-alt)]/70 p-6 sm:p-8 select-none">
+          <div class="flex items-center justify-between border-b border-[var(--line)] pb-4 mb-4">
+            <span class="font-mono text-[11px] tracking-widest uppercase text-[var(--ink-muted)]">Ficha de candidato</span>
+            <span class="font-mono text-[11px] text-[var(--accent)]">N.º 9842</span>
+          </div>
+          <dl class="space-y-3 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="text-[var(--ink-muted)]">Perfil</dt>
+              <dd class="text-[var(--ink)] font-medium text-right">Tecnológico · Ventas B2B</dd>
             </div>
-            <div class="space-y-3 font-mono text-xs">
-              <p class="text-slate-300">&gt; Iniciando cribado semántico en base de datos de candidatos...</p>
-              <p class="text-indigo-400">&gt; Buscando: [Perfil Tecnológico + Ventas B2B + Inglés C1]</p>
-              <div class="p-3 bg-slate-950/80 rounded-lg border border-slate-800/60 flex items-center justify-between">
-                <div>
-                  <p class="text-slate-200 font-sans font-semibold">Candidato ID: #9842</p>
-                  <p class="text-slate-400 text-[11px]">Coincidencia de perfil algorítmico</p>
-                </div>
-                <span class="text-emerald-400 font-bold text-sm bg-emerald-500/5 px-2 py-1 rounded">98% Coincidencia</span>
-              </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-[var(--ink-muted)]">Inglés</dt>
+              <dd class="text-[var(--ink)] font-medium">C1</dd>
             </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-[var(--ink-muted)]">SLA de cribado</dt>
+              <dd class="text-[var(--ink)] font-medium">&lt; 24 horas</dd>
+            </div>
+          </dl>
+          <div class="mt-6 pt-4 border-t border-[var(--line)] flex items-center justify-between">
+            <span class="text-xs text-[var(--ink-muted)] uppercase tracking-wider">Coincidencia algorítmica</span>
+            <span class="font-display text-2xl font-semibold text-[var(--accent)]">98%</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- SECCIÓN SERVICIOS: Tarjetas estructuradas con rejilla adaptativa moderna -->
-    <section id="servicios" aria-labelledby="servicios-heading" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-900">
-      <div class="max-w-3xl mb-10">
-        <h2 id="servicios-heading" class="font-manrope text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+    <!-- SERVICIOS: tres tarjetas dispuestas como cuadrícula editorial con divisores de un pixel, sin radio ni sombra, coherente con la identidad tipográfica de la página -->
+    <section id="servicios" aria-labelledby="servicios-heading" class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-b border-[var(--line)]">
+      <div class="max-w-2xl mb-12">
+        <p class="font-display text-sm tracking-[0.2em] uppercase text-[var(--accent)] mb-3">Qué hacemos</p>
+        <h2 id="servicios-heading" class="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--ink)]">
           Servicios
         </h2>
       </div>
-      <div id="services-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <article class="group relative flex flex-col justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6 transition-all duration-300 hover:border-indigo-500/50 hover:bg-slate-900 shadow-xl select-none">
-          <div class="space-y-4">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl shadow-lg" style="background:#4f46e520" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.5" class="h-5 w-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-            </span>
-            <h3 class="font-manrope text-xl font-bold text-white">Headhunting Ejecutivo</h3>
-            <p class="text-sm leading-relaxed text-slate-300">Búsqueda y selección de perfiles ejecutivos y mandos medios, con proceso personalizado y garantía de reemplazo.</p>
-          </div>
-          <div class="pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-indigo-400 font-semibold tracking-wider uppercase">
-            <span>Garantía Nexova</span>
-            <span class="font-mono text-indigo-300">SLA Check ✓</span>
-          </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-[var(--line)] border border-[var(--line)]">
+        <article class="flex flex-col bg-[var(--bg)] p-8 lg:p-10 transition-colors hover:bg-[var(--bg-alt)]">
+          <span class="font-mono text-xs tracking-widest text-[var(--accent)] mb-8">N.º 01</span>
+          <h3 class="font-display text-xl font-semibold text-[var(--ink)] mb-3">Headhunting Ejecutivo</h3>
+          <p class="text-sm leading-relaxed text-[var(--ink-muted)] mb-10 flex-grow">Búsqueda y selección de perfiles ejecutivos y mandos medios, con proceso personalizado y garantía de reemplazo.</p>
+          <span class="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-[var(--accent)] pt-5 border-t border-[var(--line)]">
+            Garantía Nexova
+          </span>
         </article>
-        <article class="group relative flex flex-col justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6 transition-all duration-300 hover:border-indigo-500/50 hover:bg-slate-900 shadow-xl select-none">
-          <div class="space-y-4">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl shadow-lg" style="background:#10b98120" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.5" class="h-5 w-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
-              </svg>
-            </span>
-            <h3 class="font-manrope text-xl font-bold text-white">Outsourcing de Atención al Cliente</h3>
-            <p class="text-sm leading-relaxed text-slate-300">Equipos especializados para empresas tecnológicas, con formación continua y supervisión dedicada.</p>
-          </div>
-          <div class="pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-indigo-400 font-semibold tracking-wider uppercase">
-            <span>Garantía Nexova</span>
-            <span class="font-mono text-indigo-300">SLA Check ✓</span>
-          </div>
+
+        <article class="flex flex-col bg-[var(--bg)] p-8 lg:p-10 transition-colors hover:bg-[var(--bg-alt)]">
+          <span class="font-mono text-xs tracking-widest text-[var(--accent)] mb-8">N.º 02</span>
+          <h3 class="font-display text-xl font-semibold text-[var(--ink)] mb-3">Outsourcing de Atención al Cliente</h3>
+          <p class="text-sm leading-relaxed text-[var(--ink-muted)] mb-10 flex-grow">Equipos especializados para empresas tecnológicas, con formación continua y supervisión dedicada.</p>
+          <span class="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-[var(--accent)] pt-5 border-t border-[var(--line)]">
+            Garantía Nexova
+          </span>
         </article>
-        <article class="group relative flex flex-col justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6 transition-all duration-300 hover:border-indigo-500/50 hover:bg-slate-900 shadow-xl select-none">
-          <div class="space-y-4">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl shadow-lg" style="background:#818cf820" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.5" class="h-5 w-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347M4.26 10.147a50.57 50.57 0 0 0-2.658-.813A59.905 59.905 0 0 1 12 3.493a59.902 59.902 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814M4.26 10.147A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
-              </svg>
-            </span>
-            <h3 class="font-manrope text-xl font-bold text-white">Formación Corporativa</h3>
-            <p class="text-sm leading-relaxed text-slate-300">Programas de soft skills y liderazgo, con cursos presenciales y en línea adaptados a cada organización.</p>
-          </div>
-          <div class="pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-indigo-400 font-semibold tracking-wider uppercase">
-            <span>Garantía Nexova</span>
-            <span class="font-mono text-indigo-300">SLA Check ✓</span>
-          </div>
+
+        <article class="flex flex-col bg-[var(--bg)] p-8 lg:p-10 transition-colors hover:bg-[var(--bg-alt)]">
+          <span class="font-mono text-xs tracking-widest text-[var(--accent)] mb-8">N.º 03</span>
+          <h3 class="font-display text-xl font-semibold text-[var(--ink)] mb-3">Formación Corporativa</h3>
+          <p class="text-sm leading-relaxed text-[var(--ink-muted)] mb-10 flex-grow">Programas de soft skills y liderazgo, con cursos presenciales y en línea adaptados a cada organización.</p>
+          <span class="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-[var(--accent)] pt-5 border-t border-[var(--line)]">
+            Garantía Nexova
+          </span>
         </article>
       </div>
     </section>
 
-    <!-- SECCIÓN TALENTO: Estadísticas y valor de negocio -->
-    <section id="talento" aria-labelledby="talento-heading" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-900">
-      <div class="max-w-3xl mb-10">
-        <p class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-2">Talento</p>
-        <h2 id="talento-heading" class="font-manrope text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+    <!-- TALENTO: banda de estadísticas tipográfica en vez de tarjetas con degradado -->
+    <section id="talento" aria-labelledby="talento-heading" class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-b border-[var(--line)]">
+      <div class="max-w-2xl mb-12">
+        <p class="font-display text-sm tracking-[0.2em] uppercase text-[var(--accent)] mb-3">Talento</p>
+        <h2 id="talento-heading" class="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--ink)]">
           Por qué Nexova
         </h2>
       </div>
-      <div id="stats-list" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div class="grid gap-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-slate-700/60 text-center sm:text-left backdrop-blur-sm">
-          <span class="font-manrope text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">12 años de experiencia</span>
-          <span class="text-xs font-medium text-slate-300 tracking-wide uppercase">en el mercado latinoamericano</span>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[var(--line)] border-y border-[var(--line)]">
+        <div class="py-8 sm:py-2 sm:pr-8">
+          <p class="font-display text-3xl font-semibold text-[var(--ink)]">12 años</p>
+          <p class="text-xs font-medium text-[var(--ink-muted)] tracking-wide uppercase mt-2">de experiencia en el mercado</p>
         </div>
-        <div class="grid gap-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-slate-700/60 text-center sm:text-left backdrop-blur-sm">
-          <span class="font-manrope text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Presencia regional</span>
-          <span class="text-xs font-medium text-slate-300 tracking-wide uppercase">España y Estados Unidos</span>
+        <div class="py-8 sm:py-2 sm:px-8">
+          <p class="font-display text-3xl font-semibold text-[var(--ink)]">Presencia regional</p>
+          <p class="text-xs font-medium text-[var(--ink-muted)] tracking-wide uppercase mt-2">España y Estados Unidos</p>
         </div>
-        <div class="grid gap-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-slate-700/60 text-center sm:text-left backdrop-blur-sm">
-          <span class="font-manrope text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">+500 procesos exitosos</span>
-          <span class="text-xs font-medium text-slate-300 tracking-wide uppercase">de selección completados</span>
+        <div class="py-8 sm:py-2 sm:px-8">
+          <p class="font-display text-3xl font-semibold text-[var(--ink)]">+500</p>
+          <p class="text-xs font-medium text-[var(--ink-muted)] tracking-wide uppercase mt-2">procesos de selección completados</p>
         </div>
-        <div class="grid gap-2 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 transition-colors hover:border-slate-700/60 text-center sm:text-left backdrop-blur-sm">
-          <span class="font-manrope text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Especialización sectorial</span>
-          <span class="text-xs font-medium text-slate-300 tracking-wide uppercase">en tecnología, retail y finanzas</span>
+        <div class="py-8 sm:py-2 sm:pl-8">
+          <p class="font-display text-3xl font-semibold text-[var(--ink)]">Especialización</p>
+          <p class="text-xs font-medium text-[var(--ink-muted)] tracking-wide uppercase mt-2">tecnología, retail y finanzas</p>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- PIE DE PÁGINA: Reforzado estructuralmente e igualado al de application.html -->
-  <footer id="contacto" aria-label="Pie de página" class="border-t border-slate-900 bg-slate-950 px-4 sm:px-6 lg:px-8 py-12">
-    <div class="mx-auto max-w-7xl grid grid-cols-1 gap-10 md:grid-cols-[2fr_1fr]">
+  <footer id="contacto" aria-label="Pie de página" class="bg-[var(--bg-alt)] px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mx-auto max-w-6xl grid grid-cols-1 gap-10 md:grid-cols-[2fr_1fr]">
       <div class="space-y-4">
-        <span class="font-manrope text-lg font-extrabold text-white">NEXOVA</span>
-        <p class="max-w-md text-sm text-slate-300 leading-relaxed">
+        <span class="font-display text-lg font-semibold text-[var(--ink)]">NEXOVA</span>
+        <p class="max-w-md text-sm text-[var(--ink-muted)] leading-relaxed">
           Selección de talento, externalización y formación corporativa potenciados por infraestructura de Inteligencia Artificial desde 2011.
         </p>
       </div>
-      
+
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <address class="space-y-1.5 text-sm not-italic text-slate-300">
-          <strong class="text-slate-200 block border-b border-slate-900 pb-1 mb-1">Valencia, España</strong>
+        <address class="space-y-1.5 text-sm not-italic text-[var(--ink-muted)]">
+          <strong class="text-[var(--ink)] block border-b border-[var(--line)] pb-1 mb-1">Valencia, España</strong>
           Av. de Francia 12, 46023<br />Valencia, España<br />
-          <a href="tel:+34960123456" class="hover:text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1">+34 960 123 456</a>
+          <a href="tel:+34960123456" class="hover:text-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] px-1">+34 960 123 456</a>
         </address>
-        <address class="space-y-1.5 text-sm not-italic text-slate-300">
-          <strong class="text-slate-200 block border-b border-slate-900 pb-1 mb-1">Miami, USA</strong>
+        <address class="space-y-1.5 text-sm not-italic text-[var(--ink-muted)]">
+          <strong class="text-[var(--ink)] block border-b border-[var(--line)] pb-1 mb-1">Miami, USA</strong>
           1450 Brickell Ave, Suite 900<br />Miami, FL 33131<br />
-          <a href="tel:+13055550191" class="hover:text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1">+1 305 555 0191</a>
+          <a href="tel:+13055550191" class="hover:text-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] px-1">+1 305 555 0191</a>
         </address>
       </div>
 
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 md:col-span-2 border-t border-slate-900 pt-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 md:col-span-2 border-t border-[var(--line)] pt-8">
         <nav aria-label="Enlaces corporativos" class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          <a href="#inicio" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Inicio</a>
-          <a href="#servicios" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Servicios</a>
-          <a href="#talento" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Talento</a>
-          <a href="#contacto" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Contacto</a>
-          <a href="application.html" class="text-indigo-400 no-underline hover:text-indigo-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1">Solicitar Ahora</a>
+          <a href="#inicio" class="text-[var(--accent)] no-underline hover:text-[var(--accent-strong)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] px-1">Inicio</a>
+          <a href="#servicios" class="text-[var(--accent)] no-underline hover:text-[var(--accent-strong)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] px-1">Servicios</a>
+          <a href="#talento" class="text-[var(--accent)] no-underline hover:text-[var(--accent-strong)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] px-1">Talento</a>
+          <a href="#contacto" class="text-[var(--accent)] no-underline hover:text-[var(--accent-strong)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] px-1">Contacto</a>
+          <a href="application.html" class="text-[var(--accent)] no-underline hover:text-[var(--accent-strong)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] px-1">Solicitar Ahora</a>
         </nav>
 
-        <div class="text-xs text-slate-400 space-y-2 sm:space-y-0 sm:text-right">
-          <p class="text-sm text-slate-300 block mb-1">
-            <a href="mailto:contacto@nexova.com" class="hover:text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1">contacto@nexova.com</a>
+        <div class="text-xs text-[var(--ink-muted)] space-y-2 sm:space-y-0 sm:text-right">
+          <p class="text-sm text-[var(--ink-muted)] block mb-1">
+            <a href="mailto:contacto@nexova.com" class="hover:text-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] px-1">contacto@nexova.com</a>
           </p>
           <p class="flex items-center gap-3 justify-end mb-1">
-            <a href="https://linkedin.com/company/nexova" target="_blank" rel="noopener noreferrer" aria-label="Nexova en LinkedIn" class="inline-flex items-center gap-1.5 hover:text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1">
+            <a href="https://linkedin.com/company/nexova" target="_blank" rel="noopener noreferrer" aria-label="Nexova en LinkedIn" class="inline-flex items-center gap-1.5 hover:text-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] px-1">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
                 <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
                 <rect x="2" y="9" width="4" height="12"></rect>
@@ -297,7 +311,7 @@
               LinkedIn
             </a>
             <span aria-hidden="true">|</span>
-            <a href="https://instagram.com/nexova" target="_blank" rel="noopener noreferrer" aria-label="Nexova en Instagram" class="inline-flex items-center gap-1.5 hover:text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1">
+            <a href="https://instagram.com/nexova" target="_blank" rel="noopener noreferrer" aria-label="Nexova en Instagram" class="inline-flex items-center gap-1.5 hover:text-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] px-1">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -346,6 +360,34 @@
       window.addEventListener('resize', function () {
         if (window.innerWidth >= 768) closeMenu();
       });
+    })();
+  </script>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const toggleBtn = document.getElementById('theme-toggle');
+      const iconDark = document.getElementById('icon-theme-dark');
+      const iconLight = document.getElementById('icon-theme-light');
+      const themeColorMeta = document.getElementById('theme-color-meta');
+      const THEME_COLOR = { light: '#F6F1E7', dark: '#16130E' };
+
+      function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        const isDark = theme === 'dark';
+        iconDark.classList.toggle('hidden', isDark);
+        iconLight.classList.toggle('hidden', !isDark);
+        toggleBtn.setAttribute('aria-pressed', String(isDark));
+        toggleBtn.setAttribute('aria-label', isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+        themeColorMeta.setAttribute('content', isDark ? THEME_COLOR.dark : THEME_COLOR.light);
+      }
+
+      toggleBtn.addEventListener('click', function () {
+        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('nexova-theme', next);
+        applyTheme(next);
+      });
+
+      applyTheme(root.getAttribute('data-theme') || 'light');
     })();
   </script>
 </body>
