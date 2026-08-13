@@ -129,14 +129,40 @@ export function countCandidatesByStatus(candidates: Candidate[]): Record<Candida
   }, initialCounts);
 }
 
+export function calculateTotalExpectedSalary(candidates: Candidate[]): number {
+  return candidates.reduce((sum, candidate) => sum + candidate.expectedSalary, 0);
+}
+
 export function calculateAverageSalary(candidates: Candidate[]): number {
   if (candidates.length === 0) {
     return 0;
   }
 
-  const totalSalary = candidates.reduce((sum, candidate) => sum + candidate.expectedSalary, 0);
+  const totalSalary = calculateTotalExpectedSalary(candidates);
 
   return Math.round((totalSalary / candidates.length) * 100) / 100;
+}
+
+export function findHighestExpectedSalary(candidates: Candidate[]): number | null {
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  return candidates.reduce(
+    (highest, candidate) => Math.max(highest, candidate.expectedSalary),
+    candidates[0].expectedSalary,
+  );
+}
+
+export function findLowestExpectedSalary(candidates: Candidate[]): number | null {
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  return candidates.reduce(
+    (lowest, candidate) => Math.min(lowest, candidate.expectedSalary),
+    candidates[0].expectedSalary,
+  );
 }
 
 export function findTopSkills(candidates: Candidate[], topN: number): Array<{ skill: string; count: number }> {

@@ -322,4 +322,4 @@ _Esta plantilla la mantiene 4Geeks Academy para el track de Ingeniería de IA. U
 ## Plan de pruebas
 - [x] `npm install`
 - [x] `npm run typecheck` sin errores
-- [x] `npm run demo` corre las 20 llamadas sin excepciones y con resultados coherentes
+- [x] `npm run demo` corre las 30 llamadas sin excepciones y con resultados coherentes

@@ -4,14 +4,18 @@ import {
   filterCandidatesBySeniority,
   filterCandidatesBySkills,
   sortCandidatesByExperience,
+  sortCandidatesByFields,
   sortCandidatesBySalary,
 } from "./utils/collections";
 import { binarySearchCandidateBySalary, findCandidateByEmail, findCandidateById } from "./utils/search";
 import {
   calculateAverageSalary,
   calculateCandidateScore,
+  calculateTotalExpectedSalary,
   calculateVacancyFillRate,
   countCandidatesByStatus,
+  findHighestExpectedSalary,
+  findLowestExpectedSalary,
   findTopSkills,
   groupCandidatesBySeniority,
   rankCandidatesForVacancy,
@@ -51,6 +55,13 @@ export function buildDemoSections(): DemoSection[] {
         { label: "sortCandidatesBySalary [desc]", value: sortCandidatesBySalary(candidates, "desc") },
         { label: "sortCandidatesByExperience [asc]", value: sortCandidatesByExperience(candidates, "asc") },
         { label: "sortCandidatesByExperience [desc]", value: sortCandidatesByExperience(candidates, "desc") },
+        {
+          label: "sortCandidatesByFields [seniority-tier desc, expectedSalary asc]",
+          value: sortCandidatesByFields(candidates, [
+            { field: "yearsOfExperience", order: "desc" },
+            { field: "expectedSalary", order: "asc" },
+          ]),
+        },
       ],
     },
     {
@@ -89,7 +100,10 @@ export function buildDemoSections(): DemoSection[] {
         },
         { label: "groupCandidatesBySeniority", value: groupCandidatesBySeniority(candidates) },
         { label: "countCandidatesByStatus", value: countCandidatesByStatus(candidates) },
+        { label: "calculateTotalExpectedSalary", value: calculateTotalExpectedSalary(candidates) },
         { label: "calculateAverageSalary", value: calculateAverageSalary(candidates) },
+        { label: "findHighestExpectedSalary", value: findHighestExpectedSalary(candidates) },
+        { label: "findLowestExpectedSalary", value: findLowestExpectedSalary(candidates) },
         { label: "findTopSkills [top 3]", value: findTopSkills(candidates, 3) },
         { label: "calculateVacancyFillRate", value: calculateVacancyFillRate(selectionProcesses) },
       ],
