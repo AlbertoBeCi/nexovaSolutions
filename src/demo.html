@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nexova · Demo de dominio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #F6F1E7;
+      --bg-alt: #EEE6D4;
+      --ink: #1C1A16;
+      --ink-muted: #6B6355;
+      --accent: #2F5233;
+      --line: #DCD3BE;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Public Sans', system-ui, sans-serif;
+    }
+    .font-display { font-family: 'Fraunces', Georgia, serif; }
+
+    header {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 2rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 0.75rem;
+    }
+    header h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 2rem;
+      margin: 0 0 0.5rem;
+    }
+    header p {
+      color: var(--ink-muted);
+      max-width: 42rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    #app { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+    .loading-hint { color: var(--ink-muted); font-size: 0.85rem; padding-top: 1.5rem; }
+
+    .button-group { padding-top: 2rem; }
+    .button-group h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.6rem;
+      margin: 0 0 1rem;
+    }
+
+    .button-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .action-button {
+      font-family: 'Public Sans', system-ui, sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--ink);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .action-button:hover { background: var(--accent-soft); border-color: var(--accent); }
+    .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .console-panel {
+      margin-top: 2.5rem;
+      border: 1px solid var(--line);
+    }
+    .console-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--line);
+      padding: 0.6rem 1rem;
+    }
+    .console-title {
+      font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+    .clear-button {
+      font-family: 'Public Sans', system-ui, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: transparent;
+      border: 1px solid var(--accent);
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+    }
+    .clear-button:hover { background: var(--accent-soft); }
+    .clear-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .console-output {
+      background: #14120c;
+      color: #e7e2d3;
+      max-height: 26rem;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+    .console-placeholder {
+      font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+      font-size: 0.8rem;
+      color: #8a8577;
+      margin: 0;
+    }
+    .console-entry { padding-bottom: 1rem; }
+    .console-entry + .console-entry {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #2a2718;
+    }
+    .console-label {
+      font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+      font-size: 0.75rem;
+      color: #9fd6a8;
+      margin: 0 0 0.5rem;
+    }
+    .console-value {
+      font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: #e7e2d3;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Herramienta interna</p>
+    <h1>Demo de dominio</h1>
+    <p>
+      Ejecuta en el navegador las mismas funciones de <code>collections.ts</code>, <code>search.ts</code>,
+      <code>transformations.ts</code> y <code>validations.ts</code> que <code>npm run demo</code> corre en consola,
+      para inspeccionar los resultados sin salir del navegador.
+    </p>
+  </header>
+
+  <main id="app">
+    <section id="actions">
+      <p class="loading-hint">Cargando botones… si esto no cambia, ejecuta antes <code>npm run build:demo-web</code>.</p>
+    </section>
+
+    <section class="console-panel">
+      <div class="console-header">
+        <span class="console-title">Consola</span>
+        <button type="button" id="clear-console" class="clear-button">Limpiar</button>
+      </div>
+      <div id="console-output" class="console-output"></div>
+    </section>
+  </main>
+
+  <script src="../dist/browser-demo.js"></script>
+</body>
+</html>

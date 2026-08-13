@@ -318,3 +318,8 @@ Esta plantilla fue creada como parte del Programa de Carrera de Ingeniería de I
 Puedes encontrar otras plantillas y recursos similares en la [página de GitHub de 4Geeks Academy](https://github.com/4geeksacademy).
 
 _Esta plantilla la mantiene 4Geeks Academy para el track de Ingeniería de IA. Uso exclusivo del programa._
+
+## Plan de pruebas
+- [x] `npm install`
+- [x] `npm run typecheck` sin errores
+- [x] `npm run demo` corre las 20 llamadas sin excepciones y con resultados coherentes
