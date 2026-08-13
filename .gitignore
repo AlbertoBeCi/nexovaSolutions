@@ -1,3 +1,4 @@
 prompts.txt
 .claude/
 node_modules/
+dist/

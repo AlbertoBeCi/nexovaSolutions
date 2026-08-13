@@ -218,3 +218,22 @@ export const selectionProcesses: SelectionProcess[] = [
     updatedAt: new Date("2024-03-20"),
   },
 ];
+
+// Objetos deliberadamente invalidos para probar validateCandidate/validateVacancy.
+export const invalidCandidate: Candidate = {
+  ...candidates[1],
+  id: "C-2024-9999",
+  email: "correo-sin-arroba.com",
+  phone: "",
+  skills: [],
+  expectedSalary: 0,
+};
+
+export const invalidVacancy: Vacancy = {
+  ...vacancies[1],
+  id: "V-2024-9999",
+  requiredSkills: [],
+  maxYearsExperience: -1,
+  salaryRangeMax: 10000,
+  salaryRangeMin: 20000,
+};
