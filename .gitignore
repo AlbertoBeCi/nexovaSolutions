@@ -2,3 +2,5 @@ prompts.txt
 .claude/
 node_modules/
 dist/
+docs/tareashito2.md
+.env*.local
