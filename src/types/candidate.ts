@@ -13,12 +13,14 @@ export interface Candidate {
   email: string;
   phone: string;
   position: string;
-  linkedinUrl: string;
-  resumeUrl: string;
+  linkedinUrl: string | null;
+  resumeUrl: string | null;
   yearsOfExperience: number;
   status: CandidateStatus;
   stage: CandidateStage;
+  notesCount: number;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CandidateNote {
