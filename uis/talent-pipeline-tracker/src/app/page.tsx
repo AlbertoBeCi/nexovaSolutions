@@ -1,3 +1,10 @@
+/**
+ * NEXOVA SOLUTIONS - app/page.tsx
+ * Listado de candidatos con búsqueda y filtros de estado/etapa. Los filtros
+ * viven en la URL (searchParams), así que la página es enlazable y el botón
+ * atrás del navegador funciona como cabría esperar.
+ */
+
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
@@ -43,6 +50,10 @@ function CandidatesPageContent() {
   const urlStage = searchParams.get("stage");
   const status = urlStatus && isCandidateStatus(urlStatus) ? urlStatus : "";
   const stage = urlStage && isCandidateStage(urlStage) ? urlStage : "";
+
+  // requestKey identifica la combinación de filtros vigente en la URL. Comparándola
+  // con la key guardada en queryResult derivamos `loading` sin un useState aparte:
+  // si aún no coinciden, la respuesta en vuelo pertenece a un filtro anterior.
   const requestKey = JSON.stringify({ search: urlSearch, status, stage });
 
   const [searchInput, setSearchInput] = useState(urlSearch);
@@ -65,6 +76,8 @@ function CandidatesPageContent() {
     [pathname, router]
   );
 
+  // Debounce: solo escribe el término de búsqueda a la URL (y por tanto dispara
+  // el fetch) SEARCH_DEBOUNCE_MS después de que el usuario deja de teclear.
   useEffect(() => {
     if (searchInput === urlSearch) return;
 

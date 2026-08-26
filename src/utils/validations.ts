@@ -1,9 +1,19 @@
+/**
+ * NEXOVA SOLUTIONS - utils/validations.ts
+ * Validaciones de datos de dominio. Cada validate* acumula todos los
+ * errores encontrados (no corta en el primero) para poder mostrarlos todos
+ * a la vez en un formulario.
+ */
+
 import { Candidate, Vacancy } from "../types/models";
 
+/** Comprobación de formato deliberadamente laxa (solo exige "@" y ".");
+ *  no sustituye una validación real de RFC 5322 en el borde del sistema. */
 export function isValidEmail(email: string): boolean {
   return email.includes("@") && email.includes(".");
 }
 
+/** Valida los datos de un candidato. Devuelve todos los errores encontrados, no solo el primero. */
 export function validateCandidate(candidate: Candidate): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
@@ -34,6 +44,7 @@ export function validateCandidate(candidate: Candidate): { valid: boolean; error
   return { valid: errors.length === 0, errors };
 }
 
+/** Valida los datos de una vacante. Devuelve todos los errores encontrados, no solo el primero. */
 export function validateVacancy(vacancy: Vacancy): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 

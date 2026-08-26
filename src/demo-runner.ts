@@ -1,3 +1,10 @@
+/**
+ * NEXOVA SOLUTIONS - demo-runner.ts
+ * Calcula los resultados de todas las funciones de dominio, sin console.log
+ * ni DOM, para que tanto demo.ts (consola) como browser-demo.ts (interfaz
+ * web) los reutilicen sin duplicar las llamadas.
+ */
+
 import { candidates, invalidCandidate, invalidVacancy, selectionProcesses, vacancies } from "./data/create-objects";
 import {
   filterCandidatesByAvailability,
@@ -32,8 +39,6 @@ export interface DemoSection {
   results: DemoResult[];
 }
 
-// Calcula los resultados de todas las funciones de dominio, sin console.log ni DOM,
-// para que tanto demo.ts (consola) como browser-demo.ts (interfaz web) los reutilicen.
 export function buildDemoSections(): DemoSection[] {
   const candidatesSortedBySalary = sortCandidatesBySalary(candidates, "asc");
   const vacancyRanking = rankCandidatesForVacancy(candidates, vacancies[0]);

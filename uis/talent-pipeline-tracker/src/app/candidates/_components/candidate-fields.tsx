@@ -1,3 +1,9 @@
+/**
+ * NEXOVA SOLUTIONS - candidates/_components/candidate-fields.tsx
+ * Formulario reutilizable de datos de candidato, compartido por las
+ * pantallas de alta (new/page.tsx) y edición ([id]/edit/page.tsx).
+ */
+
 "use client";
 
 import type { ChangeEvent } from "react";
@@ -23,6 +29,8 @@ export const EMPTY_CANDIDATE_FIELDS: CandidateFieldsValue = {
   yearsOfExperience: "",
 };
 
+/** Convierte el estado de texto del formulario al payload que espera la API:
+ *  recorta espacios y convierte cadenas vacías de URL en `null`. */
 export function toCandidateInput(fields: CandidateFieldsValue): CandidateInput {
   return {
     name: fields.name.trim(),
@@ -45,6 +53,8 @@ interface CandidateFieldsProps {
   disabled?: boolean;
 }
 
+/** Campos de datos personales/profesionales del candidato, sin estado/etapa
+ *  (esos se gestionan aparte porque solo existen tras la creación). */
 export function CandidateFields({ value, onChange, disabled = false }: CandidateFieldsProps) {
   function handleChange(field: keyof CandidateFieldsValue) {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -55,8 +65,9 @@ export function CandidateFields({ value, onChange, disabled = false }: Candidate
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div>
-        <label className={labelClassName}>Nombre completo</label>
+        <label htmlFor="candidate-name" className={labelClassName}>Nombre completo</label>
         <input
+          id="candidate-name"
           type="text"
           value={value.name}
           onChange={handleChange("name")}
@@ -67,8 +78,9 @@ export function CandidateFields({ value, onChange, disabled = false }: Candidate
       </div>
 
       <div>
-        <label className={labelClassName}>Email</label>
+        <label htmlFor="candidate-email" className={labelClassName}>Email</label>
         <input
+          id="candidate-email"
           type="email"
           value={value.email}
           onChange={handleChange("email")}
@@ -79,8 +91,9 @@ export function CandidateFields({ value, onChange, disabled = false }: Candidate
       </div>
 
       <div>
-        <label className={labelClassName}>Telefono</label>
+        <label htmlFor="candidate-phone" className={labelClassName}>Teléfono</label>
         <input
+          id="candidate-phone"
           type="tel"
           value={value.phone}
           onChange={handleChange("phone")}
@@ -91,8 +104,9 @@ export function CandidateFields({ value, onChange, disabled = false }: Candidate
       </div>
 
       <div>
-        <label className={labelClassName}>Puesto</label>
+        <label htmlFor="candidate-position" className={labelClassName}>Puesto</label>
         <input
+          id="candidate-position"
           type="text"
           value={value.position}
           onChange={handleChange("position")}
@@ -103,8 +117,9 @@ export function CandidateFields({ value, onChange, disabled = false }: Candidate
       </div>
 
       <div>
-        <label className={labelClassName}>LinkedIn</label>
+        <label htmlFor="candidate-linkedinUrl" className={labelClassName}>LinkedIn</label>
         <input
+          id="candidate-linkedinUrl"
           type="url"
           value={value.linkedinUrl}
           onChange={handleChange("linkedinUrl")}
@@ -115,8 +130,9 @@ export function CandidateFields({ value, onChange, disabled = false }: Candidate
       </div>
 
       <div>
-        <label className={labelClassName}>CV (URL)</label>
+        <label htmlFor="candidate-resumeUrl" className={labelClassName}>CV (URL)</label>
         <input
+          id="candidate-resumeUrl"
           type="url"
           value={value.resumeUrl}
           onChange={handleChange("resumeUrl")}
@@ -127,8 +143,9 @@ export function CandidateFields({ value, onChange, disabled = false }: Candidate
       </div>
 
       <div>
-        <label className={labelClassName}>Anos de experiencia</label>
+        <label htmlFor="candidate-yearsOfExperience" className={labelClassName}>Años de experiencia</label>
         <input
+          id="candidate-yearsOfExperience"
           type="number"
           min={0}
           step={1}

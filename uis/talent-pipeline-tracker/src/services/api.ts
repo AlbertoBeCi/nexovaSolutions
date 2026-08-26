@@ -1,3 +1,10 @@
+/**
+ * NEXOVA SOLUTIONS - services/api.ts
+ * Cliente HTTP contra la API pública de 4Geek Tracker. Traduce entre el DTO
+ * de la API (snake_case, campos "record"/"content") y el modelo de la UI
+ * (camelCase, tipos en types/candidate.ts) en ambas direcciones.
+ */
+
 import { Candidate, CandidateNote, CandidateStatus, CandidateStage } from "../types/candidate";
 
 const API_BASE_URL =
@@ -19,6 +26,8 @@ export interface CandidateStatusStageInput {
   status?: CandidateStatus;
   stage?: CandidateStage;
 }
+
+// ─── DTOs de la API (snake_case) ────────────────────────────────────
 
 interface RecordDto {
   id: string;
@@ -55,6 +64,9 @@ interface NoteListResponseDto {
   meta: { total: number };
 }
 
+// ─── Mappers DTO ↔ modelo de UI ─────────────────────────────────────
+
+/** DTO de la API → modelo de la UI (snake_case → camelCase, fechas a Date). */
 function toCandidate(dto: RecordDto): Candidate {
   return {
     id: dto.id,
@@ -73,6 +85,7 @@ function toCandidate(dto: RecordDto): Candidate {
   };
 }
 
+/** DTO de nota de la API → modelo de la UI. */
 function toCandidateNote(dto: NoteDto): CandidateNote {
   return {
     id: dto.id,
@@ -82,6 +95,8 @@ function toCandidateNote(dto: NoteDto): CandidateNote {
   };
 }
 
+/** Modelo de la UI (camelCase) → payload de escritura de la API (snake_case).
+ *  Solo incluye los campos que la API acepta al crear/actualizar un registro. */
 function toRecordPayload(data: CandidateInput) {
   return {
     full_name: data.name,
@@ -94,6 +109,11 @@ function toRecordPayload(data: CandidateInput) {
   };
 }
 
+// ─── Manejo de errores y respuestas ─────────────────────────────────
+
+/** Extrae un mensaje legible del cuerpo de error de la API (formato de
+ *  validación FastAPI, o `error`/`message` genéricos); si no reconoce el
+ *  formato, o el cuerpo no es JSON, cae al mensaje por defecto. */
 async function extractErrorMessage(response: Response, fallbackMessage: string): Promise<string> {
   try {
     const body = await response.json();
@@ -113,6 +133,7 @@ async function extractErrorMessage(response: Response, fallbackMessage: string):
   return fallbackMessage;
 }
 
+/** Parsea la respuesta como JSON, o lanza con el mensaje extraído del error si no fue ok. */
 async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
   if (!response.ok) {
     throw new Error(await extractErrorMessage(response, fallbackMessage));
@@ -120,6 +141,9 @@ async function parseJsonResponse<T>(response: Response, fallbackMessage: string)
   return response.json() as Promise<T>;
 }
 
+// ─── Endpoints: candidatos ───────────────────────────────────────────
+
+/** Lista candidatos aplicando los filtros opcionales de búsqueda/estado/etapa. */
 export async function getCandidates(filters: CandidateFilters = {}): Promise<Candidate[]> {
   const params = new URLSearchParams();
 
@@ -143,6 +167,7 @@ export async function getCandidates(filters: CandidateFilters = {}): Promise<Can
   return result.data.map(toCandidate);
 }
 
+/** Obtiene un candidato por id, o `null` si la API responde 404 (no existe). */
 export async function getCandidateById(id: string): Promise<Candidate | null> {
   const response = await fetch(`${API_BASE_URL}/records/${id}`);
 
@@ -154,6 +179,7 @@ export async function getCandidateById(id: string): Promise<Candidate | null> {
   return toCandidate(dto);
 }
 
+/** Crea un candidato. La API asigna status/stage por defecto (no aceptados en el payload). */
 export async function createCandidate(data: CandidateInput): Promise<Candidate> {
   const response = await fetch(`${API_BASE_URL}/records`, {
     method: "POST",
@@ -165,6 +191,7 @@ export async function createCandidate(data: CandidateInput): Promise<Candidate> 
   return toCandidate(dto);
 }
 
+/** Reemplaza los datos personales/profesionales del candidato (no toca status/stage). */
 export async function updateCandidate(id: string, data: CandidateInput): Promise<Candidate> {
   const response = await fetch(`${API_BASE_URL}/records/${id}`, {
     method: "PUT",
@@ -176,6 +203,7 @@ export async function updateCandidate(id: string, data: CandidateInput): Promise
   return toCandidate(dto);
 }
 
+/** Actualiza status y/o stage sin tocar el resto de los datos del candidato. */
 export async function updateCandidateStatusStage(
   id: string,
   data: CandidateStatusStageInput
@@ -193,6 +221,9 @@ export async function updateCandidateStatusStage(
   return toCandidate(dto);
 }
 
+// ─── Endpoints: notas ─────────────────────────────────────────────
+
+/** Lista las notas internas de un candidato. */
 export async function getCandidateNotes(candidateId: string): Promise<CandidateNote[]> {
   const response = await fetch(`${API_BASE_URL}/records/${candidateId}/notes`);
   const result = await parseJsonResponse<NoteListResponseDto>(
@@ -203,6 +234,7 @@ export async function getCandidateNotes(candidateId: string): Promise<CandidateN
   return result.data.map(toCandidateNote);
 }
 
+/** Añade una nota interna al candidato. */
 export async function addCandidateNote(candidateId: string, text: string): Promise<CandidateNote> {
   const response = await fetch(`${API_BASE_URL}/records/${candidateId}/notes`, {
     method: "POST",
@@ -217,6 +249,7 @@ export async function addCandidateNote(candidateId: string, text: string): Promi
   return toCandidateNote(dto);
 }
 
+/** Borra una nota interna del candidato. */
 export async function deleteCandidateNote(candidateId: string, noteId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/records/${candidateId}/notes/${noteId}`, {
     method: "DELETE",

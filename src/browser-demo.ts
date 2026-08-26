@@ -1,7 +1,18 @@
+/**
+ * NEXOVA SOLUTIONS - browser-demo.ts
+ * Capa de presentación DOM para src/demo.html: convierte las secciones de
+ * demo-runner.ts en botones y muestra el resultado de cada llamada en una
+ * consola visual. Sin lógica de dominio propia.
+ */
+
 import { buildDemoSections, DemoResult, DemoSection } from "./demo-runner";
 
 const PLACEHOLDER_CLASS = "console-placeholder";
 
+// ─── Formato ─────────────────────────────────────────────────────────
+
+/** Formatea un valor de resultado para mostrarlo como texto: primitivos tal
+ *  cual, el resto (arrays, objetos, null) como JSON indentado. */
 function formatValue(value: unknown): string {
   if (value === null) {
     return "null";
@@ -12,6 +23,9 @@ function formatValue(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
 
+// ─── Render ──────────────────────────────────────────────────────────
+
+/** Sustituye el contenido de la consola por un único mensaje de placeholder. */
 function showConsolePlaceholder(consoleEl: HTMLElement, text: string): void {
   const placeholder = document.createElement("p");
   placeholder.className = PLACEHOLDER_CLASS;
@@ -19,6 +33,7 @@ function showConsolePlaceholder(consoleEl: HTMLElement, text: string): void {
   consoleEl.replaceChildren(placeholder);
 }
 
+/** Añade una entrada de resultado a la consola, reemplazando el placeholder si es la primera. */
 function logToConsole(consoleEl: HTMLElement, label: string, value: unknown): void {
   if (consoleEl.querySelector(`.${PLACEHOLDER_CLASS}`)) {
     consoleEl.replaceChildren();
@@ -65,6 +80,7 @@ function createSectionGroup(section: DemoSection, consoleEl: HTMLElement): HTMLE
   return group;
 }
 
+/** Punto de entrada: construye la UI a partir de las secciones de demo y cablea los listeners. */
 function renderApp(): void {
   const actionsEl = document.getElementById("actions");
   const consoleEl = document.getElementById("console-output");

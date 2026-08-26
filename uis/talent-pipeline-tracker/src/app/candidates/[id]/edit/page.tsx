@@ -1,3 +1,9 @@
+/**
+ * NEXOVA SOLUTIONS - candidates/[id]/edit/page.tsx
+ * Edición de los datos personales/profesionales de un candidato existente.
+ * Status y stage no se tocan aquí: se gestionan desde la ficha ([id]/page.tsx).
+ */
+
 "use client";
 
 import { Suspense, use, useEffect, useState } from "react";
@@ -12,6 +18,8 @@ import {
 } from "../../_components/candidate-fields";
 import type { CandidateFieldsValue } from "../../_components/candidate-fields";
 
+/** Convierte el candidato cargado al shape de texto que espera el formulario
+ *  (los campos opcionales `null` se muestran como cadena vacía). */
 function toFieldsValue(candidate: Candidate): CandidateFieldsValue {
   return {
     name: candidate.name,
@@ -70,6 +78,8 @@ function EditCandidateContent({ params }: { params: Promise<{ id: string }> }) {
     };
   }, [id]);
 
+  /** Guarda los cambios con PUT y refresca el formulario con la respuesta
+   *  del servidor (por si normaliza algún valor). */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
@@ -108,7 +118,7 @@ function EditCandidateContent({ params }: { params: Promise<{ id: string }> }) {
       )}
 
       {!loading && loaded.outcome === "not-found" && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">No se encontro el candidato.</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">No se encontró el candidato.</p>
       )}
 
       {!loading && loaded.outcome === "found" && (
