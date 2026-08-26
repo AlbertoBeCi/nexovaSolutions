@@ -1,3 +1,10 @@
+/**
+ * NEXOVA SOLUTIONS - candidates/new/page.tsx
+ * Alta de un candidato nuevo. El endpoint de creación no acepta
+ * status/stage, así que si el usuario elige algo distinto del valor por
+ * defecto se hace un POST y, si hace falta, un PATCH inmediato después.
+ */
+
 "use client";
 
 import { useState } from "react";
@@ -36,6 +43,8 @@ export default function NewCandidatePage() {
 
     try {
       const created = await createCandidate(toCandidateInput(fields));
+      // El POST siempre crea con status/stage por defecto de la API;
+      // si el usuario eligió otros, se ajustan con un PATCH aparte.
       const finalCandidate =
         status !== created.status || stage !== created.stage
           ? await updateCandidateStatusStage(created.id, { status, stage })
@@ -89,10 +98,11 @@ export default function NewCandidatePage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <label htmlFor="candidate-initial-status" className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
               Estado inicial
             </label>
             <select
+              id="candidate-initial-status"
               value={status}
               onChange={(event) => setStatus(event.target.value as CandidateStatus)}
               disabled={submitting}
@@ -107,10 +117,11 @@ export default function NewCandidatePage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <label htmlFor="candidate-initial-stage" className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
               Etapa inicial
             </label>
             <select
+              id="candidate-initial-stage"
               value={stage}
               onChange={(event) => setStage(event.target.value as CandidateStage)}
               disabled={submitting}

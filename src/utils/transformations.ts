@@ -1,3 +1,16 @@
+/**
+ * NEXOVA SOLUTIONS - utils/transformations.ts
+ * Scoring de encaje candidato-vacante y agregaciones sobre listas de
+ * candidatos/procesos (agrupar, contar, sumar, rankear).
+ *
+ * El score de encaje reparte 100 puntos entre 5 criterios: skills (hasta
+ * 60: 40 requeridas + 20 preferidas), experiencia (20), seniority (15),
+ * inglés (15) y salario (10). La suma máxima real es 120, no 100 — es
+ * intencional, para que un candidato fuerte en 4 de 5 criterios pueda
+ * seguir llegando al tope aunque falle uno; calculateCandidateScore
+ * recorta el resultado a 100 con Math.min.
+ */
+
 import { Candidate, CandidateStatus, EnglishLevel, SelectionProcess, SeniorityLevel, Vacancy } from "../types/models";
 
 const SENIORITY_ORDER: SeniorityLevel[] = ["Junior", "Semi-Senior", "Senior", "Lead", "Executive"];
@@ -7,7 +20,9 @@ function normalizeSkills(skills: string[]): string[] {
   return skills.map((skill) => skill.toLowerCase());
 }
 
-// Requeridas: +40 si están todas, +20 si >= 50%. Preferidas: +10 c/u, tope +20.
+// ─── Scoring de encaje candidato-vacante ────────────────────────────
+
+/** Requeridas: +40 si están todas, +20 si >= 50%. Preferidas: +10 c/u, tope +20. */
 function calculateSkillsScore(candidate: Candidate, vacancy: Vacancy): number {
   const candidateSkills = normalizeSkills(candidate.skills);
 
@@ -29,7 +44,7 @@ function calculateSkillsScore(candidate: Candidate, vacancy: Vacancy): number {
   return requiredScore + preferredScore;
 }
 
-// +20 dentro del rango, +10 si se aleja 1-2 años, 0 si se aleja más.
+/** +20 dentro del rango, +10 si se aleja 1-2 años, 0 si se aleja más. */
 function calculateExperienceScore(candidate: Candidate, vacancy: Vacancy): number {
   const { yearsOfExperience } = candidate;
   const { minYearsExperience, maxYearsExperience } = vacancy;
@@ -46,7 +61,7 @@ function calculateExperienceScore(candidate: Candidate, vacancy: Vacancy): numbe
   return yearsOutsideRange <= 2 ? 10 : 0;
 }
 
-// +15 match exacto de nivel, +7 si difiere en un nivel.
+/** +15 match exacto de nivel, +7 si difiere en un nivel. */
 function calculateSeniorityScore(candidate: Candidate, vacancy: Vacancy): number {
   const candidateLevel = SENIORITY_ORDER.indexOf(candidate.seniority);
   const requiredLevel = SENIORITY_ORDER.indexOf(vacancy.requiredSeniority);
@@ -59,6 +74,7 @@ function calculateSeniorityScore(candidate: Candidate, vacancy: Vacancy): number
   return levelDifference === 1 ? 7 : 0;
 }
 
+/** +15 si el nivel de inglés del candidato iguala o supera el requerido, 0 si no. */
 function calculateEnglishScore(candidate: Candidate, vacancy: Vacancy): number {
   const candidateLevel = ENGLISH_LEVEL_ORDER.indexOf(candidate.englishLevel);
   const requiredLevel = ENGLISH_LEVEL_ORDER.indexOf(vacancy.requiredEnglishLevel);
@@ -66,7 +82,7 @@ function calculateEnglishScore(candidate: Candidate, vacancy: Vacancy): number {
   return candidateLevel >= requiredLevel ? 15 : 0;
 }
 
-// +10 dentro del rango, +5 si excede el máximo hasta un 20%.
+/** +10 dentro del rango, +5 si excede el máximo hasta un 20%. */
 function calculateSalaryScore(candidate: Candidate, vacancy: Vacancy): number {
   const { expectedSalary } = candidate;
   const { salaryRangeMin, salaryRangeMax } = vacancy;
@@ -80,6 +96,7 @@ function calculateSalaryScore(candidate: Candidate, vacancy: Vacancy): number {
   return expectedSalary > salaryRangeMax && expectedSalary <= maxAcceptableSalary ? 5 : 0;
 }
 
+/** Score de encaje 0-100 entre un candidato y una vacante (ver cabecera del archivo para el reparto). */
 export function calculateCandidateScore(candidate: Candidate, vacancy: Vacancy): number {
   const rawScore =
     calculateSkillsScore(candidate, vacancy) +
@@ -91,6 +108,7 @@ export function calculateCandidateScore(candidate: Candidate, vacancy: Vacancy):
   return Math.min(rawScore, 100);
 }
 
+/** Calcula el score de cada candidato frente a la vacante y los ordena de mayor a menor encaje. */
 export function rankCandidatesForVacancy(
   candidates: Candidate[],
   vacancy: Vacancy,
@@ -100,6 +118,9 @@ export function rankCandidatesForVacancy(
     .sort((a, b) => b.score - a.score);
 }
 
+// ─── Agrupación y conteo ─────────────────────────────────────────────
+
+/** Agrupa candidatos por seniority; todos los niveles aparecen en el resultado aunque estén vacíos. */
 export function groupCandidatesBySeniority(candidates: Candidate[]): Record<SeniorityLevel, Candidate[]> {
   const initialGroups: Record<SeniorityLevel, Candidate[]> = {
     Junior: [],
@@ -115,6 +136,7 @@ export function groupCandidatesBySeniority(candidates: Candidate[]): Record<Seni
   }, initialGroups);
 }
 
+/** Cuenta candidatos por status; todos los status aparecen en el resultado aunque sean 0. */
 export function countCandidatesByStatus(candidates: Candidate[]): Record<CandidateStatus, number> {
   const initialCounts: Record<CandidateStatus, number> = {
     Active: 0,
@@ -129,10 +151,14 @@ export function countCandidatesByStatus(candidates: Candidate[]): Record<Candida
   }, initialCounts);
 }
 
+// ─── Métricas de salario ──────────────────────────────────────────
+
+/** Suma el salario esperado de todos los candidatos. */
 export function calculateTotalExpectedSalary(candidates: Candidate[]): number {
   return candidates.reduce((sum, candidate) => sum + candidate.expectedSalary, 0);
 }
 
+/** Promedio de salario esperado, redondeado a 2 decimales. Lista vacía => 0. */
 export function calculateAverageSalary(candidates: Candidate[]): number {
   if (candidates.length === 0) {
     return 0;
@@ -143,6 +169,7 @@ export function calculateAverageSalary(candidates: Candidate[]): number {
   return Math.round((totalSalary / candidates.length) * 100) / 100;
 }
 
+/** Mayor salario esperado de la lista, o `null` si está vacía. */
 export function findHighestExpectedSalary(candidates: Candidate[]): number | null {
   if (candidates.length === 0) {
     return null;
@@ -154,6 +181,7 @@ export function findHighestExpectedSalary(candidates: Candidate[]): number | nul
   );
 }
 
+/** Menor salario esperado de la lista, o `null` si está vacía. */
 export function findLowestExpectedSalary(candidates: Candidate[]): number | null {
   if (candidates.length === 0) {
     return null;
@@ -165,6 +193,7 @@ export function findLowestExpectedSalary(candidates: Candidate[]): number | null
   );
 }
 
+/** Las `topN` skills más frecuentes entre todos los candidatos, de mayor a menor conteo. */
 export function findTopSkills(candidates: Candidate[], topN: number): Array<{ skill: string; count: number }> {
   const skillCounts = new Map<string, number>();
 
@@ -179,6 +208,7 @@ export function findTopSkills(candidates: Candidate[], topN: number): Array<{ sk
     .slice(0, Math.max(topN, 0));
 }
 
+/** Porcentaje de procesos de selección que terminaron en "Hired", redondeado a 2 decimales. */
 export function calculateVacancyFillRate(processes: SelectionProcess[]): number {
   if (processes.length === 0) {
     return 0;

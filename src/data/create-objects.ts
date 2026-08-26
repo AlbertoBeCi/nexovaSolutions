@@ -1,3 +1,10 @@
+/**
+ * NEXOVA SOLUTIONS - data/create-objects.ts
+ * Datos de ejemplo del pipeline de reclutamiento, usados por el demo
+ * (npm run demo / build:demo-web) y como fixtures manuales. No son datos
+ * de producción: los ids no corresponden a ningún backend real.
+ */
+
 import { Candidate, SelectionProcess, Vacancy } from "../types/models";
 
 export const candidates: Candidate[] = [
