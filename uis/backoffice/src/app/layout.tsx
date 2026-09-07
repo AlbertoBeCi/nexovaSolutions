@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AppShell } from "./_components/app-shell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nexova - Talent Pipeline",
-  description: "Seguimiento del pipeline de candidatos de Nexova",
+  title: {
+    default: "Nexova · Backoffice",
+    template: "%s · Nexova Backoffice",
+  },
+  description: "Herramientas internas de Nexova: pipeline de talento y gestión de candidaturas.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -23,7 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full">
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }

@@ -1,8 +1,8 @@
 /**
  * NEXOVA SOLUTIONS - types/candidate.ts
- * Modelo del candidato tal como lo consume la UI del talent-pipeline-tracker
+ * Modelo del candidato tal como lo consume la UI del backoffice
  * (nombres en camelCase). No confundir con el modelo de dominio de
- * src/types/models.ts: ese describe el pipeline interno de reclutamiento
+ * packages/domain (@repo/domain): ese describe el pipeline interno de reclutamiento
  * (seniority, skills, salario...), este describe el registro de la API
  * pública de 4Geek Tracker. services/api.ts hace la conversión entre ambos.
  */

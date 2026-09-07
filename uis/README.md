@@ -12,4 +12,14 @@ Organize `uis/` by **different concerns** — each subfolder covers a distinct a
 - **Main purpose**: to centralize in a single place all frontend applications that support the company's use cases.
 - **Recommendation**: document in this file (or in sub-READMEs) the applications you add, their objective, the technology used, and how to run them.
 
+## Apps en este monorepo
+
+| App | Carpeta | Objetivo | Stack | Arrancar |
+| --- | --- | --- | --- | --- |
+| **Website** | [`website/`](./website/) | Web corporativa pública (landing + banco de talento) | Next.js 16, React 19, Tailwind v4 | `cd website && npm install && npm run dev` |
+| **Backoffice** | [`backoffice/`](./backoffice/) | Apps internas: pipeline de talento y gestión de candidaturas (Hito 3). Antes `talent-pipeline-tracker/` | Next.js 16, React 19, Tailwind v4 | `cd backoffice && npm install && npm run dev` |
+
+Cada app corre en `http://localhost:3000`; levanta solo una a la vez o usa
+`npm run dev -- -p <puerto>`.
+
 > _Estas instrucciones también están disponibles en [español](./README.es.md)._
