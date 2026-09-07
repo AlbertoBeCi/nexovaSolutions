@@ -1,6 +1,9 @@
-prompts.txt
+docs/prompts.txt
+docs/tareashito2.md
 .claude/
 node_modules/
 dist/
-docs/tareashito2.md
+.next/
+next-env.d.ts
+*.tsbuildinfo
 .env*.local
