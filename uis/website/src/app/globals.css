@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
+/* Paleta editorial de Nexova (portada desde la landing estatica del Hito 1). */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f6f1e7;
+  --bg-alt: #eee6d4;
+  --ink: #1c1a16;
+  --ink-muted: #6b6355;
+  --accent: #2f5233;
+  --accent-strong: #25401f;
+  --accent-soft: #e3e8d9;
+  --accent-ink: #ffffff;
+  --line: #dcd3be;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Modo oscuro: eleccion explicita del usuario (toggle) */
+:root[data-theme="dark"] {
+  --bg: #16130e;
+  --bg-alt: #201b13;
+  --ink: #f2ecdd;
+  --ink-muted: #b7ad97;
+  --accent: #86c695;
+  --accent-strong: #a3ddb0;
+  --accent-soft: #1f2e1d;
+  --accent-ink: #14120c;
+  --line: #362f20;
 }
 
+/* Modo oscuro: preferencia del sistema, salvo que el usuario haya fijado "light" */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --bg: #16130e;
+    --bg-alt: #201b13;
+    --ink: #f2ecdd;
+    --ink-muted: #b7ad97;
+    --accent: #86c695;
+    --accent-strong: #a3ddb0;
+    --accent-soft: #1f2e1d;
+    --accent-ink: #14120c;
+    --line: #362f20;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-line: var(--line);
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-public-sans), system-ui, sans-serif;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-public-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+body,
+header,
+.transition-theme {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  header,
+  .transition-theme {
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }

@@ -20,12 +20,18 @@ Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
 
 ### Estructura de aplicación (`uis/`)
 
-- `uis/website/` (Next.js 16): `/` = landing corporativa alineada con `CONTEXT.md`
-  (hero, servicios, por qué Nexova, CTA), componentes `SiteHeader`/`SiteFooter`,
-  JSON-LD Organization, `/talento` stub. `npm run dev` y `build` en verde, `/` 200.
+- `uis/website/` (Next.js 16): **Hito 1 migrado de HTML/CSS/JS a Next/React.**
+  `/` = landing editorial (hero + ficha de candidato, servicios, por qué Nexova),
+  `/talento` = registro en 3 pasos (`TalentForm`) con validación
+  (`src/lib/talent-validation.ts`, mensajes literales de `CONTEXT.md`), mensaje de
+  éxito y aviso B2B. Tema claro/oscuro (`data-theme` + localStorage), fuentes
+  Fraunces + Public Sans, JSON-LD Organization. `dev`/`build`/`lint` verde, `/` y
+  `/talento` 200, sin issues del overlay.
 - `uis/backoffice/` (Next.js 16, antes `talent-pipeline-tracker/`): layout propio
   `AppShell` (sidebar/topbar), `/` = pipeline de candidatos con datos de la API en
   español (estados/etapas traducidos). `npm run dev` y `build` en verde, `/` 200.
+- Ya **no existen** `index.html`, `application.html`, `validation.js`,
+  `form-modal.js` en la raíz (eliminados tras la migración).
 - Backend: nada en `services/` todavía; regla documentada.
 
 ### Reorganización previa (conforme a los README de carpeta)
@@ -33,17 +39,16 @@ Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
 - `src/` (raíz) → `packages/domain/` (`@repo/domain`, Hito 2). `typecheck`/`demo` verde.
 - `CONTEXT-nexova-briefing.md` → `docs/context/`. `company-choice.md`,
   `prompts.md`, `prompts.txt` → `docs/`. Borrado `index.html.bak`.
-- Raíz limpia: `CONTEXT.md`, `README*`, `AGENTS.md`, `.gitignore`, landing Hito 1.
+- Raíz: `CONTEXT.md`, `README*`, `AGENTS.md`, `.gitignore`.
 
 ## Pendiente
 
-- **No commiteado.** Falta: `git commit` en `feature/agent-memory-bank`, PR a
-  `main` con capturas de `website` y `backoffice` + enlace a `AGENTS.md`.
-- `README.md` raíz quedó desactualizado (árbol, "Current status", `apps/` vs
-  `uis/`). No tocar READMEs de momento — actualizar cuando se autorice.
-- Formulario real del banco de talento en `uis/website/talento`.
 - Decidir si el backend propio en `services/` entra ya.
 
-## Decisiones abiertas
+## Hecho recientemente
 
-- ¿Migrar la landing estática de la raíz (`index.html`) dentro de `uis/website/`?
+- `README.md` / `README.es.md` raíz reescritos: estado real del proyecto (hitos
+  1-3), cómo arrancar cada app, árbol actualizado (`AGENTS.md`, `.agents/`,
+  `memory-bank/`, `uis/website`, `uis/backoffice`, `packages/domain`), y `.agents/`
+  vs `agents/` aclarado. La sección de landing estática (`index.html` / `npx serve`)
+  eliminada.
