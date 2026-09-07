@@ -49,9 +49,12 @@ Luego esta guía completa y, del área en la que vayas a trabajar, su archivo en
 | Área | Ruta | Stack | Comandos |
 | --- | --- | --- | --- |
 | Modelo de dominio + utils (Hito 2) | [`packages/domain/`](./packages/domain/) | TypeScript puro, `tsx`, `esbuild` | `npm run typecheck`, `npm run demo`, `npm run build:demo-web` |
-| Landing pública estática (Hito 1) | `index.html`, `application.html`, `*.js` en raíz | HTML/CSS/JS estático, Tailwind CDN | sin build — `npx serve .` |
-| Web pública | [`uis/website/`](./uis/website/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
+| Web pública (Hito 1) | [`uis/website/`](./uis/website/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
 | Backoffice (pipeline de talento, Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
+
+La landing del Hito 1 se sirvió como HTML/CSS/JS estático en la raíz; ya está
+migrada a Next/React en `uis/website/` y esos archivos (`index.html`,
+`application.html`, `validation.js`, `form-modal.js`) se han eliminado.
 
 Cada área tiene su **propio `package.json` y `node_modules`**. Ejecuta los comandos
 desde la carpeta correspondiente, no desde la raíz.

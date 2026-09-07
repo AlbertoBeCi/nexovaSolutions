@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "./_components/site-header";
 import { SiteFooter } from "./_components/site-footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fraunces = Fraunces({
   subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const publicSans = Public_Sans({
   subsets: ["latin"],
+  variable: "--font-public-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -62,20 +64,32 @@ const organizationSchema = {
   sameAs: ["https://linkedin.com/company/nexova", "https://instagram.com/nexova"],
 };
 
+// Fija data-theme antes del primer paint para evitar parpadeo de tema.
+const themeInitScript = `(function(){try{var t=localStorage.getItem('nexova-theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
+      suppressHydrationWarning
+      className={`${fraunces.variable} ${publicSans.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col bg-bg text-ink">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
-          // JSON-LD estático: sin datos de usuario, seguro de serializar aquí.
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-ink focus:outline-none"
+        >
+          Saltar al contenido principal
+        </a>
         <SiteHeader />
-        <div className="flex-1">{children}</div>
+        <div id="contenido" className="flex-1">
+          {children}
+        </div>
         <SiteFooter />
       </body>
     </html>
