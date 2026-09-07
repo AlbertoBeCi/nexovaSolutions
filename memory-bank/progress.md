@@ -25,9 +25,6 @@
 
 ## Falta
 
-- Commit de la migración de la landing + PR actualizada (#11).
-- `README.md` raíz desactualizado: sigue documentando `index.html` / `npx serve .`
-  del Hito 1, que ya no existen (no tocar READMEs de momento).
 - Backend propio en `services/`.
 - Hitos posteriores (Telemetría, RAG, Agentes, Workflows, Real-time).
 

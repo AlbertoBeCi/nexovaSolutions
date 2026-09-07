@@ -125,7 +125,7 @@ No hagas `git commit` hasta haber completado estos pasos:
    - `packages/domain/` → `npm run typecheck` (debe pasar limpio).
    - App de `uis/` (Next.js) → `npm run lint` y `npm run build` desde su carpeta.
    - Servicio de `services/` → linter y tests del servicio.
-   - Landing estática → abre con `npx serve .` y verifica a mano el cambio.
+   - Si tocaste `uis/**`, ejecuta la skill `revision-textos-ui`.
    - Si tocaste varias áreas, corre las comprobaciones de todas.
 
 4. **Actualiza la documentación afectada:**
@@ -214,7 +214,7 @@ que el desarrollador lo pida de forma explícita en la conversación:
 | Ruta | Motivo |
 | --- | --- |
 | `CONTEXT.md`, `docs/context/**` | Briefing de la empresa. Fuente de verdad; solo lo cambia el desarrollador. |
-| `README.md`, `README.es.md` (raíz y de cada carpeta) | Guía de estructura de la plantilla 4Geeks. Se respeta como especificación. |
+| `README.md`, `README.es.md` (raíz y de cada carpeta) | Guía de estructura del repo. Actualízala si el cambio la afecta, pero no la reescribas por estilo. |
 | `.git/**`, historial, ramas, tags | Nunca reescribas historia ni fuerces push. |
 | `.env`, `.env.local`, `.env*.local`, cualquier secreto real | Nunca se leen para copiar valores ni se commitean. |
 | `.claude/**`, `.agents/rules/**` de otras áreas | Config de herramientas / reglas ajenas a tu tarea. |

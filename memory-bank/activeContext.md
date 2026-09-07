@@ -43,8 +43,12 @@ Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
 
 ## Pendiente
 
-- Commitear la migración de la landing y actualizar la PR #11.
-- `README.md` raíz desactualizado: árbol, "Current status", `apps/` vs `uis/`, y
-  ahora también la sección "How to run the landing page" (apunta a `index.html` /
-  `npx serve .`, que ya no existen). No tocar READMEs de momento.
 - Decidir si el backend propio en `services/` entra ya.
+
+## Hecho recientemente
+
+- `README.md` / `README.es.md` raíz reescritos: estado real del proyecto (hitos
+  1-3), cómo arrancar cada app, árbol actualizado (`AGENTS.md`, `.agents/`,
+  `memory-bank/`, `uis/website`, `uis/backoffice`, `packages/domain`), y `.agents/`
+  vs `agents/` aclarado. La sección de landing estática (`index.html` / `npx serve`)
+  eliminada.
