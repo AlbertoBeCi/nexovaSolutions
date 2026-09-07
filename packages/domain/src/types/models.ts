@@ -2,8 +2,8 @@
  * NEXOVA SOLUTIONS - types/models.ts
  * Modelo de dominio del pipeline de reclutamiento (candidatos, vacantes,
  * procesos de selección) usado por src/utils/ y los datos de ejemplo en
- * src/data/. No confundir con el modelo de la API de talent-pipeline-tracker
- * (uis/talent-pipeline-tracker/src/types/candidate.ts): ese describe el
+ * src/data/. No confundir con el modelo de la API del backoffice
+ * (uis/backoffice/src/types/candidate.ts): ese describe el
  * registro tal como lo expone 4Geek Tracker; este describe el dominio de
  * negocio (skills, seniority, salario, encaje con vacantes).
  */

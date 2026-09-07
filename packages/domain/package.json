@@ -1,8 +1,9 @@
 {
-  "name": "nexova-solutions",
+  "name": "@repo/domain",
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "description": "Modelo de dominio del pipeline de reclutamiento de Nexova (candidatos, vacantes, procesos) y utilidades de scoring, filtrado y validación. Hito 2.",
   "scripts": {
     "demo": "tsx src/demo.ts",
     "typecheck": "tsc",
