@@ -1,18 +1,16 @@
 # Despliegue en Netlify.
 #
-# Solo se publica la web pública (`uis/website`, Next.js). El backoffice es una
-# app interna (necesita `NEXT_PUBLIC_API_URL` y no debe exponerse) y
-# `packages/domain` es una librería, no un sitio.
+# Solo se publica la web pública (`uis/website`). Es un export estático de Next
+# (`output: "export"` en su `next.config.ts`), así que se sirve como HTML/CSS/JS
+# sin runtime — no hace falta el plugin de Next.
 #
-# `base` hace que Netlify instale y construya dentro de esa carpeta; el plugin de
-# Next.js detecta el `.next` y sirve las rutas (estáticas y dinámicas).
+# El backoffice es una app interna (necesita `NEXT_PUBLIC_API_URL`, no se expone)
+# y `packages/domain` es una librería, no un sitio.
 
 [build]
   base = "uis/website"
   command = "npm run build"
+  publish = "out"
 
 [build.environment]
   NODE_VERSION = "20"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"

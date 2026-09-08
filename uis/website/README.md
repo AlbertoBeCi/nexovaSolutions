@@ -37,9 +37,14 @@ src/
 
 ## Despliegue
 
-Netlify. La configuración está en [`../../netlify.toml`](../../netlify.toml)
-(raíz del repo): `base = "uis/website"`, `command = "npm run build"`, plugin
-`@netlify/plugin-nextjs`. Solo se publica esta app; el backoffice no se despliega.
+Netlify. La app es un **export estático** de Next (`output: "export"` en
+`next.config.ts`): `npm run build` genera `out/` con HTML/CSS/JS, sin runtime.
+Config en [`../../netlify.toml`](../../netlify.toml) (raíz): `base = "uis/website"`,
+`command = "npm run build"`, `publish = "out"`. Solo se publica esta app; el
+backoffice no se despliega.
+
+> Requiere que todo sea estático: nada de route handlers, `cookies()`/`headers()`,
+> ISR ni datos en request. Hoy se cumple.
 
 ## Convenciones
 
