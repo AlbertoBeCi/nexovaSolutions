@@ -35,6 +35,12 @@ src/
    └─ talent-validation.ts  # validación pura + opciones de los selects
 ```
 
+## Despliegue
+
+Netlify. La configuración está en [`../../netlify.toml`](../../netlify.toml)
+(raíz del repo): `base = "uis/website"`, `command = "npm run build"`, plugin
+`@netlify/plugin-nextjs`. Solo se publica esta app; el backoffice no se despliega.
+
 ## Convenciones
 
 - Contenido en **español** (idioma base). Textos, mensajes de error, mensaje de

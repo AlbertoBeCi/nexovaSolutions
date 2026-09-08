@@ -82,6 +82,7 @@ Lee el `README.md` enlazado dentro de cada carpeta antes de empezar a programar 
 | [`CONTEXT.md`](./CONTEXT.md) | Fuente única de verdad del dominio de Nexova           | Léelo antes de construir nada; solo lo cambia el desarrollador |
 | [`AGENTS.md`](./AGENTS.md)   | Cómo opera cualquier agente de IA en este repo         | Lectura al inicio de sesión, flujo de commit, lista de "no tocar" |
 | `README.md` / `README.es.md` | Esta guía                                             | Orientación — estás aquí                                   |
+| `netlify.toml`               | Config de build de Netlify — publica solo `uis/website` (Next.js) | Editar si cambia el build del sitio público |
 | `docker-compose.yml`         | Orquestación local (aún no existe)                     | Añadir en la raíz cuando haya `services/` y bases de datos |
 
 ### `uis/` — interfaces de usuario
@@ -241,6 +242,7 @@ nexovaSolutions/
 ├── README.md / README.es.md   # Esta guía
 ├── CONTEXT.md                 # Fuente de verdad del dominio (briefing Hito 1)
 ├── AGENTS.md                  # Cómo operan los agentes de IA aquí
+├── netlify.toml               # Build de Netlify — publica uis/website
 ├── .agents/
 │   ├── rules/                 # Reglas de desarrollo con alcance declarado
 │   └── skills/                # Skills reutilizables (+ scripts verificadores)
