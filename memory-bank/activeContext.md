@@ -44,6 +44,8 @@ Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
 ## Pendiente
 
 - Decidir si el backend propio en `services/` entra ya.
+- Verificar que el deploy de Netlify vuelve a funcionar tras mergear `netlify.toml`
+  (base `uis/website`); el sitio publicado está en 404 desde que se quitó el HTML.
 
 ## Hecho recientemente
 

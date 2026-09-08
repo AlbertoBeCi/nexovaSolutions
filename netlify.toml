@@ -1,0 +1,18 @@
+# Despliegue en Netlify.
+#
+# Solo se publica la web pública (`uis/website`, Next.js). El backoffice es una
+# app interna (necesita `NEXT_PUBLIC_API_URL` y no debe exponerse) y
+# `packages/domain` es una librería, no un sitio.
+#
+# `base` hace que Netlify instale y construya dentro de esa carpeta; el plugin de
+# Next.js detecta el `.next` y sirve las rutas (estáticas y dinámicas).
+
+[build]
+  base = "uis/website"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
