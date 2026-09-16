@@ -1,0 +1,16 @@
+# Despliegue en Netlify.
+#
+# Solo se publica la web pública (`uis/website`). Es un export estático de Next
+# (`output: "export"` en su `next.config.ts`), así que se sirve como HTML/CSS/JS
+# sin runtime — no hace falta el plugin de Next.
+#
+# El backoffice es una app interna (necesita `NEXT_PUBLIC_API_URL`, no se expone)
+# y `packages/domain` es una librería, no un sitio.
+
+[build]
+  base = "uis/website"
+  command = "npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "20"

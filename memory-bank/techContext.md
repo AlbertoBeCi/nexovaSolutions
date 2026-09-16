@@ -31,6 +31,18 @@ existe: el Hito 3 consume la API pública de 4Geek Tracker
 (`https://playground.4geeks.com/tracker/api/v1`, configurable vía
 `NEXT_PUBLIC_API_URL`).
 
+## Despliegue
+
+Netlify, sitio `nexovasol`, conectado al repo (deploy en cada PR y en `main`).
+`netlify.toml` en la raíz publica **solo `uis/website`**: `base = "uis/website"`,
+`command = "npm run build"`, `publish = "out"`, Node 20. La web es un **export
+estático** de Next (`output: "export"` + `images.unoptimized`), así que se sirve
+sin runtime y sin el plugin de Next (que además no soporta Next 16). El backoffice
+no se despliega (app interna). Antes de `netlify.toml` el sitio servía el
+`index.html` estático de la raíz; al eliminarlo quedó en 404 hasta añadir esta
+config. Si la web necesitara SSR en el futuro, habría que cambiar a un adaptador
+de Netlify para Next.
+
 ## Restricciones
 
 - Next.js del repo trae breaking changes: consultar `node_modules/next/dist/docs/`

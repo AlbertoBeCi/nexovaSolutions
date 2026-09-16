@@ -24,8 +24,12 @@ globs: ["uis/**"]
 - Estados de carga y error visibles siempre que se consuma la API.
 - Accesibilidad: etiquetas semánticas, `:focus-visible`, contraste ≥ 4.5:1,
   `aria-hidden` en iconos decorativos.
+- `uis/website` se despliega como **export estático** (`output: "export"`). No
+  introduzcas route handlers, `cookies()`/`headers()`, ISR ni fetch en request
+  ahí sin cambiar antes la estrategia de deploy (`netlify.toml`).
 
 ## Antes de commit
 
 - `npm run lint` y `npm run build` desde la carpeta de la app, en verde.
+- `uis/website`: `npm run build` debe seguir generando `out/` (export estático).
 - Si tocaste tipos compartidos con `services/`, revisa que ambos lados compilen.
