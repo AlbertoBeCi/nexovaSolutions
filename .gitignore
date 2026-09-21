@@ -9,3 +9,5 @@ next-env.d.ts
 .env*.local
 APRENDIENDO.md
 scripts/results.csv
+__pycache__/
+*.pyc
