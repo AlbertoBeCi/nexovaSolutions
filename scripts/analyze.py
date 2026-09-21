@@ -5,6 +5,11 @@ Uso:
     python scripts/analyze.py ruta/al/archivo.csv
     python scripts/analyze.py                     (pide la ruta de forma interactiva)
 
+La logica de validacion y calculo de metricas vive en
+shared/incidents_analysis.py (la misma que usa services/api): este
+archivo solo se ocupa de lo especifico de la linea de comandos (leer
+argv/input, imprimir el reporte, preguntar por la exportacion).
+
 Nota de privacidad: este script nunca imprime, registra ni exporta un
 customer_email individual. Solo trabaja con agregados (conteos, promedios,
 porcentajes). Ver scripts/APRENDIENDO.md para una explicacion paso a paso.
@@ -12,33 +17,27 @@ porcentajes). Ver scripts/APRENDIENDO.md para una explicacion paso a paso.
 from __future__ import annotations
 
 import argparse
-import operator
 import sys
-from functools import reduce
 from pathlib import Path
 
 import pandas as pd
 
-VALID_CATEGORIES = ["TECHNICAL", "BILLING", "ACCESS", "HR_QUERY", "COMPLAINT"]
-VALID_STATUSES = ["OPEN", "CLOSED", "DISCARDED"]
-REQUIRED_COLUMNS = [
-    "ticket_id", "date", "client_company", "category", "description",
-    "agent_id", "status", "customer_email", "satisfaction_score",
-]
-AGENT_ID_PATTERN = r"^AGT-\d{2}$"
+# shared/ vive en la raiz del repo, un nivel por encima de scripts/.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from shared.incidents_analysis import (  # noqa: E402
+    InvalidCsvError,
+    RULE_LABELS,
+    build_summary,
+    load_dataframe,
+    summary_to_csv_rows,
+)
+
 RESULTS_FILENAME = "results.csv"
 DIVIDER = "=" * 60
 EXPORT_YES = {"s", "si", "sí", "y", "yes"}
-
-RULE_LABELS = {
-    "missing_company": "Missing client_company",
-    "invalid_category": "Invalid or missing category",
-    "short_description": "Description too short/empty",
-    "invalid_agent_id": "Invalid or missing agent_id",
-    "invalid_email": "Invalid or missing email",
-    "closed_no_score": "Closed ticket, no score",
-    "score_out_of_range": "Score out of range",
-}
 
 SCORE_LABELS = {
     1: "Score 1 (Very dissatisfied)",
@@ -88,74 +87,9 @@ def validate_file(path: Path) -> Path:
     return path
 
 
-def load_data(path: Path) -> pd.DataFrame:
-    try:
-        df = pd.read_csv(path, dtype=str, keep_default_na=False, encoding="utf-8-sig")
-    except (pd.errors.EmptyDataError, pd.errors.ParserError):
-        print(f"Error: '{path}' no es un CSV valido o esta vacio.")
-        sys.exit(1)
-
-    missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
-    if missing:
-        print(f"Error: faltan columnas requeridas en el CSV: {', '.join(missing)}")
-        sys.exit(1)
-
-    return df
-
-
-def apply_validation_rules(df: pd.DataFrame) -> dict[str, pd.Series]:
-    score_num = pd.to_numeric(df["satisfaction_score"], errors="coerce")
-    status = df["status"].str.strip()
-
-    return {
-        "missing_company": df["client_company"].str.strip() == "",
-        "invalid_category": ~df["category"].str.strip().isin(VALID_CATEGORIES),
-        "short_description": df["description"].str.strip().str.len() < 5,
-        "invalid_agent_id": ~df["agent_id"].str.match(AGENT_ID_PATTERN, na=False),
-        "invalid_email": ~df["customer_email"].str.contains("@", na=False),
-        "closed_no_score": (status == "CLOSED") & score_num.isna(),
-        "score_out_of_range": score_num.notna() & ~score_num.between(1, 5),
-    }
-
-
-def build_summary(df: pd.DataFrame, masks: dict[str, pd.Series]) -> dict:
-    invalid_mask = reduce(operator.or_, masks.values())
-    valid_mask = ~invalid_mask
-    valid_df = df.loc[valid_mask]
-
-    category_counts = (
-        valid_df["category"].str.strip().value_counts().reindex(VALID_CATEGORIES, fill_value=0)
-    )
-    status_counts = (
-        valid_df["status"].str.strip().value_counts().reindex(VALID_STATUSES, fill_value=0)
-    )
-
-    closed_valid = valid_df[valid_df["status"].str.strip() == "CLOSED"]
-    scores = pd.to_numeric(closed_valid["satisfaction_score"], errors="coerce")
-    scored = scores.dropna()
-    score_dist = scored.value_counts().reindex([1, 2, 3, 4, 5], fill_value=0)
-
-    return {
-        "total": len(df),
-        "valid_count": int(valid_mask.sum()),
-        "invalid_count": int(invalid_mask.sum()),
-        "rule_counts": {name: int(mask.sum()) for name, mask in masks.items()},
-        "category_counts": category_counts,
-        "status_counts": status_counts,
-        "closed_count": len(closed_valid),
-        "scored_count": int(scored.count()),
-        "average": float(scored.mean()) if len(scored) else 0.0,
-        "score_dist": score_dist,
-    }
-
-
 def _row(branch: str, label: str, value: str, width: int = 32) -> str:
     dots = "." * max(1, width - len(label))
     return f"  {branch} {label} {dots} {value}"
-
-
-def _pct(count: int, total: int) -> str:
-    return f"({count / total * 100:.1f}%)" if total else "(0.0%)"
 
 
 def format_console_report(summary: dict, filename: str) -> str:
@@ -165,9 +99,9 @@ def format_console_report(summary: dict, filename: str) -> str:
         f"  Source file: {filename}",
         DIVIDER,
         "",
-        f"TOTAL RECORDS IN FILE {'.' * 10} {summary['total']}",
-        f"  ├─ Valid records {'.' * 16} {summary['valid_count']}",
-        f"  └─ Invalid / incomplete {'.' * 10} {summary['invalid_count']}",
+        f"TOTAL RECORDS IN FILE {'.' * 10} {summary['total_records']}",
+        f"  ├─ Valid records {'.' * 16} {summary['valid_records']}",
+        f"  └─ Invalid / incomplete {'.' * 10} {summary['invalid_records']}",
         "",
         "INVALID RECORDS BREAKDOWN",
     ]
@@ -175,62 +109,40 @@ def format_console_report(summary: dict, filename: str) -> str:
     rule_items = list(RULE_LABELS.items())
     for i, (key, label) in enumerate(rule_items):
         branch = "└─" if i == len(rule_items) - 1 else "├─"
-        lines.append(_row(branch, label, summary["rule_counts"][key]))
+        lines.append(_row(branch, label, summary["invalid_breakdown"][key]))
 
     lines += ["", "BREAKDOWN BY CATEGORY (valid records)"]
-    cats = list(summary["category_counts"].items())
-    for i, (cat, count) in enumerate(cats):
+    cats = list(summary["categories"].items())
+    for i, (cat, data) in enumerate(cats):
         branch = "└─" if i == len(cats) - 1 else "├─"
-        value = f"{count}  {_pct(count, summary['valid_count'])}"
+        value = f"{data['count']}  ({data['percentage']:.1f}%)"
         lines.append(_row(branch, cat, value))
 
     lines += ["", "BREAKDOWN BY STATUS (valid records)"]
-    stats = list(summary["status_counts"].items())
-    for i, (st, count) in enumerate(stats):
+    stats = list(summary["statuses"].items())
+    for i, (st, data) in enumerate(stats):
         branch = "└─" if i == len(stats) - 1 else "├─"
-        value = f"{count}  {_pct(count, summary['valid_count'])}"
+        value = f"{data['count']}  ({data['percentage']:.1f}%)"
         lines.append(_row(branch, st, value))
 
+    satisfaction = summary["satisfaction"]
     lines += [
         "",
         "SATISFACTION INDEX (closed tickets)",
-        f"  Scored tickets: {summary['scored_count']} of {summary['closed_count']}",
-        f"  Average score: {summary['average']:.2f} / 5.00",
+        f"  Scored tickets: {satisfaction['scored_tickets']} of {satisfaction['closed_tickets']}",
+        f"  Average score: {satisfaction['average_score']:.2f} / 5.00",
     ]
-    score_items = list(summary["score_dist"].items())
+    score_items = list(satisfaction["distribution"].items())
     for i, (score, count) in enumerate(score_items):
         branch = "└─" if i == len(score_items) - 1 else "├─"
-        lines.append(_row(branch, SCORE_LABELS[score], count))
+        lines.append(_row(branch, SCORE_LABELS[int(score)], count))
 
     lines += ["", DIVIDER]
     return "\n".join(lines)
 
 
 def export_to_csv(summary: dict, output_path: Path) -> None:
-    rows = [
-        ("total_records", summary["total"]),
-        ("valid_records", summary["valid_count"]),
-        ("invalid_records", summary["invalid_count"]),
-    ]
-    rows += [(f"rule_{name}", count) for name, count in summary["rule_counts"].items()]
-    rows += [
-        (f"category_{cat}_count", count)
-        for cat, count in summary["category_counts"].items()
-    ]
-    rows += [
-        (f"status_{status}_count", count)
-        for status, count in summary["status_counts"].items()
-    ]
-    rows += [
-        ("satisfaction_scored", summary["scored_count"]),
-        ("satisfaction_closed_total", summary["closed_count"]),
-        ("satisfaction_average", round(summary["average"], 2)),
-    ]
-    rows += [
-        (f"satisfaction_score_{score}", count)
-        for score, count in summary["score_dist"].items()
-    ]
-
+    rows = summary_to_csv_rows(summary)
     # dtype=object evita que pandas "sobre-escale" los conteos enteros a
     # float64 solo porque el promedio de satisfaccion es decimal.
     pd.DataFrame(rows, columns=["metric", "value"], dtype=object).to_csv(
@@ -261,9 +173,14 @@ def main() -> None:
             stream.reconfigure(encoding="utf-8", errors="replace")
 
     csv_path = validate_file(get_csv_path())
-    df = load_data(csv_path)
-    masks = apply_validation_rules(df)
-    summary = build_summary(df, masks)
+
+    try:
+        df = load_dataframe(str(csv_path))
+    except InvalidCsvError as exc:
+        print(f"Error: {exc}")
+        sys.exit(1)
+
+    summary = build_summary(df, csv_path.name)
 
     print(format_console_report(summary, csv_path.name))
     prompt_export(summary)
