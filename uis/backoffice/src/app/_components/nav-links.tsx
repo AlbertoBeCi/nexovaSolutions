@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 const NAV_ITEMS = [
   { href: "/", label: "Pipeline" },
   { href: "/candidates/new", label: "Registrar candidato" },
+  { href: "/incidencias", label: "Incidencias" },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {

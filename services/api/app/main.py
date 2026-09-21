@@ -15,6 +15,7 @@ Documentacion interactiva (Swagger UI) una vez arrancado:
 from __future__ import annotations
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 
 from . import store
@@ -31,6 +32,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Permite que el frontend de services (uis/backoffice, Next.js en localhost:3000)
+# llame a esta API desde el navegador. En produccion, restringir a los origenes
+# reales del backoffice desplegado.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 @app.post(
     "/api/incidents/analyze",
