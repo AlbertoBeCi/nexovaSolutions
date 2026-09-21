@@ -7,3 +7,5 @@ dist/
 next-env.d.ts
 *.tsbuildinfo
 .env*.local
+APRENDIENDO.md
+scripts/results.csv
