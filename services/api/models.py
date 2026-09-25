@@ -37,7 +37,11 @@ class StatusEnum(str, Enum):
 
 
 class ProviderCreate(BaseModel):
-    """Payload de POST /suppliers. No incluye `updated_at`: lo fija el sistema."""
+    """Payload de POST /suppliers.
+
+    `extra="forbid"`: cualquier campo desconocido (p. ej. `id` o `updated_at`,
+    que solo asigna el sistema) se rechaza con 422 en vez de ignorarse.
+    """
 
     name: str = Field(
         ...,
@@ -81,6 +85,7 @@ class ProviderCreate(BaseModel):
         return self
 
     model_config = {
+        "extra": "forbid",
         "json_schema_extra": {
             "example": {
                 "name": "Stripe",
@@ -106,6 +111,8 @@ class ProviderResponse(ProviderCreate):
 
 
 class UpdateRateRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
     monthly_rate: float = Field(
         ...,
         gt=0,
@@ -114,6 +121,8 @@ class UpdateRateRequest(BaseModel):
 
 
 class UpdateStatusRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
     status: StatusEnum = Field(
         ...,
         description="Nuevo estado del proveedor ('active' o 'suspended')",

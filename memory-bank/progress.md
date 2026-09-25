@@ -25,7 +25,7 @@
 - **`services/api/`** — backend FastAPI único (proyecto `uv`): router de
   incidencias (`/api/incidents`, análisis de CSV) y router de proveedores
   (`/suppliers`, CRUD sobre TinyDB con `ProviderCreate`/`ProviderResponse`).
-  `uv run seed` idempotente; `uv run pytest` → 25 tests en verde.
+  `uv run seed` idempotente; `uv run pytest` → 27 tests en verde (incluye rechazo de `updated_at`/`id` con 422).
 - **`uis/application/`** — app interna de operaciones (Next.js 16, puerto 3001):
   `/suppliers` con listado, filtros en URL, alta, edición rápida de tarifa,
   activar/suspender y eliminar. `lint`/`build` en verde, probado en navegador.

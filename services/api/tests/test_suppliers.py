@@ -62,10 +62,26 @@ def test_create_returns_201_with_id_and_updated_at(client):
     assert datetime.fromisoformat(body["updated_at"]).tzinfo is not None
 
 
-def test_create_ignores_client_updated_at(client):
-    body = create(client, {**VALID_SPAIN, "updated_at": "2000-01-01T00:00:00Z"})
+@pytest.mark.parametrize(
+    "system_field", [{"updated_at": "2000-01-01T00:00:00Z"}, {"id": 99}]
+)
+def test_create_rejects_system_assigned_fields_with_422(client, table, system_field):
+    response = client.post("/suppliers", json={**VALID_SPAIN, **system_field})
 
-    assert not body["updated_at"].startswith("2000")
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["type"] == "extra_forbidden"
+    assert len(table) == 0
+
+
+def test_patch_rate_rejects_client_updated_at(client):
+    created = create(client, VALID_SPAIN)
+
+    response = client.patch(
+        f"/suppliers/{created['id']}/rate",
+        json={"monthly_rate": 10, "updated_at": "2000-01-01T00:00:00Z"},
+    )
+
+    assert response.status_code == 422
 
 
 @pytest.mark.parametrize(

@@ -78,9 +78,10 @@ Descarga el resultado del último análisis ejecutado en este proceso, como CSV
 ## Endpoints — proveedores
 
 Modelos en `models.py`: `ProviderCreate` (entrada) y `ProviderResponse`
-(salida = `ProviderCreate` + `id` + `updated_at`). El cliente nunca envía `id`
-ni `updated_at`: el `id` es el `doc_id` de TinyDB y `updated_at` (UTC) lo fija
-el sistema en el alta y en cada modificación.
+(salida = `ProviderCreate` + `id` + `updated_at`). El `id` es el `doc_id` de
+TinyDB y `updated_at` (UTC) lo fija el sistema en el alta y en cada modificación.
+Los bodies prohíben campos desconocidos (`extra="forbid"`): si un cliente envía
+`id` o `updated_at` recibe un `422` (`extra_forbidden`) en vez de ignorarse sin avisar.
 
 Validaciones (`422` automático si fallan): `name` no vacío; `country` `Spain` o
 `USA`; `categories` con al menos una de `software`, `infrastructure`,

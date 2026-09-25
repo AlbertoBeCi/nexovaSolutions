@@ -78,9 +78,10 @@ row per metric).
 ## Endpoints — suppliers
 
 Models in `models.py`: `ProviderCreate` (input) and `ProviderResponse`
-(output = `ProviderCreate` + `id` + `updated_at`). Clients never send `id` or
-`updated_at`: `id` is TinyDB's `doc_id`, and `updated_at` (UTC) is set by the
-system on creation and on every change.
+(output = `ProviderCreate` + `id` + `updated_at`). `id` is TinyDB's `doc_id`, and
+`updated_at` (UTC) is set by the system on creation and on every change. Request
+bodies forbid unknown fields (`extra="forbid"`), so a client sending `id` or
+`updated_at` gets a `422` (`extra_forbidden`) instead of having it silently ignored.
 
 Validation (automatic `422` on failure): non-empty `name`; `country` `Spain` or
 `USA`; `categories` with at least one of `software`, `infrastructure`,
