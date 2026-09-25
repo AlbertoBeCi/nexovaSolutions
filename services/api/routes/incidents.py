@@ -1,52 +1,26 @@
 """
-API de analisis de tickets de soporte de Nexova.
+Endpoints de analisis de tickets de soporte (/api/incidents).
 
-Expone via HTTP la misma logica de validacion/metricas que scripts/analyze.py,
-para que el CSV se pueda subir desde un frontend o cualquier cliente HTTP en
-lugar de ejecutarse por linea de comandos.
-
-Ejecutar en desarrollo (desde services/api):
-    pip install -r requirements.txt
-    uvicorn app.main:app --reload --port 8000
-
-Documentacion interactiva (Swagger UI) una vez arrancado:
-    http://localhost:8000/docs
+Exponen via HTTP la misma logica de validacion/metricas que
+scripts/analyze.py, para que el CSV se pueda subir desde un frontend o
+cualquier cliente HTTP en lugar de ejecutarse por linea de comandos.
 """
 from __future__ import annotations
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import Response
 
-from . import store
-from .analysis import InvalidCsvError, analyze_csv, summary_to_csv_bytes
-from .schemas import AnalysisSummary, ErrorResponse
+import store
+from analysis import InvalidCsvError, analyze_csv, summary_to_csv_bytes
+from models import AnalysisSummary, ErrorResponse
 
-app = FastAPI(
-    title="Nexova Incidents API",
-    description=(
-        "Analiza CSVs de tickets de soporte de Nexova: detecta registros "
-        "invalidos y calcula metricas por categoria, estado y satisfaccion "
-        "del cliente. Nunca expone customer_email en ninguna respuesta."
-    ),
-    version="1.0.0",
-)
+router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
-# Permite que el frontend de services (uis/backoffice, Next.js en localhost:3000)
-# llame a esta API desde el navegador. En produccion, restringir a los origenes
-# reales del backoffice desplegado.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
 
-@app.post(
-    "/api/incidents/analyze",
+@router.post(
+    "/analyze",
     response_model=AnalysisSummary,
     status_code=200,
-    tags=["incidents"],
     summary="Analiza un CSV de tickets de soporte",
     description=(
         "Recibe un archivo CSV de tickets de soporte (multipart/form-data), "
@@ -84,9 +58,8 @@ async def analyze_incidents(
     return store.get_last_result()
 
 
-@app.get(
-    "/api/incidents/results/export",
-    tags=["incidents"],
+@router.get(
+    "/results/export",
     summary="Descarga el ultimo analisis como CSV",
     description=(
         "Devuelve, como archivo CSV descargable (una fila por metrica), el "

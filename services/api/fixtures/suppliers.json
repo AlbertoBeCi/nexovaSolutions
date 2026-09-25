@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Amazon Web Services",
+    "country": "USA",
+    "categories": ["infrastructure", "security"],
+    "monthly_rate": 1850.0,
+    "currency": "USD",
+    "status": "active",
+    "contract_renewal_date": "2027-01-15",
+    "contact_email": "account-manager@aws.example",
+    "notes": "Alojamiento de la plataforma de candidatos y copias de seguridad."
+  },
+  {
+    "name": "Stripe",
+    "country": "USA",
+    "categories": ["payments"],
+    "monthly_rate": 420.0,
+    "currency": "USD",
+    "status": "active",
+    "contact_email": "billing@stripe.example",
+    "notes": "Cobro de honorarios de colocación a clientes de la sede de Miami."
+  },
+  {
+    "name": "HubSpot",
+    "country": "USA",
+    "categories": ["marketing", "software"],
+    "monthly_rate": 780.0,
+    "currency": "USD",
+    "status": "active",
+    "contract_renewal_date": "2026-11-30",
+    "notes": "CRM comercial para clientes B2B."
+  },
+  {
+    "name": "Okta",
+    "country": "USA",
+    "categories": ["security", "software"],
+    "monthly_rate": 310.0,
+    "currency": "USD",
+    "status": "suspended",
+    "notes": "En pausa mientras se evalúa la migración de SSO."
+  },
+  {
+    "name": "Factorial",
+    "country": "Spain",
+    "categories": ["software"],
+    "monthly_rate": 540.0,
+    "currency": "EUR",
+    "status": "active",
+    "contract_renewal_date": "2027-03-01",
+    "contact_email": "cuentas@factorial.example",
+    "notes": "Gestión interna de RRHH de la sede de Valencia."
+  },
+  {
+    "name": "SEUR",
+    "country": "Spain",
+    "categories": ["logistics"],
+    "monthly_rate": 160.0,
+    "currency": "EUR",
+    "status": "active",
+    "notes": "Envío de documentación contractual firmada."
+  },
+  {
+    "name": "Redsys",
+    "country": "Spain",
+    "categories": ["payments"],
+    "monthly_rate": 95.0,
+    "currency": "EUR",
+    "status": "active",
+    "contract_renewal_date": "2026-12-31"
+  },
+  {
+    "name": "Agencia Levante Digital",
+    "country": "Spain",
+    "categories": ["marketing"],
+    "monthly_rate": 1200.0,
+    "currency": "EUR",
+    "status": "suspended",
+    "contact_email": "hola@levantedigital.example",
+    "notes": "Campañas de marca empleadora; contrato congelado hasta el primer trimestre."
+  },
+  {
+    "name": "Cloudflare",
+    "country": "Spain",
+    "categories": ["infrastructure", "security"],
+    "monthly_rate": 220.0,
+    "currency": "EUR",
+    "status": "active",
+    "notes": "CDN y WAF de la web pública (contrato facturado desde la entidad española)."
+  }
+]

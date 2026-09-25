@@ -10,6 +10,8 @@ Monorepo con áreas independientes, cada una con su propio `package.json` y
 | Modelo de dominio + utils (Hito 2) | `packages/domain/` | TypeScript, `tsx`, `esbuild` | `npm run typecheck`, `npm run demo`, `npm run build:demo-web` |
 | Web pública (Hito 1) | `uis/website/` | Next.js 16.3.2, React 19.2.8, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
 | Backoffice (pipeline de talento, Hito 3) | `uis/backoffice/` | Next.js 16.3.2, React 19.2.8, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
+| Operaciones (directorio de proveedores) | `uis/application/` | Next.js 16.3.2, React 19.2.8, Tailwind v4 (puerto 3001) | `npm run dev`, `npm run build`, `npm run lint` |
+| API (incidencias + proveedores) | `services/api/` | Python ≥3.10 (dev 3.14), FastAPI, Pydantic v2, TinyDB, `uv` | `uv sync`, `uv run seed`, `uv run pytest`, `uv run uvicorn main:app --reload --port 8000` |
 
 ## Estructura de `uis/`
 
@@ -19,17 +21,22 @@ Monorepo con áreas independientes, cada una con su propio `package.json` y
   (`/talento`, `TalentForm` + `src/lib/talent-validation.ts`).
 - `uis/backoffice/` — apps internas. Shell `AppShell` (sidebar/topbar). Antes
   `uis/talent-pipeline-tracker/` (renombrado).
-- Las dos comparten versiones de Next/React/Tailwind y config (tsconfig, eslint,
-  postcss) copiada.
+- `uis/application/` — app interna de operaciones, sin `src/` (`app/`, `lib/`,
+  `types/` en la raíz de la app). Shell `AppShell` propio, `/suppliers`.
+- Las tres comparten versiones de Next/React/Tailwind y config (tsconfig, eslint,
+  postcss).
 - Ya **no existe** la landing HTML estática de la raíz: `index.html`,
   `application.html`, `validation.js`, `form-modal.js` eliminados tras la migración.
 
 ## Backend
 
-Todo servicio va en `services/` (FastAPI, una app con routers por dominio). Aún no
-existe: el Hito 3 consume la API pública de 4Geek Tracker
-(`https://playground.4geeks.com/tracker/api/v1`, configurable vía
-`NEXT_PUBLIC_API_URL`).
+Todo servicio va en `services/` (FastAPI, una app con routers por dominio).
+`services/api/` es un proyecto `uv` (`pyproject.toml` + `uv.lock`;
+`requirements.txt` sincronizado para pip) con los routers de incidencias y
+proveedores. Env: `SUPPLIERS_DB_PATH`, `CORS_ORIGINS` (por defecto puertos 3000
+y 3001). El pipeline de candidatos del backoffice sigue consumiendo la API
+pública de 4Geek Tracker (`https://playground.4geeks.com/tracker/api/v1`,
+configurable vía `NEXT_PUBLIC_API_URL`).
 
 ## Restricciones
 

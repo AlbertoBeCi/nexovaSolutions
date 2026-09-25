@@ -262,3 +262,32 @@ Revisa las rutas del proyecto porque faltan los formularios de creación y edici
    - Botón para cancelar y volver a la ficha del candidato.
 
 3. En `src/app/candidates/[id]/page.tsx`, añade un enlace/botón visible que lleve a `/candidates/[id]/edit`.
+
+# Milestone 9
+
+## Prompt 1: Módulo /suppliers en FastAPI con TinyDB y Pydantic
+
+Implementa un nuevo router FastAPI de proveedores con persistencia en TinyDB y validación Pydantic.
+
+1. Crea una rama nueva para el trabajo.
+2. Modelos Pydantic: `ProviderCategory` (software, infrastructure, logistics, marketing, payments, security, other) y `Provider` con `name` (min 1), `country` (`Spain` | `USA`), `categories` (mínimo 1), `monthly_rate` (> 0), `currency` (`EUR` | `USD`), `updated_at`, `status` (`active` | `suspended`), `contract_renewal_date`, `contact_email` (EmailStr) y `notes` opcionales, y un validador que obligue a EUR para Spain y USD para USA. Auxiliares: `ProviderResponse` (+ `id`), `UpdateRateRequest` (> 0) y `UpdateStatusRequest`.
+3. Endpoints del router `/suppliers`, registrado en la app para que salga en Swagger:
+   - `POST /suppliers` → 201 con el registro e `id` de TinyDB; 422 si el payload no es válido.
+   - `GET /suppliers` con filtros opcionales `country` y `category`.
+   - `GET /suppliers/{id}` → 404 si no existe.
+   - `PATCH /suppliers/{id}/rate` → 422 si la tarifa es <= 0; actualiza `updated_at`; 404 si no existe.
+   - `PATCH /suppliers/{id}/status` → devuelve el registro actualizado; 404 si no existe.
+   - `DELETE /suppliers/{id}` → 204 sin cuerpo; 404 si no existe.
+
+Estructura pedida: `services/api/{main,models,database,seed}.py`, `services/api/routes/suppliers.py` y la página en `uis/application/app/suppliers/`.
+
+## Prompt 2: Separación de modelos, seeder con uv y UI del directorio de proveedores
+
+1. Modelos: `StatusEnum` (active/suspended), `ProviderCreate` como entrada del POST (sin `updated_at`, lo fija el sistema) y `ProviderResponse` como salida (+ `id` y `updated_at`). `UpdateRateRequest` (> 0) y `UpdateStatusRequest` (`StatusEnum`).
+2. Seeder `seed.py` ejecutable con `uv run seed`: lee un dataset inicial, no duplica registros ya existentes (por `name`) y muestra `[INFO] Seed completed: X new suppliers added, Y already existed.`
+3. Frontend integrado en el menú de navegación principal:
+   - Tabla con nombre, país, categorías, tarifa mensual con símbolo de moneda y estado con insignia de color (activo / suspendido).
+   - Filtros de país y categoría que actualizan la lista sin recargar la página.
+   - Formulario de alta contra `POST /suppliers` que muestre los errores de la API (422 o de servidor).
+   - Acciones rápidas: actualizar tarifa (`PATCH …/rate`) y alternar estado (`PATCH …/status`), actualizando la UI en cuanto la petición tiene éxito.
+4. Verificación: `uv run seed` idempotente, pruebas de los endpoints y comportamiento del frontend.

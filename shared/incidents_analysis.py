@@ -3,7 +3,7 @@ Logica de negocio compartida para analizar tickets de soporte de Nexova.
 
 Este modulo es la UNICA fuente de verdad de las reglas de validacion y del
 calculo de metricas: tanto scripts/analyze.py (CLI) como
-services/api/app/analysis.py (FastAPI) importan de aqui en vez de tener su
+services/api/analysis.py (FastAPI) importan de aqui en vez de tener su
 propia copia de las reglas, para que no puedan divergir con el tiempo.
 
 Es codigo puro (pandas + stdlib), sin dependencias de CLI (argparse/input)

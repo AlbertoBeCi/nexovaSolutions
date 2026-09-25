@@ -23,9 +23,9 @@ NEXT_PUBLIC_INCIDENTS_API_URL=http://localhost:8000
 ```
 
 `NEXT_PUBLIC_INCIDENTS_API_URL` apunta al servicio propio de Nexova en
-`services/api` (ver su README). Debe estar corriendo (`uvicorn app.main:app
+`services/api` (ver su README). Debe estar corriendo (`uv run uvicorn main:app
 --port 8000`) y con CORS habilitado para `http://localhost:3000` (ya
-configurado por defecto en `services/api/app/main.py`) para que la página
+configurado por defecto en `services/api/main.py`) para que la página
 `/incidencias` pueda llamarlo desde el navegador.
 
 ## Estructura

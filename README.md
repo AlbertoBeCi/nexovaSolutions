@@ -36,6 +36,8 @@ Each app has its own `package.json` and `node_modules` — run commands from its
 | --- | --- | --- |
 | Public website (Milestone 1) | [`uis/website/`](./uis/website/) | `npm install` · `npm run dev` (→ http://localhost:3000) |
 | Backoffice — talent pipeline (Milestone 3) | [`uis/backoffice/`](./uis/backoffice/) | `npm install` · `npm run dev` — needs `.env.local` (see `.env.example`) |
+| Operations — supplier directory | [`uis/application/`](./uis/application/) | `npm install` · `npm run dev` (→ http://localhost:3001) — needs `services/api` running |
+| API — incidents + suppliers | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
 | Domain model + logic (Milestone 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
 
 ---
@@ -67,7 +69,7 @@ Each app has its own `package.json` and `node_modules` — run commands from its
 | 3 — Talent pipeline | Internal app: candidate list with filters, detail view, create/edit, notes; consumes the 4Geek Tracker API | 🚧 In [`uis/backoffice/`](./uis/backoffice/) |
 | 4+ — Backend, Telemetry, RAG, Agents, Workflows, Real-time | — | ⏳ Not started |
 
-`services/`, `data/`, `agents/`, `mcps/`, `workflows/`, `infra/`, `internal/` are still empty scaffolding.
+`data/`, `agents/`, `mcps/`, `workflows/`, `infra/`, `internal/` are still empty scaffolding.
 
 ---
 
@@ -92,6 +94,7 @@ Read the linked `README.md` inside each folder before you start coding there.
 
 - Public website → [`uis/website/`](./uis/website/)
 - Internal admin / backoffice → [`uis/backoffice/`](./uis/backoffice/)
+- Internal operations app (supplier directory) → [`uis/application/`](./uis/application/)
 - Customer portals, dashboards with a UI, Streamlit/Gradio tools
 
 Each app: its own `package.json`, `README.md`, layout and a working entry view from the first commit.
@@ -251,11 +254,12 @@ nexovaSolutions/
 ├── memory-bank/               # Project memory (business + technical + state)
 ├── uis/
 │   ├── website/               # Public corporate site (Next.js) — Milestone 1
-│   └── backoffice/            # Talent pipeline app (Next.js) — Milestone 3
+│   ├── backoffice/            # Talent pipeline app (Next.js) — Milestone 3
+│   └── application/           # Operations app: supplier directory (Next.js)
 ├── packages/
 │   ├── domain/                # @repo/domain — recruitment logic — Milestone 2
 │   └── shared/                # @repo/shared-types
-├── services/                  # Centralized FastAPI company API (empty)
+├── services/api/              # Centralized FastAPI API: incidents + suppliers (TinyDB)
 ├── data/{raw,pipelines,process,eval}/   # Data lifecycle (empty)
 ├── agents/                    # AI agents (+ _template/ starter) (empty)
 ├── skills/  mcps/  workflows/ # Template scaffolding (empty)
