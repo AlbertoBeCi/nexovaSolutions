@@ -36,6 +36,8 @@ Cada app tiene su propio `package.json` y `node_modules` — ejecuta los comando
 | --- | --- | --- |
 | Web pública (Hito 1) | [`uis/website/`](./uis/website/) | `npm install` · `npm run dev` (→ http://localhost:3000) |
 | Backoffice — pipeline de talento (Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | `npm install` · `npm run dev` — necesita `.env.local` (ver `.env.example`) |
+| Operaciones — directorio de proveedores | [`uis/application/`](./uis/application/) | `npm install` · `npm run dev` (→ http://localhost:3001) — necesita `services/api` en marcha |
+| API — incidencias + proveedores | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
 | Modelo de dominio + lógica (Hito 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
 
 ---
@@ -67,7 +69,7 @@ Cada app tiene su propio `package.json` y `node_modules` — ejecuta los comando
 | 3 — Pipeline de talento | App interna: listado con filtros, ficha, alta/edición, notas; consume la API de 4Geek Tracker | 🚧 En [`uis/backoffice/`](./uis/backoffice/) |
 | 4+ — Backend, Telemetría, RAG, Agentes, Workflows, Tiempo real | — | ⏳ Sin empezar |
 
-`services/`, `data/`, `agents/`, `mcps/`, `workflows/`, `infra/`, `internal/` siguen siendo estructura vacía.
+`data/`, `agents/`, `mcps/`, `workflows/`, `infra/`, `internal/` siguen siendo estructura vacía.
 
 ---
 
@@ -92,6 +94,7 @@ Lee el `README.md` enlazado dentro de cada carpeta antes de empezar a programar 
 
 - Sitio web público → [`uis/website/`](./uis/website/)
 - Admin interno / backoffice → [`uis/backoffice/`](./uis/backoffice/)
+- App interna de operaciones (directorio de proveedores) → [`uis/application/`](./uis/application/)
 - Portales de clientes, dashboards con UI, herramientas Streamlit/Gradio
 
 Cada app: su propio `package.json`, `README.md`, layout y una vista de entrada funcional desde el primer commit.
@@ -247,11 +250,12 @@ nexovaSolutions/
 ├── memory-bank/               # Memoria del proyecto (negocio + técnico + estado)
 ├── uis/
 │   ├── website/               # Web pública (Next.js) — Hito 1
-│   └── backoffice/            # App de pipeline de talento (Next.js) — Hito 3
+│   ├── backoffice/            # App de pipeline de talento (Next.js) — Hito 3
+│   └── application/           # App de operaciones: directorio de proveedores (Next.js)
 ├── packages/
 │   ├── domain/                # @repo/domain — lógica de reclutamiento — Hito 2
 │   └── shared/                # @repo/shared-types
-├── services/                  # API FastAPI centralizada (vacía)
+├── services/api/              # API FastAPI centralizada: incidencias + proveedores (TinyDB)
 ├── data/{raw,pipelines,process,eval}/   # Ciclo de vida del dato (vacío)
 ├── agents/                    # Agentes de IA (+ plantilla _template/) (vacío)
 ├── skills/  mcps/  workflows/ # Estructura de plantilla (vacía)

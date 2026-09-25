@@ -2,7 +2,21 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — Hito: infraestructura de agentes + estructura de aplicación
+## Ahora — directorio de proveedores (`/suppliers`)
+
+Rama: `feature/suppliers-api` (parte de `feature/incidents-analysis-script`).
+
+- `services/api/` reorganizado a layout plano: `main.py`, `models.py`,
+  `database.py`, `routes/{incidents,suppliers}.py`, `seed.py`; proyecto `uv`
+  (`uv run seed`, `uv run pytest`). Se disolvió `services/api/app/`; las rutas de
+  incidencias no cambian.
+- `/suppliers`: POST (201), GET con filtros `country`/`category`, GET por id,
+  PATCH `rate` y `status` (refrescan `updated_at`), DELETE (204). TinyDB en
+  `services/api/data/` (ignorado por git).
+- Nueva app `uis/application/` (puerto 3001) con `/suppliers`: listado, filtros
+  en URL, alta, edición de tarifa, activar/suspender, eliminar.
+
+## Anterior — Hito: infraestructura de agentes + estructura de aplicación
 
 Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
 
@@ -32,7 +46,7 @@ Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
   español (estados/etapas traducidos). `npm run dev` y `build` en verde, `/` 200.
 - Ya **no existen** `index.html`, `application.html`, `validation.js`,
   `form-modal.js` en la raíz (eliminados tras la migración).
-- Backend: nada en `services/` todavía; regla documentada.
+- Backend: `services/api/` (FastAPI) con incidencias y proveedores.
 
 ### Reorganización previa (conforme a los README de carpeta)
 
@@ -43,7 +57,8 @@ Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
 
 ## Pendiente
 
-- Decidir si el backend propio en `services/` entra ya.
+- Decidir si `uis/application` absorbe más módulos o se fusiona con el backoffice.
+- Persistencia multi-proceso para proveedores si se despliega la API.
 
 ## Hecho recientemente
 

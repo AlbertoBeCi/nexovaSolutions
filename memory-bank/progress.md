@@ -22,10 +22,17 @@
   (3 reglas con alcance declarado), skill `revision-textos-ui` con verificador
   ejecutable (`check-ui-texts.mjs`, PASS).
 - **Estructura** — `packages/domain/` (ex `src/`), `docs/` poblado, raíz limpia.
+- **`services/api/`** — backend FastAPI único (proyecto `uv`): router de
+  incidencias (`/api/incidents`, análisis de CSV) y router de proveedores
+  (`/suppliers`, CRUD sobre TinyDB con `ProviderCreate`/`ProviderResponse`).
+  `uv run seed` idempotente; `uv run pytest` → 25 tests en verde.
+- **`uis/application/`** — app interna de operaciones (Next.js 16, puerto 3001):
+  `/suppliers` con listado, filtros en URL, alta, edición rápida de tarifa,
+  activar/suspender y eliminar. `lint`/`build` en verde, probado en navegador.
 
 ## Falta
 
-- Backend propio en `services/`.
+- Persistencia real (TinyDB es de un solo proceso) si `services/api` se despliega con varios workers.
 - Hitos posteriores (Telemetría, RAG, Agentes, Workflows, Real-time).
 
 ## Problemas conocidos

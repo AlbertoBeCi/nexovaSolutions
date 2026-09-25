@@ -7,11 +7,13 @@ globs: ["uis/**"]
 # uis
 
 **Alcance:** por patrón de archivo — activa cuando el cambio toca `uis/**`
-(`uis/website/`, `uis/backoffice/` o cualquier frontend futuro).
+(`uis/website/`, `uis/backoffice/`, `uis/application/` o cualquier frontend futuro).
 
 ## Reglas
 
 - Web pública → `uis/website/`. Apps internas (operadores, RRHH) → `uis/backoffice/`.
+  Aplicación de operaciones (directorio de proveedores) → `uis/application/`
+  (puerto 3001; consume `services/api`).
 - Cada app: su propio `package.json`, `README.md`, layout y **vista de entrada
   funcional desde el primer commit** (algo visible desde el día uno).
 - Stack por defecto: Next.js (App Router) + React + Tailwind, salvo que una app

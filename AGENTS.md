@@ -51,6 +51,8 @@ Luego esta guía completa y, del área en la que vayas a trabajar, su archivo en
 | Modelo de dominio + utils (Hito 2) | [`packages/domain/`](./packages/domain/) | TypeScript puro, `tsx`, `esbuild` | `npm run typecheck`, `npm run demo`, `npm run build:demo-web` |
 | Web pública (Hito 1) | [`uis/website/`](./uis/website/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
 | Backoffice (pipeline de talento, Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
+| Operaciones (directorio de proveedores) | [`uis/application/`](./uis/application/) | Next.js 16, React 19, Tailwind v4 (puerto 3001) | `npm run dev`, `npm run build`, `npm run lint` |
+| API (incidencias + proveedores) | [`services/api/`](./services/api/) | FastAPI, Pydantic v2, TinyDB, `uv` | `uv sync`, `uv run seed`, `uv run pytest`, `uv run uvicorn main:app --reload` |
 
 La landing del Hito 1 se sirvió como HTML/CSS/JS estático en la raíz; ya está
 migrada a Next/React en `uis/website/` y esos archivos (`index.html`,
@@ -61,12 +63,13 @@ desde la carpeta correspondiente, no desde la raíz.
 
 ### Estructura de la capa de aplicación
 
-Sigue la estructura del monorepo. Toda app nueva va en una de estas dos carpetas:
+Sigue la estructura del monorepo. Toda app nueva va en una de estas carpetas:
 
 | Carpeta | Para qué | Notas |
 | --- | --- | --- |
 | `./uis/website` | Web corporativa **de cara al público** | Landing, servicios, captación de talento |
 | `./uis/backoffice` | **Aplicaciones internas** (operadores, RRHH) | Pipeline de talento (Hito 3) — antes `uis/talent-pipeline-tracker/` |
+| `./uis/application` | **Aplicación interna de operaciones** | Directorio de proveedores (`/suppliers`) contra `services/api` |
 
 Reglas para cada app:
 
@@ -124,7 +127,7 @@ No hagas `git commit` hasta haber completado estos pasos:
 3. **Pasa las comprobaciones del área tocada:**
    - `packages/domain/` → `npm run typecheck` (debe pasar limpio).
    - App de `uis/` (Next.js) → `npm run lint` y `npm run build` desde su carpeta.
-   - Servicio de `services/` → linter y tests del servicio.
+   - Servicio de `services/` → linter y tests del servicio (`services/api` → `uv run pytest`).
    - Si tocaste `uis/**`, ejecuta la skill `revision-textos-ui`.
    - Si tocaste varias áreas, corre las comprobaciones de todas.
 
