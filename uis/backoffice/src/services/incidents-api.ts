@@ -2,7 +2,7 @@
  * NEXOVA SOLUTIONS - services/incidents-api.ts
  * Cliente HTTP contra services/api (FastAPI), el servicio propio de Nexova
  * que analiza CSVs de tickets de soporte. Traduce el DTO de la API
- * (snake_case, ver services/api/app/schemas.py) al modelo de la UI
+ * (snake_case, ver services/api/models.py) al modelo de la UI
  * (camelCase, types/incidents.ts), igual que services/api.ts hace con el
  * DTO de 4Geek Tracker.
  */
@@ -22,7 +22,7 @@ const INCIDENTS_API_URL =
 
 const SATISFACTION_SCORES = [1, 2, 3, 4, 5] as const;
 
-// ─── DTO de la API (snake_case, ver services/api/app/schemas.py) ────
+// ─── DTO de la API (snake_case, ver services/api/models.py) ────
 
 interface GroupBreakdownDto {
   count: number;

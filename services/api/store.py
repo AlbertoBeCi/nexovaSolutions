@@ -3,7 +3,7 @@ Almacen en memoria del ultimo resultado de analisis.
 
 Deliberadamente simple: una variable de proceso, sin base de datos ni
 disco. Suficiente para un solo proceso/instancia (por ejemplo, desarrollo
-local con `uvicorn app.main:app`). Si el servicio se reinicia, o corre con
+local con `uvicorn main:app`). Si el servicio se reinicia, o corre con
 varios workers/instancias detras de un balanceador, el resultado no se
 comparte entre ellos: seria necesario un store externo (Redis, DB, etc.)
 para ese caso, fuera del alcance de este ejercicio.

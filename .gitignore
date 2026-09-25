@@ -11,3 +11,5 @@ APRENDIENDO.md
 scripts/results.csv
 __pycache__/
 *.pyc
+services/api/data/
+*.egg-info/

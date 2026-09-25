@@ -3,7 +3,7 @@
  * Modelo del resumen de análisis de tickets de soporte tal como lo consume
  * la UI del backoffice (camelCase). Los códigos de categoría, estado y
  * regla de invalidez deben coincidir exactamente con los definidos en
- * services/api/app/analysis.py (fuente de verdad del negocio: 5 categorías,
+ * services/api/analysis.py (fuente de verdad del negocio: 5 categorías,
  * 3 estados y 7 reglas de invalidez de los tickets de soporte de Nexova).
  */
 

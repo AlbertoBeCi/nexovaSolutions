@@ -4,7 +4,7 @@ Adaptador HTTP sobre la logica de negocio compartida de shared/incidents_analysi
 No repite ninguna regla de validacion ni de calculo de metricas: solo
 adapta el modulo compartido a lo que necesita un servicio web (bytes de
 un UploadFile como entrada, CSV en bytes como salida) y re-exporta lo que
-services/api/app/main.py necesita, para que ese archivo no tenga que
+routes/incidents.py necesita, para que ese archivo no tenga que
 conocer la ruta hacia shared/.
 """
 from __future__ import annotations
@@ -17,7 +17,7 @@ from pathlib import Path
 # Se añade a sys.path en vez de convertir el repo en un paquete pip
 # instalado, siguiendo la convencion de shared/README.md ("recursos
 # compartidos no empaquetados").
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 

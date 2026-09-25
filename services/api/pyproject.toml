@@ -1,0 +1,36 @@
+[project]
+name = "nexova-api"
+version = "1.1.0"
+description = "Backend FastAPI de Nexova: analisis de incidencias y directorio de proveedores."
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+    "pandas>=2.2",
+    "tinydb>=4.8",
+    "email-validator>=2.0",
+]
+
+[project.scripts]
+seed = "seed:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "httpx2>=2.13",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+# Layout plano (modulos sueltos en services/api): se declaran a mano para que
+# setuptools no intente autodescubrir paquetes y `uv run seed` encuentre seed:main.
+[tool.setuptools]
+py-modules = ["main", "models", "database", "seed", "analysis", "store"]
+packages = ["routes"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
