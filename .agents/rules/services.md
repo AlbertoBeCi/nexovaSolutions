@@ -50,6 +50,16 @@ Limitación conocida: no se comparte entre workers/instancias. En tests,
 limpia `rate_limit._attempts` entre casos (ver la fixture `autouse` en
 `tests/conftest.py`) para que no haya fugas de estado.
 
+### Enviar un email
+
+`mailer.py` es el único punto de envío (Resend). Sigue su patrón para
+cualquier email nuevo: la función de envío nunca lanza (atrapa la excepción,
+loguea y devuelve `False`), y si no hay API key configurada devuelve `False`
+sin intentar nada — el caller decide el fallback (en `forgot-password`, es
+loguear el link por consola). Así el flujo se puede probar en un checkout
+nuevo sin cuenta de ningún proveedor externo. **No lo llames `email.py`**:
+tapa el paquete `email` de la stdlib en este layout plano.
+
 ## Antes de commit
 
 - Linter y tests del servicio en verde.

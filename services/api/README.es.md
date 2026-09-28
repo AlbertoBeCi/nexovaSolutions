@@ -45,14 +45,19 @@ Backend FastAPI único de Nexova, con un router por dominio:
   (`type="password_reset"`) que llevan la huella del hash vigente al
   emitirlos, asi que — igual que cualquier **access token** emitido antes —
   dejan de validar en cuanto la contraseña realmente cambia. No hace falta
-  ninguna tabla de tokens revocados. Todavia no hay proveedor de email:
-  `forgot-password` loguea el token de reset en la consola del servidor
-  (logger `auth`) en vez de enviarlo por correo. `new_password` en
-  reset/change debe tener 8+ caracteres con al menos una mayúscula, una
-  minúscula y un número (esta política **no** aplica al registro de
-  `POST /users`, que solo pide 8+ caracteres). `forgot-password` y
-  `reset-password` estan limitados por IP (5 solicitudes / 15 min, en
-  memoria).
+  ninguna tabla de tokens revocados. `new_password` en reset/change debe
+  tener 8+ caracteres con al menos una mayúscula, una minúscula y un número
+  (esta política **no** aplica al registro de `POST /users`, que solo pide
+  8+ caracteres). `forgot-password` y `reset-password` estan limitados por
+  IP (5 solicitudes / 15 min, en memoria).
+- **Envio de emails** (`mailer.py`): `forgot-password` envia el link de
+  reset por [Resend](https://resend.com) cuando hay `RESEND_API_KEY`
+  configurada. Sin ella (o si Resend falla), cae a loguear el token en la
+  consola del servidor (logger `auth`) — es el comportamiento por defecto
+  en un checkout nuevo, asi que el flujo se puede probar sin nada externo.
+  Con el remitente de pruebas de Resend (`onboarding@resend.dev`, el
+  default de `RESEND_FROM_EMAIL`), la entrega solo llega al email con el
+  que se creo la cuenta de Resend, hasta verificar un dominio propio ahi.
 - `uis/application` ya tiene un login minimo (`/login`), `/forgot-password`,
   `/reset-password` y `/account/change-password` (ver el README de esa app).
   `uis/website` y `uis/backoffice` todavia no consumen este sistema de auth.
@@ -62,8 +67,8 @@ Backend FastAPI único de Nexova, con un router por dominio:
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recomendado). Dependencias declaradas en
   `pyproject.toml` (FastAPI, Uvicorn, python-multipart, pandas, TinyDB,
-  email-validator, libpass, python-jose, python-dotenv); `requirements.txt`
-  se mantiene igual para quien use pip.
+  email-validator, libpass, python-jose, python-dotenv, resend);
+  `requirements.txt` se mantiene igual para quien use pip.
 
 ## Instalación y arranque (desarrollo)
 
@@ -102,6 +107,9 @@ en "Authorize" e ingresa `Bearer <token>`.
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Minutos de validez del access token. |
 | `PASSWORD_RESET_EXPIRE_MINUTES` | `15` | Minutos de validez del token de reset de password. |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | ninguno | Credenciales del primer admin, solo las usa `uv run seed-users`. |
+| `RESEND_API_KEY` | ninguno (cae a loguear por consola) | API key de [Resend](https://resend.com). Habilita el envio real del email de `forgot-password`. |
+| `RESEND_FROM_EMAIL` | `Nexova <onboarding@resend.dev>` | Remitente. Necesita un dominio verificado en Resend para entregar a cualquier destinatario. |
+| `FRONTEND_URL` | `http://localhost:3001` | Base para construir el link `/reset-password?token=...` del email (y del fallback de consola). |
 
 Copia `.env.example` a `.env` (ignorado por git, ver `services/api/.gitignore`)
 y completa valores reales para desarrollo.
@@ -245,6 +253,7 @@ services/api/
 ├── users_db.py               # inicializacion de TinyDB de usuarios/perfiles + lock
 ├── security.py                # hash de contrasenas, JWT, get_current_user/get_current_admin
 ├── rate_limit.py               # rate limiter en memoria (forgot/reset-password)
+├── mailer.py                    # envio de emails via Resend (forgot-password), fallback de consola
 ├── routes/
 │   ├── incidents.py        # /api/incidents
 │   ├── suppliers.py        # /suppliers

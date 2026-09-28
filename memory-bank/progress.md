@@ -43,8 +43,11 @@
   invalida de inmediato todas las sesiones anteriores, sin tabla de
   revocados. Política de contraseña (8+, mayúscula, minúscula, número) solo
   en reset/change, no en el registro. Rate limiting en memoria (5/15min por
-  IP) en `forgot-password`/`reset-password`. `uv run pytest` → 79 tests en
-  verde (55 anteriores + 24 nuevos).
+  IP) en `forgot-password`/`reset-password`. Envío real de email con
+  [Resend](https://resend.com) (`mailer.py`, opcional vía `RESEND_API_KEY`;
+  sin ella cae al log por consola de siempre). `uv run pytest` → 79 tests en
+  verde (55 anteriores + 24 nuevos; los tests nunca disparan un envío real,
+  aunque el `.env` local tenga la key).
 - **Login en `uis/application`** — primera integración de auth en un
   frontend: `/login`, `/forgot-password`, `/reset-password`,
   `/account/change-password`, token en `localStorage`

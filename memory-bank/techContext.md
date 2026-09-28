@@ -77,8 +77,19 @@ API pública de 4Geek Tracker
   reset/change-password (no en `POST /users`). `rate_limit.py`: limitador en
   memoria (dict + lock, sin dependencia nueva) para `forgot-password`/
   `reset-password`. `main.py` llama `logging.basicConfig` — sin eso, el
-  `logger("auth")` que loguea el token de reset (no hay proveedor de email)
-  no imprime nada al correr `uvicorn`.
+  `logger("auth")` no imprime nada al correr `uvicorn` (si lo capturan los
+  tests).
+- **Envío real de email con Resend**: `mailer.py`
+  (`send_password_reset_email`), SDK oficial `resend`. Solo envía si
+  `RESEND_API_KEY` está en `.env`; si no, o si Resend falla, cae al log por
+  consola de siempre (`forgot-password` nunca depende de tener una cuenta
+  de email para funcionar en dev). Env vars: `RESEND_API_KEY`,
+  `RESEND_FROM_EMAIL` (default `onboarding@resend.dev`), `FRONTEND_URL`
+  (default `http://localhost:3001`, para el link del email). Tests: fixture
+  `autouse` en `conftest.py` monkeypatchea `routes.auth.send_password_reset_email`
+  a `False`, así nunca se dispara un envío real aunque el `.env` local
+  tenga la key puesta. El módulo se llama `mailer.py`, no `email.py` (taparía
+  el paquete `email` de la stdlib en este layout plano).
 - **`uis/application` ya tiene login** (ver arriba, sección `uis/`) pero su
   `lib/suppliers-api.ts` todavía no adjunta el token: `POST/PATCH/DELETE
   /suppliers` siguen devolviendo 401 desde esa UI hasta que se conecte.

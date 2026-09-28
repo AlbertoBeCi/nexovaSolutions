@@ -44,6 +44,22 @@ mergeado).
   el token viejo, y `/account/change-password` redirigiendo a `/login` sin
   sesión. Sin errores de consola salvo los 401 esperados de los intentos
   fallidos/no autenticados.
+- **Envío real por email (Resend)**: `mailer.py` nuevo —
+  `send_password_reset_email(to_email, reset_link)`, usando el SDK oficial
+  `resend`. Solo envía si `RESEND_API_KEY` está en `.env` (el desarrollador
+  ya tiene una cuenta y la configuró); sin la key, o si Resend falla,
+  `forgot-password` cae al log por consola de siempre — así el flujo sigue
+  siendo probable en un checkout nuevo sin cuenta de ningún proveedor.
+  Nuevas env vars: `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (default
+  `onboarding@resend.dev`, el remitente de pruebas de Resend — solo entrega
+  al email dueño de la cuenta hasta verificar un dominio propio ahí) y
+  `FRONTEND_URL` (default `http://localhost:3001`, para construir el link
+  `/reset-password?token=...` del email). Los tests nunca disparan un envío
+  real: `tests/conftest.py` tiene una fixture `autouse` que monkeypatchea
+  `routes.auth.send_password_reset_email` a `False`, sin importar lo que
+  tenga el `.env` local. **Importante:** el módulo se llama `mailer.py`, no
+  `email.py` — ese nombre taparía el paquete `email` de la stdlib en este
+  layout plano.
 
 ## Anterior — autenticación y protección de rutas (AUTH-01)
 

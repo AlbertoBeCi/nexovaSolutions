@@ -44,13 +44,19 @@ Nexova's single FastAPI backend, with one router per domain:
   are stateless JWTs (`type="password_reset"`) that embed a fingerprint of
   the password hash at issue time, so they — and, the same way, every
   previously-issued **access** token — stop validating the moment the
-  password actually changes. No revoked-token table needed. There is no
-  email provider configured yet: `forgot-password` logs the reset token to
-  the server console (logger `auth`) instead of emailing it. `new_password`
+  password actually changes. No revoked-token table needed. `new_password`
   on reset/change must be 8+ chars with at least one uppercase, one
   lowercase and one digit (this policy does **not** apply to `POST /users`
   registration, which only requires 8+ chars). `forgot-password` and
   `reset-password` are rate-limited per IP (5 requests / 15 min, in-memory).
+- **Email delivery** (`mailer.py`): `forgot-password` sends the reset link
+  through [Resend](https://resend.com) when `RESEND_API_KEY` is set. Without
+  it (or if the Resend call fails), it falls back to logging the token to
+  the server console (logger `auth`) — that's the default in a fresh
+  checkout, so the flow is testable with zero external setup. With Resend's
+  own test sender (`onboarding@resend.dev`, the `RESEND_FROM_EMAIL`
+  default), delivery only reaches the email the Resend account was created
+  with, until a real domain is verified there.
 - `uis/application` now has a minimal login (`/login`), `/forgot-password`,
   `/reset-password` and `/account/change-password` (see that app's README).
   `uis/website` and `uis/backoffice` still don't consume this auth system.
@@ -60,8 +66,8 @@ Nexova's single FastAPI backend, with one router per domain:
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recommended). Dependencies are declared in
   `pyproject.toml` (FastAPI, Uvicorn, python-multipart, pandas, TinyDB,
-  email-validator, libpass, python-jose, python-dotenv); `requirements.txt` is
-  kept in sync for pip users.
+  email-validator, libpass, python-jose, python-dotenv, resend);
+  `requirements.txt` is kept in sync for pip users.
 
 ## Install and run (development)
 
@@ -100,6 +106,9 @@ Swagger: `POST /auth/login`, copy `access_token`, click "Authorize" and enter
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Access token lifetime, in minutes. |
 | `PASSWORD_RESET_EXPIRE_MINUTES` | `15` | Password-reset token lifetime, in minutes. |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | none | First admin's credentials, used only by `uv run seed-users`. |
+| `RESEND_API_KEY` | none (falls back to console logging) | API key for [Resend](https://resend.com). Enables real email delivery for `forgot-password`. |
+| `RESEND_FROM_EMAIL` | `Nexova <onboarding@resend.dev>` | Sender address. Needs a verified domain in Resend to deliver to arbitrary recipients. |
+| `FRONTEND_URL` | `http://localhost:3001` | Base URL used to build the `/reset-password?token=...` link in the email (and in the console fallback). |
 
 Copy `.env.example` to `.env` (git-ignored, see `services/api/.gitignore`) and
 fill in real values for development.
@@ -240,6 +249,7 @@ services/api/
 ├── users_db.py               # users/profiles TinyDB setup + lock
 ├── security.py                # password hashing, JWT, get_current_user/get_current_admin
 ├── rate_limit.py               # in-memory rate limiter (forgot/reset-password)
+├── mailer.py                    # Resend email delivery (forgot-password), console fallback
 ├── routes/
 │   ├── incidents.py        # /api/incidents
 │   ├── suppliers.py        # /suppliers

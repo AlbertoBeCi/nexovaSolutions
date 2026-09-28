@@ -44,9 +44,10 @@ Sesión con `Authorization: Bearer <token>` guardado en `localStorage`
   `/reset-password` (`?reset=success`), muestra un aviso.
 - **`/forgot-password`**: pide el email y siempre muestra el mismo mensaje de
   éxito, exista o no la cuenta (igual que hace la API, para no revelar qué
-  emails están registrados). No hay proveedor de email todavía: el token de
-  reset se ve en la consola del backend (`uv run uvicorn ...`), no en el
-  navegador — hay que copiarlo a mano para probar `/reset-password`.
+  emails están registrados). Si el backend tiene `RESEND_API_KEY`
+  configurada, el link real llega por email (vía Resend); si no, el token
+  se ve en la consola del backend (`uv run uvicorn ...`) — hay que copiarlo
+  a mano para probar `/reset-password`.
 - **`/reset-password?token=...`**: nueva contraseña + confirmación; si no
   coinciden, no llega a llamar a la API. Éxito → redirige a
   `/login?reset=success`.
