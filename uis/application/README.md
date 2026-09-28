@@ -1,10 +1,10 @@
 # Nexova — Operaciones (`uis/application`)
 
 Aplicación interna del equipo de operaciones de Nexova. Módulos: **login y
-cuenta** (`/login`, `/forgot-password`, `/reset-password`,
-`/account/change-password`) y el **directorio de proveedores**
-(`/suppliers`). Next.js 16 (App Router) + React 19 + Tailwind v4, mismas
-versiones que `uis/backoffice`.
+cuenta** (`/login`, `/register`, `/forgot-password`, `/reset-password`,
+`/account/profile`, `/account/change-password`) y el **directorio de
+proveedores** (`/suppliers`). Next.js 16 (App Router) + React 19 +
+Tailwind v4, mismas versiones que `uis/backoffice`.
 
 ## Arrancar
 
@@ -41,7 +41,12 @@ Sesión con `Authorization: Bearer <token>` guardado en `localStorage`
 (`lib/auth-storage.ts`); no hay cookies ni SSR de datos de sesión.
 
 - **`/login`**: email + password contra `POST /auth/login`. Si viene de
-  `/reset-password` (`?reset=success`), muestra un aviso.
+  `/reset-password` (`?reset=success`), muestra un aviso. Enlaza a
+  `/forgot-password` y a `/register`.
+- **`/register`**: email + password + `name`/`phone`/`address` opcionales
+  en un solo formulario (si se llena `name`, `POST /users` crea también el
+  `Profile` vinculado en la misma llamada) → login automático con las
+  mismas credenciales → redirige a `/`.
 - **`/forgot-password`**: pide el email y siempre muestra el mismo mensaje de
   éxito, exista o no la cuenta (igual que hace la API, para no revelar qué
   emails están registrados). Si el backend tiene `RESEND_API_KEY`
@@ -51,16 +56,31 @@ Sesión con `Authorization: Bearer <token>` guardado en `localStorage`
 - **`/reset-password?token=...`**: nueva contraseña + confirmación; si no
   coinciden, no llega a llamar a la API. Éxito → redirige a
   `/login?reset=success`.
-- **`/account/change-password`**: requiere sesión (envuelta en
-  `<RequireAuth>`, que redirige a `/login` si no hay token válido).
-  Contraseña actual + nueva + confirmación. La API devuelve un access token
-  nuevo al cambiarla (invalida el anterior); esta página lo guarda solo.
+- **`/account/profile`**: requiere sesión (envuelta en `<RequireAuth>`).
+  Muestra email/rol (de `GET /auth/me`, que `RequireAuth` ya resolvió — la
+  página no repite la llamada) y un formulario para `name`/`phone`/`address`
+  vía `PUT /profiles/me` (upsert). Enlaza a `/account/change-password`.
+- **`/account/change-password`**: requiere sesión. Contraseña actual +
+  nueva + confirmación. La API devuelve un access token nuevo al cambiarla
+  (invalida el anterior); esta página lo guarda sola.
+- **`<RequireAuth>`** (`app/_components/require-auth.tsx`): al montar hace
+  `GET /auth/me`; si falla, limpia el token y redirige a `/login`. Puede
+  envolver un nodo normal o una función `(currentUser) => nodo` cuando la
+  página necesita los datos del usuario ya autenticado (así lo usa
+  `/account/profile`, para no duplicar la llamada a `/auth/me`).
+- **Interceptor centralizado** (`lib/api-client.ts::apiRequest`): adjunta el
+  token guardado (si hay) en cada request — ningún cliente de dominio
+  (`auth-api.ts`, `suppliers-api.ts`) arma el header a mano. Si una llamada
+  *que llevaba token* responde `401` (sesión inválida/expirada), limpia el
+  storage y redirige a `/login` automáticamente. Un `401` en una llamada
+  *sin* token (ej. login con credenciales malas) no dispara nada de esto: se
+  muestra como error normal en el formulario.
 - El nav (`nav-links.tsx`) muestra "Iniciar sesión" o "Mi cuenta" / "Cerrar
   sesión" según haya token guardado (`useSyncExternalStore` sobre
   `lib/auth-storage.ts`, para no leer `localStorage` dentro de un efecto).
-- Política de contraseña en reset/change: 8+ caracteres, mayúscula,
-  minúscula y número (la valida la API; esta UI no duplica la regla, solo
-  muestra el mensaje que devuelve).
+- Política de contraseña: en `/register`, la API solo exige 8+ caracteres;
+  en reset/change, 8+ con mayúscula, minúscula y número (la valida la API;
+  esta UI no duplica la regla, solo muestra el mensaje que devuelve).
 
 ## Qué hace `/suppliers`
 
@@ -76,12 +96,9 @@ Sesión con `Authorization: Bearer <token>` guardado en `localStorage`
   (`PATCH …/status`) y eliminar con confirmación (`DELETE`). La fila se
   actualiza con la respuesta de la API en cuanto la petición tiene éxito.
 
-> **Pendiente:** `lib/suppliers-api.ts` todavía no adjunta el
-> `Authorization: Bearer <token>` del login. `POST/PATCH/DELETE /suppliers`
-> ya lo exige en la API (ver `services/api/README.md`), así que esas
-> acciones devuelven `401` aunque el usuario haya iniciado sesión; solo
-> `GET /suppliers` (lectura) sigue funcionando. Conectar `lib/auth-storage.ts`
-> con `lib/suppliers-api.ts` queda para una tarea siguiente.
+`lib/api-client.ts` adjunta el token guardado automáticamente en toda
+llamada que pase por `apiRequest` (incluida `lib/suppliers-api.ts`), así que
+alta/edición/eliminación de proveedores ya funcionan estando logueado.
 
 ## Estructura
 
@@ -95,9 +112,12 @@ app/
 │  ├─ require-auth.tsx        # guard client-side: redirige a /login sin token
 │  └─ form-styles.ts          # clases Tailwind compartidas por los forms de auth
 ├─ login/page.tsx
+├─ register/page.tsx
 ├─ forgot-password/page.tsx
 ├─ reset-password/page.tsx    # lee ?token= (useSearchParams)
-├─ account/change-password/page.tsx   # envuelta en <RequireAuth>
+├─ account/
+│  ├─ profile/page.tsx        # envuelta en <RequireAuth>, usa el currentUser que ya resolvio
+│  └─ change-password/page.tsx   # envuelta en <RequireAuth>
 └─ suppliers/
    ├─ page.tsx                # cabecera + <Suspense> del directorio
    └─ _components/

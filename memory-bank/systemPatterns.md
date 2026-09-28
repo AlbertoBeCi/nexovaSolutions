@@ -12,14 +12,33 @@
 
 - App Router de Next.js. Cada app de `uis/` tiene su propio layout y una vista de
   entrada visible desde el primer commit.
-- Capa de servicios (`uis/backoffice/src/services/api.ts`, `uis/application/lib/suppliers-api.ts`,
-  `uis/application/lib/auth-api.ts`) que traduce entre el DTO de la API
-  (snake_case) y el modelo de la UI (camelCase) en ambas direcciones.
-  En `uis/application`, el fetch genérico (`apiRequest`/`extractErrorMessage`/
-  `jsonInit`) vive en `lib/api-client.ts`; cada dominio (`suppliers-api.ts`,
-  `auth-api.ts`) solo aporta su propio `translateIssue`. Extraer ese cliente
-  compartido en cuanto haya un segundo consumidor evita duplicar la lógica de
-  errores/red.
+- Capa de servicios (`uis/backoffice/src/services/api.ts`,
+  `uis/{application,backoffice}/lib/{suppliers-api,auth-api}.ts`) que
+  traduce entre el DTO de la API (snake_case) y el modelo de la UI
+  (camelCase) en ambas direcciones. El fetch genérico
+  (`apiRequest`/`extractErrorMessage`/`jsonInit`) vive en `lib/api-client.ts`
+  en cada app; cada dominio (`suppliers-api.ts`, `auth-api.ts`,
+  `incidents-api.ts`) solo aporta su propio `translateIssue`.
+- **`lib/api-client.ts::apiRequest` es tambien el interceptor de auth**: si
+  hay un token guardado lo adjunta como `Authorization` en toda llamada
+  (ningún cliente de dominio lo arma a mano), y si una llamada *con* token
+  responde 401 (sesión inválida/expirada), limpia el storage y hace
+  `window.location.href = "/login"` — navegación dura a propósito, porque
+  `apiRequest` corre fuera de un componente/evento de React. Un 401 en una
+  llamada *sin* token (ej. login con credenciales malas) no dispara nada
+  de esto: se propaga como error normal para el formulario.
+- **Auth de frontend duplicado por app, no en `packages/`**: el patrón
+  completo (`lib/{api-client,auth-api,auth-storage}.ts`, `types/auth.ts`,
+  `app/_components/{require-auth,form-styles}`) vive copiado en
+  `uis/application` y `uis/backoffice` — aunque ya hay dos consumidores
+  (la condición que normalmente manda extraer a `packages/`, ver más
+  abajo), este repo no tiene workspace tooling real (sin
+  `pnpm-workspace.yaml` ni `workspaces` en ningún `package.json`), así que
+  ningún app puede hoy `import` código de otro. Montar workspaces es una
+  tarea de infraestructura aparte.
+  `<RequireAuth>` acepta `children` como nodo normal o como función
+  `(currentUser) => nodo`, para que una página reuse el usuario que el
+  guard ya resolvió (`GET /auth/me`) en vez de repetirlo.
 - Diccionarios de etiquetas ES para todo enum de la API; la UI nunca muestra el
   valor crudo. Filtros que se guardan en la URL.
 - Estados de carga y error explícitos en cada consumo de API.
@@ -30,8 +49,7 @@
 - Los mensajes de error que arma el backend en Python (`services/api/`) no
   llevan tildes (ver más abajo); si un cliente de `uis/` los muestra tal
   cual, hay que reescribirlos con la ortografía correcta antes de
-  mostrarlos al usuario (ver `KNOWN_MESSAGE_FIXES` en
-  `uis/application/lib/auth-api.ts`).
+  mostrarlos al usuario (ver `KNOWN_MESSAGE_FIXES` en cada `auth-api.ts`).
 
 ## Backend
 
@@ -69,7 +87,10 @@ y arranque `uv run uvicorn main:app`. Layout plano (sin paquete `app/`).
   endpoints sensibles a fuerza bruta/abuso sin agregar una dependencia
   nueva — ver `services/api/rate_limit.py`. Limitación conocida: no se
   comparte entre workers/instancias, igual que TinyDB y `store.py`.
-- Interfaces compartidas con el frontend → `packages/` cuando haya dos consumidores.
+- Interfaces compartidas con el frontend → `packages/` cuando haya dos
+  consumidores **y** haya workspace tooling que lo haga importable (ver
+  nota de "Auth de frontend" arriba: hoy no lo hay, así que dos
+  consumidores por ahora significa duplicar, no extraer).
 
 ## Convenciones transversales
 

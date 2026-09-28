@@ -48,22 +48,29 @@
   sin ella cae al log por consola de siempre). `uv run pytest` → 79 tests en
   verde (55 anteriores + 24 nuevos; los tests nunca disparan un envío real,
   aunque el `.env` local tenga la key).
-- **Login en `uis/application`** — primera integración de auth en un
-  frontend: `/login`, `/forgot-password`, `/reset-password`,
-  `/account/change-password`, token en `localStorage`
-  (`lib/auth-storage.ts` + `useSyncExternalStore`), nav reflejando la
-  sesión. `lint`/`build` en verde, probado en navegador real con Playwright
-  (headless, sin quedar como dependencia del proyecto).
+- **Login en `uis/application` y `uis/backoffice`** — auth de frontend en
+  las dos apps que consumen `services/api`: `/login`, `/register`,
+  `/account/profile`, `/account/change-password` en ambas;
+  `/forgot-password`/`/reset-password` solo en `uis/application` (el email
+  de reset apunta a un único `FRONTEND_URL`; backoffice enlaza ahí de forma
+  cruzada). Token en `localStorage` con `useSyncExternalStore`. Interceptor
+  centralizado (`lib/api-client.ts::apiRequest`) adjunta el token en toda
+  llamada y redirige a `/login` en un 401 autenticado — así quedó resuelto,
+  de paso, el pendiente de `lib/suppliers-api.ts` sin token. Arregla
+  además una regresión real: `uis/backoffice/incidencias` llamaba a
+  `POST /api/incidents/analyze` (protegida desde AUTH-01) sin ningún login,
+  así que daba 401 silencioso desde entonces. `lint`/`build` en verde en
+  ambas apps, probado en navegador real con Playwright (headless, sin
+  quedar como dependencia del proyecto) cubriendo las dos apps a la vez.
 
 ## Falta
 
 - Persistencia real (TinyDB es de un solo proceso) si `services/api` se despliega con varios workers.
-- **`lib/suppliers-api.ts` sin token**: aunque `uis/application` ya tiene
-  login, ese cliente todavía no adjunta el `Authorization` guardado, así
-  que alta/edición/eliminación de proveedores siguen devolviendo 401 desde
-  la UI. Conectarlo es la siguiente tarea de frontend obvia.
-- `uis/backoffice` y `uis/website` no tienen ningún login ni consumen este
-  sistema de auth.
+- `uis/website` (Hito 1, público) no tiene login ni debe tenerlo.
+- No hay workspace tooling real en el monorepo (confirmado explorando): el
+  cliente de auth de frontend está duplicado entre `uis/application` y
+  `uis/backoffice` en vez de vivir en `packages/`. Montarlo es una tarea de
+  infraestructura aparte.
 - JWT sin revocación explícita de un token individual (solo hay
   invalidación global por cambio de contraseña vía `pwd_fp`); no hay
   "cerrar todas las demás sesiones" selectivo.

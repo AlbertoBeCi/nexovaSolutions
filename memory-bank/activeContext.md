@@ -2,7 +2,52 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — recuperación/cambio de contraseña + login en `uis/application`
+## Ahora — auth de frontend: register/profile + interceptor + `uis/backoffice`
+
+Rama: `feature/auth-frontend` (partiendo de `feature/password-reset`, con
+forgot/reset/change-password + Resend ya hechos ahí).
+
+- **Interceptor centralizado** (`lib/api-client.ts::apiRequest`, en las dos
+  apps): adjunta el token guardado automáticamente en toda llamada — ya no
+  hace falta pasarlo a mano por función (resuelve de paso el pendiente de
+  `lib/suppliers-api.ts` sin token, documentado en la tarea anterior). Si
+  una llamada *que llevaba* token responde 401, limpia el storage y hace
+  `window.location.href = "/login"` (navegación dura a propósito: corre
+  fuera de un componente/evento de React). Un 401 en una llamada *sin*
+  token (login con credenciales malas) no dispara nada de esto.
+- **`uis/application`**: `/register` (un solo formulario, `POST /users` con
+  `profile` embebido si se llena `name` → `POST /auth/login` automático) y
+  `/account/profile` (`GET /auth/me` + `PUT /profiles/me`, upsert). `Mi
+  cuenta` en el nav ahora apunta a `/account/profile` (antes iba directo a
+  change-password). `<RequireAuth>` ahora acepta `children` como funcion
+  `(currentUser) => nodo`, para que `/account/profile` reuse el usuario que
+  el guard ya resolvió en vez de repetir `GET /auth/me`.
+- **`uis/backoffice`** (nuevo, antes sin auth): duplicado completo del
+  cliente de auth (`lib/{api-client,auth-api,auth-storage}.ts`,
+  `types/auth.ts`, `_components/{require-auth,form-styles}`) más
+  `/login`, `/register`, `/account/profile`, `/account/change-password`.
+  **Sin duplicar `/forgot-password`/`/reset-password`**: el email de reset
+  de `services/api` apunta a un único `FRONTEND_URL` (hoy `uis/application`),
+  así que `/login` de backoffice enlaza ahí de forma cruzada
+  (`NEXT_PUBLIC_APPLICATION_URL`, nueva env var) en vez de duplicar el
+  flujo. No hay workspace tooling real en el repo (ni `pnpm-workspace.yaml`
+  ni `workspaces` en ningún `package.json`, confirmado explorando) — por
+  eso se duplica el cliente por app en vez de extraerlo a `packages/`.
+- **Regresión real encontrada y arreglada**: `uis/backoffice/incidencias`
+  llama a `POST /api/incidents/analyze`, protegida desde AUTH-01 — como
+  backoffice nunca tuvo login, esa página daba 401 silencioso desde
+  entonces. `services/incidents-api.ts` se migró a `lib/api-client.ts` (ya
+  no arma su propio `fetch`) y la página quedó envuelta en `<RequireAuth>`.
+- Verificado end-to-end con Playwright (headless, instalado temporalmente,
+  no quedó como dependencia) en ambas apps a la vez: registro con perfil,
+  perfil precargado sin llamada duplicada, editar perfil, crear un
+  proveedor logueado (confirma el interceptor), cambiar contraseña, logout,
+  login con la contraseña nueva, `/account/profile` sin sesión redirige;
+  en backoffice: `/incidencias` sin sesión redirige, registro, y analizar
+  un CSV logueado funciona (confirma el fix de la regresión). Cero errores
+  de consola en ambas.
+
+## Anterior — recuperación/cambio de contraseña + login en `uis/application`
 
 Rama: `feature/password-reset` (partiendo de `main`, con AUTH-01 ya
 mergeado).
