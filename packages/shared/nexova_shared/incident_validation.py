@@ -29,15 +29,19 @@ REQUIRED_FIELD_LABELS: dict[str, str] = {
 }
 
 
-def validate_incident(data: Mapping[str, object]) -> dict[str, str]:
-    """Valida los campos de una incidencia nueva.
+def validate_incident_fields(data: Mapping[str, object]) -> dict[str, str]:
+    """Valida title/description/category/origin/branch de una incidencia,
+    SIN la regla de "una incidencia nueva solo puede crearse abierta" (esa
+    es especifica de la creacion via API, ver validate_incident mas abajo).
+
+    La usan tanto validate_incident() (POST /api/incidents) como
+    scripts/seed_incidents.py, que inserta incidencias HISTORICAS con
+    cualquier estado (abierta, resuelta o descartada, segun el CSV
+    original): la regla de "solo open al crear" no le aplica.
 
     Devuelve un dict {campo: mensaje} con un mensaje en espanol por cada
     campo invalido o ausente; un dict vacio significa que los datos son
-    validos. No valida `status` como obligatorio (el modelo lo pone en
-    `open` por defecto), pero si el llamador incluye un `status` en el
-    payload de creacion, solo se admite `open` (el resto de estados solo se
-    alcanzan via PATCH /status, ver is_valid_transition).
+    validos.
     """
     errors: dict[str, str] = {}
 
@@ -57,6 +61,22 @@ def validate_incident(data: Mapping[str, object]) -> dict[str, str]:
     branch = data.get("branch")
     if isinstance(branch, str) and branch.strip() != "" and branch not in BRANCHES:
         errors["branch"] = "La sede indicada no es valida."
+
+    return errors
+
+
+def validate_incident(data: Mapping[str, object]) -> dict[str, str]:
+    """Valida el payload de POST /api/incidents (una incidencia NUEVA).
+
+    Ademas de validate_incident_fields(), no valida `status` como
+    obligatorio (el modelo lo pone en `open` por defecto), pero si el
+    llamador incluye un `status` en el payload de creacion, solo se admite
+    `open` (el resto de estados solo se alcanzan via PATCH /status, ver
+    is_valid_transition). Esta regla es especifica de la creacion via API:
+    scripts/seed_incidents.py usa validate_incident_fields() directamente
+    porque inserta incidencias historicas con cualquier estado.
+    """
+    errors = validate_incident_fields(data)
 
     if "status" in data and data.get("status") is not None:
         status = data.get("status")

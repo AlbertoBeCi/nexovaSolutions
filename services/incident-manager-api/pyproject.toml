@@ -8,6 +8,14 @@ dependencies = [
     "uvicorn[standard]>=0.30",
     "sqlalchemy>=2.0",
     "python-dotenv>=1.2.3",
+    # pandas: no la usa este servicio directamente, pero
+    # nexova_shared.incidents_analysis (que scripts/seed_incidents.py
+    # importa para reutilizar las 7 reglas del analizador) la requiere. Se
+    # declara aqui para poder ejecutar el seed con
+    # `uv run --project services/incident-manager-api python scripts/seed_incidents.py`,
+    # un unico entorno con todas las dependencias que el seed necesita
+    # (SQLAlchemy + nexova_shared).
+    "pandas>=2.2",
 ]
 
 [project.scripts]

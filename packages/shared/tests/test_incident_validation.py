@@ -8,6 +8,7 @@ from nexova_shared.incident_validation import (
     is_valid_transition,
     transition_error_message,
     validate_incident,
+    validate_incident_fields,
     validate_status_value,
 )
 
@@ -63,6 +64,20 @@ def test_validate_incident_rejects_non_open_status_on_create(status):
     data = {**VALID_INCIDENT, "status": status}
     errors = validate_incident(data)
     assert "status" in errors
+
+
+@pytest.mark.parametrize("status", ["open", "in_progress", "resolved", "discarded"])
+def test_validate_incident_fields_accepts_any_status_value(status):
+    """A diferencia de validate_incident(), validate_incident_fields() no
+    aplica la regla de "solo open al crear": la usa scripts/seed_incidents.py
+    para incidencias historicas con cualquier estado."""
+    data = {**VALID_INCIDENT, "status": status}
+    assert validate_incident_fields(data) == {}
+
+
+def test_validate_incident_fields_still_requires_the_other_fields():
+    errors = validate_incident_fields({**VALID_INCIDENT, "branch": ""})
+    assert "branch" in errors
 
 
 def test_validate_status_value_requires_known_status():
