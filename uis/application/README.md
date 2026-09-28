@@ -2,16 +2,18 @@
 
 Aplicación interna del equipo de operaciones de Nexova. Módulos: **login y
 cuenta** (`/login`, `/register`, `/forgot-password`, `/reset-password`,
-`/account/profile`, `/account/change-password`) y el **directorio de
-proveedores** (`/suppliers`). Next.js 16 (App Router) + React 19 +
-Tailwind v4, mismas versiones que `uis/backoffice`.
+`/account/profile`, `/account/change-password`), el **directorio de
+proveedores** (`/suppliers`) y el **gestor de incidencias**
+(`/incidents/new`, `/incidents`, `/incidents/summary`). Next.js 16 (App
+Router) + React 19 + Tailwind v4, mismas versiones que `uis/backoffice`.
 
 ## Arrancar
 
-Necesita la API de `services/api` en marcha (ver su README):
+Necesita **dos** APIs en marcha: `services/api` (login, proveedores) y
+`services/incident-manager-api` (gestor de incidencias) — ver sus README:
 
 ```bash
-# terminal 1 — API
+# terminal 1 — API de proveedores/auth
 cd services/api
 uv sync
 cp .env.example .env      # completa SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
@@ -19,20 +21,27 @@ uv run seed
 uv run seed-users          # crea el primer admin, para poder probar el login
 uv run uvicorn main:app --reload --port 8000
 
-# terminal 2 — esta app
+# terminal 2 — API del gestor de incidencias
+cd services/incident-manager-api
+uv sync
+uv run --project services/incident-manager-api python ../../scripts/seed_incidents.py
+uv run serve                # → puerto 8001
+
+# terminal 3 — esta app
 cd uis/application
 npm install
 npm run dev
 ```
 
 Abre [http://localhost:3001](http://localhost:3001). Usa el puerto **3001**
-para poder convivir con el backoffice (3000); la API ya permite ese origen por
-CORS.
+para poder convivir con el backoffice (3000); ambas APIs ya permiten ese
+origen por CORS.
 
-Variable opcional en `.env.local`:
+Variables opcionales en `.env.local`:
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_INCIDENTS_API_URL=http://localhost:8001
 ```
 
 ## Qué hace el login
@@ -100,6 +109,31 @@ Sesión con `Authorization: Bearer <token>` guardado en `localStorage`
 llamada que pase por `apiRequest` (incluida `lib/suppliers-api.ts`), así que
 alta/edición/eliminación de proveedores ya funcionan estando logueado.
 
+## Qué hace `/incidents`
+
+Consume `services/incident-manager-api` (puerto 8001, no `services/api`) a
+través de `lib/incidents-api.ts`, un cliente propio: el formato de error de
+ese backend (`{"error": {"code","message","fields"}}`) es distinto del
+`{"detail": [...]}` de Pydantic que traduce `lib/api-client.ts`, así que no
+lo reutiliza. Sin login: este gestor no tiene autenticación propia.
+
+- **`/incidents/new`**: alta de incidencia (título, descripción, categoría,
+  origen, sede — el estado siempre nace "Abierta"). Validación en cliente
+  campo a campo (`aria-invalid`/`aria-describedby`); si `origen = Sede`, el
+  campo sede se resalta con un aviso ("Estás reportando desde una sede
+  específica"). Los errores de la API nunca se muestran tal cual: solo se
+  usan `code` y las claves de `fields`, con mensajes propios de esta UI.
+- **`/incidents`**: listado con filtros de estado/origen/sede en la URL,
+  paginado de 25 filas, y cambio de estado en línea. El selector de estado
+  solo ofrece las transiciones válidas desde el estado actual
+  (`nextStatusOptions` en `types/incident.ts`); los estados finales
+  (Resuelta/Descartada) se muestran como insignia bloqueada. El cambio es
+  optimista: la fila cambia antes de que responda la API, y si el `PATCH`
+  falla, vuelve a su estado anterior con un aviso.
+- **`/incidents/summary`**: 4 tarjetas (estado, categoría, origen, sede) con
+  los totales de `GET /api/incidents/summary`. Carga y error aislados del
+  resto de la página.
+
 ## Estructura
 
 ```
@@ -118,29 +152,43 @@ app/
 ├─ account/
 │  ├─ profile/page.tsx        # envuelta en <RequireAuth>, usa el currentUser que ya resolvio
 │  └─ change-password/page.tsx   # envuelta en <RequireAuth>
-└─ suppliers/
-   ├─ page.tsx                # cabecera + <Suspense> del directorio
+├─ suppliers/
+│  ├─ page.tsx                # cabecera + <Suspense> del directorio
+│  └─ _components/
+│     ├─ suppliers-directory.tsx  # estado, filtros en URL, acciones
+│     ├─ supplier-filters.tsx     # selects de país y categoría
+│     ├─ supplier-table.tsx       # tabla + acciones por fila
+│     ├─ supplier-form.tsx        # formulario de alta
+│     ├─ rate-editor.tsx          # edición rápida de tarifa
+│     └─ status-badge.tsx         # insignia Activo / Suspendido
+└─ incidents/
+   ├─ new/page.tsx            # registro de incidencia
+   ├─ page.tsx                # cabecera + <Suspense> del listado
+   ├─ summary/page.tsx        # resumen
    └─ _components/
-      ├─ suppliers-directory.tsx  # estado, filtros en URL, acciones
-      ├─ supplier-filters.tsx     # selects de país y categoría
-      ├─ supplier-table.tsx       # tabla + acciones por fila
-      ├─ supplier-form.tsx        # formulario de alta
-      ├─ rate-editor.tsx          # edición rápida de tarifa
-      └─ status-badge.tsx         # insignia Activo / Suspendido
+      ├─ incident-form.tsx           # formulario de alta
+      ├─ incident-filters.tsx        # selects de estado/origen/sede
+      ├─ incident-table.tsx          # tabla + cambio de estado por fila
+      ├─ status-select.tsx           # transiciones válidas / insignia si es final
+      ├─ incidents-panel.tsx         # estado, filtros en URL, paginación, optimismo
+      └─ incidents-summary-panel.tsx # 4 tarjetas de GET /api/incidents/summary
 lib/
-├─ api-client.ts              # fetch genérico compartido (fetch + errores + jsonInit)
+├─ api-client.ts              # fetch genérico compartido (fetch + errores + jsonInit) — services/api
 ├─ suppliers-api.ts           # cliente de /suppliers: DTO ↔ modelo, errores en español
 ├─ auth-api.ts                # cliente de /auth: login, forgot/reset/change-password
-└─ auth-storage.ts            # token en localStorage + subscribeToken (useSyncExternalStore)
+├─ auth-storage.ts            # token en localStorage + subscribeToken (useSyncExternalStore)
+└─ incidents-api.ts           # cliente de services/incident-manager-api: formato de error propio
 types/
 ├─ supplier.ts                # tipos + COUNTRY_LABELS / CATEGORY_LABELS / STATUS_LABELS
-└─ auth.ts                    # User, UserProfile, LoginCredentials
+├─ auth.ts                    # User, UserProfile, LoginCredentials
+└─ incident.ts                # espejo TS de nexova_shared/incident_constants.py + etiquetas
 ```
 
 ## Convenciones
 
 - La UI va en **español**; nunca se muestran valores crudos de la API (`Spain`,
-  `payments`, `active`…): se traducen con los diccionarios de `types/supplier.ts`.
+  `payments`, `active`…): se traducen con los diccionarios de
+  `types/supplier.ts` / `types/incident.ts`.
 - Antes de commit: `npm run lint` y `npm run build` en verde.
 - Next.js del repo trae breaking changes: consulta `node_modules/next/dist/docs/`
   antes de tocar código de Next. El bloque de `AGENTS.md` lo regenera `next dev`.

@@ -2,7 +2,72 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — auth de frontend: register/profile + interceptor + `uis/backoffice`
+## Ahora — Gestor de Incidencias Centralizado
+
+Rama: `feature/gestor-incidencias` (partiendo de `main`, con AUTH-01 y el
+login/reset de `uis/application`/`uis/backoffice` ya mergeados vía PR #17).
+
+- **Servicio nuevo** `services/incident-manager-api/` (puerto 8001):
+  excepción documentada a "una sola app FastAPI" (el ejercicio pedía
+  explícitamente un servicio nuevo). FastAPI + SQLAlchemy 2.0 + SQLite
+  (`models.py`), sin autenticación propia. Modelo `Incident`: title/
+  description NOT NULL con CHECK de no-vacío; category/status/origin/branch
+  con CHECK constraint generado desde `nexova_shared.incident_constants`
+  (misma fuente de verdad que la validación de aplicación); índices en las
+  4 columnas filtrables (incluye `category=sla_breach`). `created_at`/
+  `updated_at` UTC de verdad vía un `TypeDecorator` (`UTCDateTime`): SQLite
+  devuelve datetimes *naive* al leer un `DateTime(timezone=True)`, aunque
+  se haya escrito un valor consciente de zona horaria (comprobado a mano).
+  Tabla auxiliar `seed_ticket_ids` para la idempotencia del seed (el
+  `ticket_id` nunca se guarda en `Incident`). Sin Alembic: `create_all` al
+  arrancar y en el seed.
+- **`packages/shared/nexova_shared`** (paquete Python nuevo, junto al TS
+  `@repo/shared-types` que ya vivía en `packages/shared/`): constantes/
+  etiquetas/transiciones del gestor (`incident_constants.py`), validación
+  (`incident_validation.py`: `validate_incident_fields` sin la regla de
+  "solo open al crear", que sí aplica `validate_incident` para el POST) y
+  mapeo CSV→Incident (`csv_mapping.py`). De paso, se movió aquí
+  `shared/incidents_analysis.py` (la lógica del analizador de tickets, que
+  ya vivía en la raíz del repo): `shared/incidents_analysis.py` quedó como
+  *shim* de compatibilidad que resuelve `packages/shared/` por su cuenta
+  (mismo patrón de `sys.path`, ningún consumidor existente cambió). Se
+  sumó `csv_row_violations()` (versión fila a fila de
+  `apply_validation_rules`, para el seed), con un test de regresión que
+  verifica que ambas nunca divergen sobre el CSV real.
+- **`scripts/seed_incidents.py`**: carga `scripts/incidents-COMPANY.csv`
+  (el prompt original nombraba `incidents-nexova.csv`, que no existe en el
+  repo) aplicando las 7 reglas del analizador + el mapeo compartido.
+  Idempotente vía `seed_ticket_ids`. Se ejecuta con el venv de
+  `incident-manager-api` (`uv run --project services/incident-manager-api
+  python scripts/seed_incidents.py`), el único con SQLAlchemy *y* pandas
+  (pandas se añadió como dependencia de ese servicio solo por esto).
+  Resultado sobre el CSV real: 96 insertadas / 4 descartadas (1ª
+  ejecución), 0 insertadas / 96 duplicadas (2ª). Tras el seed,
+  `GET /api/incidents/summary` da exactamente lo esperado: status
+  open=27/resolved=56/discarded=13, category
+  technical_failure=49/process_error=35/client_complaint=12.
+- **API** (`routes/incidents.py`, bajo `/api/incidents`): POST, GET con
+  filtros, GET `/summary` (declarado antes que `/{id}`), GET `/{id}`, PATCH
+  `/status` (valida con `is_valid_transition`). Formato de error uniforme
+  nuevo, `{"error": {"code","message","fields"?}}` (`errors.py`), distinto
+  del `{"detail": [...]}` de Pydantic que usa `services/api`; un 500 nunca
+  filtra el texto de la excepción original. Ver la convención documentada
+  en `.agents/rules/services.md`.
+- **`uis/application`**: 3 páginas nuevas (`/incidents/new`, `/incidents`,
+  `/incidents/summary`) y `types/incident.ts` (espejo TS de
+  `incident_constants.py`, añadido a la lista de diccionarios exentos del
+  verificador de textos de UI). `lib/incidents-api.ts` es un cliente propio
+  (no reutiliza `lib/api-client.ts`: el formato de error no es compatible)
+  que nunca muestra el texto del backend, solo `code` y las claves de
+  `fields`. Listado con filtros en URL, paginación de 25, y cambio de
+  estado optimista (revierte si el PATCH falla). Tuvo que ajustarse al
+  patrón de "derivar el loading comparando una clave de petición" en vez de
+  `setState` dentro de un efecto (mismo lint que ya limitaba
+  `uis/application`/`uis/backoffice`). Probado en navegador real con
+  Playwright (headless, temporal). `npm run lint`/`build` y el verificador
+  de textos de UI en verde.
+
+## Anterior — auth de frontend: register/profile + interceptor + `uis/backoffice`
 
 Rama: `feature/auth-frontend` (partiendo de `feature/password-reset`, con
 forgot/reset/change-password + Resend ya hechos ahí).
@@ -189,6 +254,11 @@ Rama de entrega: `feature/agent-memory-bank` (PR → `main` del fork).
 
 - Decidir si `uis/application` absorbe más módulos o se fusiona con el backoffice.
 - Persistencia multi-proceso para proveedores si se despliega la API.
+- `services/incident-manager-api` no tiene autenticación (el ejercicio no la
+  pedía): `/incidents/*` en `uis/application` queda accesible sin login, a
+  diferencia de `/suppliers` (protegido en escritura). Si el gestor de
+  incidencias pasa a producción, revisar si necesita el mismo sistema de
+  auth que `services/api`.
 
 ## Hecho recientemente
 

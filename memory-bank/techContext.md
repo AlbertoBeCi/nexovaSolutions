@@ -10,8 +10,10 @@ Monorepo con áreas independientes, cada una con su propio `package.json` y
 | Modelo de dominio + utils (Hito 2) | `packages/domain/` | TypeScript, `tsx`, `esbuild` | `npm run typecheck`, `npm run demo`, `npm run build:demo-web` |
 | Web pública (Hito 1) | `uis/website/` | Next.js 16.3.2, React 19.2.8, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
 | Backoffice (pipeline de talento, Hito 3) | `uis/backoffice/` | Next.js 16.3.2, React 19.2.8, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
-| Operaciones (directorio de proveedores) | `uis/application/` | Next.js 16.3.2, React 19.2.8, Tailwind v4 (puerto 3001) | `npm run dev`, `npm run build`, `npm run lint` |
-| API (incidencias + proveedores) | `services/api/` | Python ≥3.10 (dev 3.14), FastAPI, Pydantic v2, TinyDB, `uv` | `uv sync`, `uv run seed`, `uv run pytest`, `uv run uvicorn main:app --reload --port 8000` |
+| Operaciones (proveedores + gestor de incidencias) | `uis/application/` | Next.js 16.3.2, React 19.2.8, Tailwind v4 (puerto 3001) | `npm run dev`, `npm run build`, `npm run lint` |
+| API (incidencias — análisis CSV — + proveedores) | `services/api/` | Python ≥3.10 (dev 3.14), FastAPI, Pydantic v2, TinyDB, `uv` | `uv sync`, `uv run seed`, `uv run pytest`, `uv run uvicorn main:app --reload --port 8000` |
+| API gestor de incidencias (persistente) | `services/incident-manager-api/` | Python ≥3.10, FastAPI, SQLAlchemy 2.0, SQLite, `uv` | `uv sync`, `uv run --project services/incident-manager-api python scripts/seed_incidents.py`, `uv run pytest`, `uv run serve` (puerto 8001) |
+| Lógica Python compartida | `packages/shared/` (`nexova_shared`) | Python ≥3.10, pandas, `uv` | `uv sync`, `uv run pytest` |
 
 ## Estructura de `uis/`
 
@@ -28,7 +30,13 @@ Monorepo con áreas independientes, cada una con su propio `package.json` y
 - `uis/application/` — app interna de operaciones, sin `src/` (`app/`, `lib/`,
   `types/` en la raíz de la app). Shell `AppShell` propio, `/suppliers`.
   Login propio: `/login`, `/register`, `/forgot-password`, `/reset-password`,
-  `/account/profile`, `/account/change-password`.
+  `/account/profile`, `/account/change-password`. Gestor de incidencias
+  (sin login, ver "Backend" mas abajo): `/incidents/new`, `/incidents`,
+  `/incidents/summary`, con su propio cliente HTTP
+  (`lib/incidents-api.ts`) contra `services/incident-manager-api` (puerto
+  8001) — no reutiliza `lib/api-client.ts` porque ese backend usa un
+  formato de error distinto (`{"error": {"code","message","fields"}}`, no
+  el `{"detail": [...]}` de Pydantic).
 - **Auth de frontend (patron compartido por `uis/application` y
   `uis/backoffice`, duplicado en cada una — no hay workspace tooling real en
   el repo, ver "Restricciones")**: token en `localStorage`
@@ -112,16 +120,61 @@ API pública de 4Geek Tracker
   en toda llamada — ya no hay un pendiente de "conectar el token" en
   ninguna de las dos.
 
+### Gestor de incidencias (`services/incident-manager-api/`)
+
+Segundo servicio FastAPI, independiente de `services/api` (excepcion
+documentada a "una sola app FastAPI": ver `.agents/rules/services.md` y el
+`README.md` del servicio). Sin autenticacion propia.
+
+- Persistencia con **SQLAlchemy 2.0 + SQLite** (no TinyDB): modelo
+  `Incident` con CHECK constraints por columna enum (category/status/
+  origin/branch), generados desde `nexova_shared.incident_constants` para
+  que la BD y la app nunca diverjan; indices en las 4 columnas filtrables.
+  Sin Alembic: `db.init_db()` (`create_all`) al arrancar y antes del seed.
+- `created_at`/`updated_at` usan un `TypeDecorator` propio (`UTCDateTime`
+  en `models.py`): SQLite devuelve un `datetime` *naive* al leer un
+  `DateTime(timezone=True)`, aunque se haya escrito un valor UTC-aware
+  (comprobado a mano) — este tipo exige tz-aware al escribir y reasigna
+  `tzinfo=UTC` al leer.
+- Alcanza `packages/shared/nexova_shared` con el mismo patron de
+  `sys.path` que el resto del repo (`shared_bootstrap.py`), no como
+  dependencia `uv` instalada entre proyectos.
+- Formato de error propio, uniforme en toda la API:
+  `{"error": {"code","message","fields"?}}` (`errors.py`), con un 500
+  generico que nunca filtra el texto de la excepcion original.
+- `scripts/seed_incidents.py` (raiz del repo, no dentro del servicio) carga
+  `scripts/incidents-COMPANY.csv` reutilizando `nexova_shared.
+  incidents_analysis.csv_row_violations` (las 7 reglas del analizador) y
+  `nexova_shared.csv_mapping` (CSV -> Incident). Necesita el venv de este
+  servicio (`uv run --project services/incident-manager-api python
+  scripts/seed_incidents.py`): es el unico con SQLAlchemy *y* pandas (pandas
+  se agrego a este servicio solo por esta dependencia transitiva).
+
+### Logica Python compartida (`packages/shared/nexova_shared`)
+
+Paquete `uv` propio (junto al TS `@repo/shared-types` que ya vivia en
+`packages/shared/`), alcanzado por sus consumidores via `sys.path` (no
+instalado como dependencia `uv`/`pip`): `incidents_analysis.py` (logica del
+analizador, movida aqui desde `shared/`, que ahora es un shim de
+compatibilidad), `incident_constants.py`, `incident_validation.py` y
+`csv_mapping.py` (dominio del gestor de incidencias). Es la unica fuente de
+verdad de esa validacion para `scripts/` y `services/*`.
+
 ## Restricciones
 
 - **No hay workspace tooling real** (confirmado explorando: sin
   `package.json` en la raíz, sin `pnpm-workspace.yaml`, sin `workspaces` en
-  ningún `package.json`). `packages/domain` y `packages/shared` existen
-  pero ningún app los importa hoy — cualquier código "compartido" entre
-  apps de `uis/` se duplica por app (mismo patrón que ya usaban los
-  clientes HTTP). Montar workspaces de verdad es una tarea de
-  infraestructura aparte, no algo que colar de paso en una tarea de
-  producto.
+  ningún `package.json`). El lado **TypeScript** de `packages/domain` y
+  `packages/shared` (`@repo/shared-types`) sigue sin que ningún app lo
+  importe — cualquier código "compartido" entre apps de `uis/` se duplica
+  por app (mismo patrón que ya usaban los clientes HTTP). El lado
+  **Python** de `packages/shared` (`nexova_shared`) sí lo usan `scripts/` y
+  `services/*`, pero via `sys.path` (mismo patrón que ya usaba `shared/`),
+  no via un mecanismo de dependencias `uv`/`pip` entre proyectos — cada
+  proyecto Python sigue siendo independiente (su propio `pyproject.toml`,
+  `.venv`, `uv.lock`). Montar workspaces de verdad (TS o Python) es una
+  tarea de infraestructura aparte, no algo que colar de paso en una tarea
+  de producto.
 - Next.js del repo trae breaking changes: consultar `node_modules/next/dist/docs/`
   antes de escribir código de Next. El `AGENTS.md` de esa carpeta lo regenera
   `next dev`.

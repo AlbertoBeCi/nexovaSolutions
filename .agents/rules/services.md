@@ -13,7 +13,17 @@ globs: ["services/**"]
 
 - Un solo backend FastAPI para la empresa, con routers/módulos por dominio
   (`candidates`, `notes`, …). Evita microservicios múltiples; extrae un worker
-  aparte solo cuando de verdad deba correr separado de la API.
+  aparte solo cuando de verdad deba correr separado de la API. Excepción
+  documentada: `services/incident-manager-api/` es un segundo servicio
+  FastAPI independiente (persistencia SQLAlchemy/SQLite, sin auth, puerto
+  8001), porque el ejercicio que lo originó pedía explícitamente un
+  servicio nuevo — ver ese README para el porqué antes de replicar el
+  patrón sin necesidad real.
+- Lógica de negocio compartida por 2+ consumidores Python (scripts/,
+  varios `services/*`) → `packages/shared/` (paquete `nexova_shared`),
+  alcanzado con el mismo patrón de `sys.path` que ya usaba el repo para
+  `shared/` (ver `packages/shared/README.md`), no como una dependencia
+  `uv`/`pip` instalada entre proyectos independientes.
 - Contrato de datos alineado con el frontend: si `uis/` y `services/` comparten
   una interfaz, extráela a `packages/` en vez de duplicarla.
 - Configuración por variables de entorno; nunca hardcodees URLs, claves ni
@@ -59,6 +69,20 @@ sin intentar nada — el caller decide el fallback (en `forgot-password`, es
 loguear el link por consola). Así el flujo se puede probar en un checkout
 nuevo sin cuenta de ningún proveedor externo. **No lo llames `email.py`**:
 tapa el paquete `email` de la stdlib en este layout plano.
+
+### Formato de error uniforme (`services/incident-manager-api/errors.py`)
+
+Cuando un servicio necesita que el frontend distinga el CAMPO que falló (no
+solo mostrar un mensaje), usa `{"error": {"code", "message", "fields"?}}`
+en vez del `{"detail": ...}` por defecto de FastAPI/Pydantic: una clase
+`ApiError(code, message, status_code=400, fields=None)` más 4
+`exception_handler`s (`ApiError`, `RequestValidationError`,
+`StarletteHTTPException`, `Exception`) cubren todos los casos, incluido un
+500 genérico que nunca filtra el texto de la excepción original (solo va al
+logger). Un cliente HTTP contra un servicio con este formato no puede
+reutilizar el `apiRequest`/`extractErrorMessage` pensado para el
+`{"detail": [...]}` de Pydantic (ver `uis/application/lib/incidents-api.ts`
+frente a `lib/api-client.ts`): necesita su propio fetch de bajo nivel.
 
 ## Antes de commit
 

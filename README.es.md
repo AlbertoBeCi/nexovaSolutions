@@ -36,8 +36,9 @@ Cada app tiene su propio `package.json` y `node_modules` — ejecuta los comando
 | --- | --- | --- |
 | Web pública (Hito 1) | [`uis/website/`](./uis/website/) | `npm install` · `npm run dev` (→ http://localhost:3000) |
 | Backoffice — pipeline de talento (Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | `npm install` · `npm run dev` — necesita `.env.local` (ver `.env.example`) |
-| Operaciones — directorio de proveedores | [`uis/application/`](./uis/application/) | `npm install` · `npm run dev` (→ http://localhost:3001) — necesita `services/api` en marcha |
-| API — incidencias + proveedores | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
+| Operaciones — proveedores + gestor de incidencias | [`uis/application/`](./uis/application/) | `npm install` · `npm run dev` (→ http://localhost:3001) — necesita `services/api` y `services/incident-manager-api` en marcha |
+| API — incidencias (análisis de CSV) + proveedores | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
+| API — gestor de incidencias (persistente) | [`services/incident-manager-api/`](./services/incident-manager-api/) | `uv sync` · `uv run --project services/incident-manager-api python scripts/seed_incidents.py` · `uv run serve` (→ http://localhost:8001) |
 | Modelo de dominio + lógica (Hito 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
 
 ---
@@ -110,7 +111,11 @@ Cada app: su propio `package.json`, `README.md`, layout y una vista de entrada f
 - Una app FastAPI principal (p. ej. `api/`) con routers/módulos por dominio
 - Workers en background solo cuando de verdad necesiten correr separados de la API
 
-**Recomendación:** evita dividir en muchos microservicios al inicio.
+**Recomendación:** evita dividir en muchos microservicios al inicio. Excepción en
+este repo: [`services/incident-manager-api/`](./services/incident-manager-api/)
+es una segunda app FastAPI independiente (su propio `pyproject.toml`/puerto),
+porque el ejercicio del gestor de incidencias pedía explícitamente un servicio
+nuevo — ver el `README.md` de esa carpeta para la justificación.
 
 → Ver [`services/README.md`](./services/README.md)
 
@@ -173,7 +178,8 @@ Cada app: su propio `package.json`, `README.md`, layout y una vista de entrada f
 **Pon aquí:**
 
 - [`packages/domain/`](./packages/domain/) → `@repo/domain` — modelo y lógica del dominio de reclutamiento (Hito 2)
-- [`packages/shared/`](./packages/shared/) → `@repo/shared-types` — tipos compartidos entre apps y servicios
+- [`packages/shared/`](./packages/shared/) → `@repo/shared-types` (TS, tipos compartidos entre apps y servicios) +
+  `nexova-shared` (Python, validación de incidencias/analizador compartida por `scripts/` y `services/*`)
 - Librerías de componentes UI, clientes API, SDKs de analytics
 
 **Regla:** si `uis/` y `services/` comparten la misma interfaz → extráela aquí.
@@ -254,8 +260,10 @@ nexovaSolutions/
 │   └── application/           # App de operaciones: directorio de proveedores (Next.js)
 ├── packages/
 │   ├── domain/                # @repo/domain — lógica de reclutamiento — Hito 2
-│   └── shared/                # @repo/shared-types
-├── services/api/              # API FastAPI centralizada: incidencias + proveedores (TinyDB)
+│   └── shared/                # @repo/shared-types (TS) + nexova-shared (Python: validación incidencias/analizador)
+├── services/
+│   ├── api/                   # API FastAPI centralizada: incidencias (análisis CSV) + proveedores (TinyDB)
+│   └── incident-manager-api/  # Gestor de incidencias: modelo persistente (SQLAlchemy/SQLite), API REST, seed CSV
 ├── data/{raw,pipelines,process,eval}/   # Ciclo de vida del dato (vacío)
 ├── agents/                    # Agentes de IA (+ plantilla _template/) (vacío)
 ├── skills/  mcps/  workflows/ # Estructura de plantilla (vacía)
