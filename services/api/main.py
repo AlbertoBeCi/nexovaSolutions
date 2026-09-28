@@ -16,8 +16,9 @@ from __future__ import annotations
 import logging
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from routes import auth, incidents, profiles, suppliers, users
 
@@ -25,6 +26,8 @@ from routes import auth, incidents, profiles, suppliers, users
 # routes/auth.py a falta de un proveedor de email) no se ve en la consola de
 # `uvicorn main:app`: el logger raiz no tiene handler propio por defecto.
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(name)s: %(message)s")
+
+logger = logging.getLogger("main")
 
 # Frontends de desarrollo: uis/backoffice (3000) y uis/application (3001).
 # En produccion, definir CORS_ORIGINS con los origenes reales separados por comas.
@@ -61,3 +64,20 @@ app.include_router(suppliers.router)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(profiles.router)
+
+
+@app.exception_handler(Exception)
+async def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+    """Red de seguridad para cualquier excepcion no controlada (auditoria de
+    manejo de errores): por defecto, sin este handler, no queda ningun log
+    propio del servicio con contexto de la request (solo lo que uvicorn
+    decida imprimir al re-lanzar la excepcion), y si algun dia `debug=True`
+    se activa por error, Starlette devolveria el traceback completo al
+    cliente. El detalle real de la excepcion SOLO va al logger; el cliente
+    siempre recibe el mismo mensaje generico, en el mismo formato
+    {"detail": "..."} que ya usa el resto de esta API."""
+    logger.exception("Error interno no controlado en %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Ha ocurrido un error interno. Intentalo de nuevo mas tarde."},
+    )
