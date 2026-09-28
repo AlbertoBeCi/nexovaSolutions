@@ -43,6 +43,7 @@ py-modules = [
     "security",
     "users_db",
     "seed_users",
+    "rate_limit",
 ]
 packages = ["routes"]
 
