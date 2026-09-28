@@ -3,7 +3,16 @@
  * Cliente HTTP generico contra services/api (FastAPI), compartido por todos
  * los dominios (proveedores, auth, ...). Cada dominio trae su propio
  * `translateIssue` para traducir los errores 422 de Pydantic a español.
+ *
+ * Centraliza el ciclo de vida del token: adjunta `Authorization: Bearer
+ * <token>` en cada request si hay uno guardado, y si una request que SI
+ * llevaba token responde 401 (sesion invalida/expirada), limpia el storage
+ * y redirige a /login. Un 401 en una request SIN token (ej. login con
+ * credenciales malas) no dispara nada de esto: se propaga como error normal
+ * para que la pagina lo muestre en el formulario.
  */
+
+import { clearToken, getToken } from "@/lib/auth-storage";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -37,18 +46,33 @@ export async function extractErrorMessage(
   return fallbackMessage;
 }
 
-/** fetch contra la API que convierte fallos de red y respuestas no-2xx en Error con mensaje en español. */
+/** fetch contra la API que adjunta el token guardado (si hay), convierte
+ *  fallos de red y respuestas no-2xx en Error con mensaje en español, y
+ *  redirige a /login si una llamada autenticada responde 401. */
 export async function apiRequest(
   path: string,
   init: RequestInit,
   fallbackMessage: string,
   translateIssue: TranslateIssue
 ): Promise<Response> {
+  const token = getToken();
+  const headers = new Headers(init.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
   let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, init);
+    response = await fetch(`${API_URL}${path}`, { ...init, headers });
   } catch {
     throw new Error("No se pudo conectar con el servidor. Comprueba que la API está en marcha.");
+  }
+
+  if (response.status === 401 && token) {
+    clearToken();
+    // Navegacion dura a proposito: apiRequest corre fuera de un componente
+    // o evento de React (no hay useRouter aca), y un reload completo deja
+    // el estado del cliente limpio tras invalidar la sesion.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    if (typeof window !== "undefined") window.location.href = "/login";
   }
 
   if (!response.ok) {
@@ -57,10 +81,10 @@ export async function apiRequest(
   return response;
 }
 
-export function jsonInit(method: string, body: unknown, headers?: HeadersInit): RequestInit {
+export function jsonInit(method: string, body: unknown): RequestInit {
   return {
     method,
-    headers: { "Content-Type": "application/json", ...headers },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   };
 }

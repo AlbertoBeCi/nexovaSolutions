@@ -79,9 +79,9 @@ export function NavLinks({ orientation = "vertical" }: { orientation?: "vertical
       {hasSession ? (
         <>
           <Link
-            href="/account/change-password"
-            aria-current={isActive(pathname, "/account/change-password") ? "page" : undefined}
-            className={isActive(pathname, "/account/change-password") ? ACTIVE_LINK_CLASS : LINK_CLASS}
+            href="/account/profile"
+            aria-current={pathname.startsWith("/account") ? "page" : undefined}
+            className={pathname.startsWith("/account") ? ACTIVE_LINK_CLASS : LINK_CLASS}
           >
             Mi cuenta
           </Link>

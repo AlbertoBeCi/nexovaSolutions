@@ -28,3 +28,13 @@ export interface LoginCredentials {
   email: string;
   password: string;
 }
+
+/** `name`/`phone`/`address` opcionales: si se llena `name`, POST /users crea
+ *  tambien el Profile vinculado en la misma llamada. */
+export interface RegisterInput {
+  email: string;
+  password: string;
+  name?: string;
+  phone?: string;
+  address?: string;
+}

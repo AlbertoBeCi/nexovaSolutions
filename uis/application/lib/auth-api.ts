@@ -8,7 +8,7 @@
 
 import { API_URL, apiRequest, genericTranslateIssue, jsonInit, type ValidationIssue } from "@/lib/api-client";
 import { clearToken, getToken, setToken } from "@/lib/auth-storage";
-import type { LoginCredentials, User, UserProfile, UserRole } from "@/types/auth";
+import type { LoginCredentials, RegisterInput, User, UserProfile, UserRole } from "@/types/auth";
 
 // ─── DTOs de la API (snake_case, ver services/api/models.py) ──────────
 
@@ -79,6 +79,10 @@ function translateIssue(issue: ValidationIssue): string {
 
   if (field === "token" && issue.type === "missing") return "Falta el token de restablecimiento.";
 
+  if (field === "name" && (issue.type === "string_too_short" || issue.type === "missing")) {
+    return "El nombre es obligatorio.";
+  }
+
   return genericTranslateIssue(issue);
 }
 
@@ -133,18 +137,71 @@ export function logout(): void {
   clearToken();
 }
 
-/** Usuario autenticado actual. Lanza si no hay token guardado o si la API lo rechaza (401). */
+/** Registra el usuario (con perfil opcional embebido si se dio `name`) y
+ *  luego inicia sesion automaticamente con las mismas credenciales. */
+export async function register(input: RegisterInput): Promise<void> {
+  return withPolishedErrors(async () => {
+    const name = input.name?.trim();
+    const profile = name
+      ? { name, phone: input.phone?.trim() || null, address: input.address?.trim() || null }
+      : undefined;
+
+    await apiRequest(
+      "/users",
+      jsonInit("POST", { email: input.email, password: input.password, profile }),
+      "No se pudo completar el registro.",
+      translateIssue
+    );
+
+    await login({ email: input.email, password: input.password });
+  });
+}
+
+/** Usuario autenticado actual (+ perfil, si existe). Lanza si no hay token
+ *  guardado o si la API lo rechaza (401, ya maneja el interceptor global). */
 export async function getCurrentUser(): Promise<User> {
-  const token = getToken();
-  if (!token) throw new Error("No hay una sesión activa.");
+  if (!getToken()) throw new Error("No hay una sesión activa.");
 
   const response = await apiRequest(
     "/auth/me",
-    { headers: { Authorization: `Bearer ${token}` } },
+    { method: "GET" },
     "No se pudo obtener la sesión.",
     translateIssue
   );
   return toUser((await response.json()) as UserDto);
+}
+
+/** Perfil del usuario autenticado. `null` si todavia no lo creo (404). */
+export async function getMyProfile(): Promise<UserProfile | null> {
+  try {
+    const response = await apiRequest(
+      "/profiles/me",
+      { method: "GET" },
+      "No se pudo obtener el perfil.",
+      translateIssue
+    );
+    return toProfile((await response.json()) as ProfileDto);
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("perfil creado")) return null;
+    throw err;
+  }
+}
+
+export interface ProfileInput {
+  name: string;
+  phone: string | null;
+  address: string | null;
+}
+
+/** Upsert: crea el perfil si todavia no existe. */
+export async function updateMyProfile(input: ProfileInput): Promise<UserProfile> {
+  const response = await apiRequest(
+    "/profiles/me",
+    jsonInit("PUT", input),
+    "No se pudo actualizar el perfil.",
+    translateIssue
+  );
+  return toProfile((await response.json()) as ProfileDto);
 }
 
 /** Siempre resuelve con el mismo mensaje generico, exista o no el email. */
@@ -176,17 +233,12 @@ export async function resetPassword(token: string, newPassword: string): Promise
  *  (el cambio invalida el token anterior, incluido el que se uso para
  *  llamar a este endpoint). */
 export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
-  const token = getToken();
-  if (!token) throw new Error("No hay una sesión activa.");
+  if (!getToken()) throw new Error("No hay una sesión activa.");
 
   await withPolishedErrors(async () => {
     const response = await apiRequest(
       "/auth/change-password",
-      jsonInit(
-        "POST",
-        { current_password: currentPassword, new_password: newPassword },
-        { Authorization: `Bearer ${token}` }
-      ),
+      jsonInit("POST", { current_password: currentPassword, new_password: newPassword }),
       "No se pudo cambiar la contraseña.",
       translateIssue
     );

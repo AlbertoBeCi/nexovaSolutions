@@ -85,12 +85,20 @@ function LoginForm() {
         </button>
       </form>
 
-      <Link
-        href="/forgot-password"
-        className="text-center text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-      >
-        ¿Olvidaste tu contraseña?
-      </Link>
+      <div className="flex flex-col items-center gap-2 text-sm font-medium">
+        <Link
+          href="/forgot-password"
+          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+        <Link
+          href="/register"
+          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+        >
+          ¿No tienes cuenta? Crear una
+        </Link>
+      </div>
     </main>
   );
 }
