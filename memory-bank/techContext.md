@@ -23,6 +23,13 @@ Monorepo con áreas independientes, cada una con su propio `package.json` y
   `uis/talent-pipeline-tracker/` (renombrado).
 - `uis/application/` — app interna de operaciones, sin `src/` (`app/`, `lib/`,
   `types/` en la raíz de la app). Shell `AppShell` propio, `/suppliers`.
+  Login propio (`/login`, `/forgot-password`, `/reset-password`,
+  `/account/change-password`): token en `localStorage`
+  (`lib/auth-storage.ts`), leído en componentes con `useSyncExternalStore`
+  (no `useEffect` + `setState`, que dispara el lint de React sobre efectos).
+  `lib/api-client.ts` tiene el fetch genérico (antes vivía duplicado dentro
+  de `lib/suppliers-api.ts`), reutilizado por `lib/suppliers-api.ts` y
+  `lib/auth-api.ts`.
 - Las tres comparten versiones de Next/React/Tailwind y config (tsconfig, eslint,
   postcss).
 - Ya **no existe** la landing HTML estática de la raíz: `index.html`,
@@ -60,9 +67,21 @@ API pública de 4Geek Tracker
   lecturas de `suppliers`/`incidents` siguen públicas).
 - Bootstrap del primer admin: `uv run seed-users` (idempotente, mismo patrón
   que `uv run seed` de proveedores).
-- **Pendiente:** `uis/application` no se actualizó — sus llamadas a
-  `/suppliers` (POST/PATCH/DELETE) devuelven 401 sin login/token hasta una
-  tarea de frontend posterior.
+- **Recuperación/cambio de contraseña**: `POST /auth/forgot-password`,
+  `POST /auth/reset-password`, `POST /auth/change-password`. Los tokens de
+  reset y los access tokens normales comparten el mismo mecanismo `pwd_fp`
+  (huella `sha256` del `hashed_password` vigente, ver `security.py`): un
+  token —de cualquiera de los dos tipos— deja de validar en cuanto la
+  contraseña cambia, sin tabla de revocados. `validate_password_strength`
+  (`models.py`) exige 8+/mayúscula/minúscula/número solo en
+  reset/change-password (no en `POST /users`). `rate_limit.py`: limitador en
+  memoria (dict + lock, sin dependencia nueva) para `forgot-password`/
+  `reset-password`. `main.py` llama `logging.basicConfig` — sin eso, el
+  `logger("auth")` que loguea el token de reset (no hay proveedor de email)
+  no imprime nada al correr `uvicorn`.
+- **`uis/application` ya tiene login** (ver arriba, sección `uis/`) pero su
+  `lib/suppliers-api.ts` todavía no adjunta el token: `POST/PATCH/DELETE
+  /suppliers` siguen devolviendo 401 desde esa UI hasta que se conecte.
 
 ## Restricciones
 

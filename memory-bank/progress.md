@@ -35,17 +35,35 @@
   Hash bcrypt con `libpass`, JWT con `python-jose`, TinyDB propio para
   users/profiles. 5 rutas existentes de `/suppliers`/`/api/incidents`
   protegidas con login. Bootstrap del admin con `uv run seed-users`
-  (idempotente). `uv run pytest` → 55 tests en verde (27 de `/suppliers` +
-  28 nuevos de auth/users/profiles/rutas protegidas).
+  (idempotente). Mergeado a `main` (PR #16).
+- **Recuperación/cambio de contraseña** — `POST /auth/forgot-password`,
+  `POST /auth/reset-password`, `POST /auth/change-password` en
+  `services/api/`. Tokens de reset y access tokens comparten el mecanismo
+  `pwd_fp` (huella del hash de password): cualquier cambio de contraseña
+  invalida de inmediato todas las sesiones anteriores, sin tabla de
+  revocados. Política de contraseña (8+, mayúscula, minúscula, número) solo
+  en reset/change, no en el registro. Rate limiting en memoria (5/15min por
+  IP) en `forgot-password`/`reset-password`. `uv run pytest` → 79 tests en
+  verde (55 anteriores + 24 nuevos).
+- **Login en `uis/application`** — primera integración de auth en un
+  frontend: `/login`, `/forgot-password`, `/reset-password`,
+  `/account/change-password`, token en `localStorage`
+  (`lib/auth-storage.ts` + `useSyncExternalStore`), nav reflejando la
+  sesión. `lint`/`build` en verde, probado en navegador real con Playwright
+  (headless, sin quedar como dependencia del proyecto).
 
 ## Falta
 
 - Persistencia real (TinyDB es de un solo proceso) si `services/api` se despliega con varios workers.
-- **Frontend de `uis/application` sin login**: no envía `Authorization`
-  todavía, así que alta/edición/eliminación de proveedores devuelven 401
-  desde la UI hasta una tarea de frontend que añada login y token.
-- JWT sin revocación/logout (fuera de alcance de AUTH-01): el token solo
-  expira por tiempo (`ACCESS_TOKEN_EXPIRE_MINUTES`).
+- **`lib/suppliers-api.ts` sin token**: aunque `uis/application` ya tiene
+  login, ese cliente todavía no adjunta el `Authorization` guardado, así
+  que alta/edición/eliminación de proveedores siguen devolviendo 401 desde
+  la UI. Conectarlo es la siguiente tarea de frontend obvia.
+- `uis/backoffice` y `uis/website` no tienen ningún login ni consumen este
+  sistema de auth.
+- JWT sin revocación explícita de un token individual (solo hay
+  invalidación global por cambio de contraseña vía `pwd_fp`); no hay
+  "cerrar todas las demás sesiones" selectivo.
 - Hitos posteriores (Telemetría, RAG, Agentes, Workflows, Real-time).
 
 ## Problemas conocidos

@@ -2,9 +2,53 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — autenticación y protección de rutas (AUTH-01)
+## Ahora — recuperación/cambio de contraseña + login en `uis/application`
 
-Rama: `feature/auth-api` (partiendo de `feature/suppliers-api`).
+Rama: `feature/password-reset` (partiendo de `main`, con AUTH-01 ya
+mergeado).
+
+- `services/api/routes/auth.py`: 3 endpoints nuevos —
+  `POST /auth/forgot-password`, `POST /auth/reset-password`,
+  `POST /auth/change-password` (autenticado). Reset con JWT stateless
+  (`type="password_reset"`) que lleva `pwd_fp` (huella del hash vigente al
+  emitirlo): tanto los tokens de reset como los **access token** normales
+  ahora incluyen `pwd_fp` y `get_current_user` lo valida, así que cualquier
+  cambio de contraseña invalida de inmediato todas las sesiones anteriores
+  sin necesitar una tabla de tokens revocados. `create_access_token` cambió
+  de firma (`subject, hashed_password, expires_delta=None`).
+- Política de contraseña nueva (`validate_password_strength` en
+  `models.py`, vía `Annotated[str, AfterValidator(...)]`): 8+ caracteres,
+  mayúscula, minúscula, número. Solo aplica a reset/change-password, **no**
+  a `POST /users` (se queda en `min_length=8` para no romper AUTH-01).
+  `rate_limit.py` (nuevo): limitador en memoria simple, 5 intentos/15min
+  por IP en `forgot-password` y `reset-password`.
+  `main.py` ahora llama `logging.basicConfig` (si no, el logger `auth` no
+  imprime nada al correr `uvicorn`, aunque sí lo capturan los tests).
+  `uv run pytest` → 79 tests en verde (55 de antes + 24 nuevos en
+  `tests/test_password_reset.py`).
+- `uis/application`: primera integración de auth en un frontend.
+  `lib/auth-api.ts` + `lib/auth-storage.ts` (token en `localStorage`,
+  `useSyncExternalStore` para que `nav-links.tsx` refleje la sesión sin
+  leer `localStorage` en un efecto) + páginas `/login`, `/forgot-password`,
+  `/reset-password`, `/account/change-password` (esta última envuelta en
+  `<RequireAuth>`). Se extrajo `lib/api-client.ts` desde
+  `lib/suppliers-api.ts` (fetch genérico + traducción de errores) para no
+  duplicarlo entre proveedores y auth.
+  **Sigue pendiente:** `lib/suppliers-api.ts` todavía no adjunta el token,
+  así que las mutaciones de `/suppliers` seguirán devolviendo 401 aunque el
+  usuario esté logueado.
+- Verificado en navegador real con Playwright (headless, instalado
+  temporalmente con `npm install --no-save playwright`, no quedó como
+  dependencia): login con credenciales inválidas, forgot→reset→login con la
+  contraseña nueva, nav reflejando la sesión, change-password invalidando
+  el token viejo, y `/account/change-password` redirigiendo a `/login` sin
+  sesión. Sin errores de consola salvo los 401 esperados de los intentos
+  fallidos/no autenticados.
+
+## Anterior — autenticación y protección de rutas (AUTH-01)
+
+Mergeado a `main` (PR #16). Rama original: `feature/auth-api` (partiendo de
+`feature/suppliers-api`).
 
 - `services/api/`: nuevos módulos `config.py` (carga `.env`), `users_db.py`
   (TinyDB propio de `users`/`profiles`, `USERS_DB_PATH`), `security.py`

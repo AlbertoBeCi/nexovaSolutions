@@ -39,9 +39,21 @@ Nexova's single FastAPI backend, with one router per domain:
   `ADMIN_EMAIL`/`ADMIN_PASSWORD` (see "Environment variables"). It is
   idempotent: re-running it never changes an existing account's role or
   password.
-- **`uis/application` is not updated yet**: it calls the now-protected
-  `/suppliers` routes without a token, so those calls will return `401` from
-  the current UI until a follow-up frontend task adds login/token handling.
+- **Forgot / reset / change password** (`POST /auth/forgot-password`,
+  `POST /auth/reset-password`, `POST /auth/change-password`): reset tokens
+  are stateless JWTs (`type="password_reset"`) that embed a fingerprint of
+  the password hash at issue time, so they — and, the same way, every
+  previously-issued **access** token — stop validating the moment the
+  password actually changes. No revoked-token table needed. There is no
+  email provider configured yet: `forgot-password` logs the reset token to
+  the server console (logger `auth`) instead of emailing it. `new_password`
+  on reset/change must be 8+ chars with at least one uppercase, one
+  lowercase and one digit (this policy does **not** apply to `POST /users`
+  registration, which only requires 8+ chars). `forgot-password` and
+  `reset-password` are rate-limited per IP (5 requests / 15 min, in-memory).
+- `uis/application` now has a minimal login (`/login`), `/forgot-password`,
+  `/reset-password` and `/account/change-password` (see that app's README).
+  `uis/website` and `uis/backoffice` still don't consume this auth system.
 
 ## Requirements
 
@@ -86,6 +98,7 @@ Swagger: `POST /auth/login`, copy `access_token`, click "Authorize" and enter
 | `SECRET_KEY` | dev-only fallback (logs a warning) | JWT signing key. **Must** be set explicitly in production. |
 | `ALGORITHM` | `HS256` | JWT signing algorithm. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Access token lifetime, in minutes. |
+| `PASSWORD_RESET_EXPIRE_MINUTES` | `15` | Password-reset token lifetime, in minutes. |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | none | First admin's credentials, used only by `uv run seed-users`. |
 
 Copy `.env.example` to `.env` (git-ignored, see `services/api/.gitignore`) and
@@ -102,8 +115,12 @@ idempotency; `tests/test_auth.py`, `tests/test_users.py` and
 `tests/test_profiles.py` cover registration, login, `/users` permissions and
 `/profiles/me`; `tests/test_protected_routes.py` checks that the five
 newly-protected routes reject requests without a token and accept a valid
-one. All of them run against a temporary TinyDB per test
-(`tests/conftest.py` has the shared user/token fixtures).
+one; `tests/test_password_reset.py` covers forgot/reset/change-password
+(single-use tokens, weak-password rejection, rate limiting, and previously
+issued access tokens becoming invalid after a password change). All of them
+run against a temporary TinyDB per test (`tests/conftest.py` has the shared
+user/token fixtures, plus an autouse fixture that resets the in-memory rate
+limiter between tests).
 
 ## Endpoints — incidents
 
@@ -148,6 +165,9 @@ no `role`/`id`/`hashed_password`/`created_at`/`is_active`) and `UserResponse`
 | `GET /auth/me` | Login | `200` with the current user (+ `profile`). |
 | `GET /profiles/me` | Login | `200` with the profile. `404` if not created yet. |
 | `PUT /profiles/me` | Login | Body `{"name", "phone"?, "address"?}`. Upsert: `200`, creates the profile on first call. |
+| `POST /auth/forgot-password` | Public | Body `{"email"}`. Always `200` with the same generic message. `429` if rate-limited (5/15min per IP). No email is sent — the reset token is logged to the console. |
+| `POST /auth/reset-password` | Public | Body `{"token", "new_password"}`. `200` on success. `400` on an invalid/expired/already-used token or if `new_password` equals the current one. `422` if `new_password` is too weak. `429` if rate-limited. |
+| `POST /auth/change-password` | Login | Body `{"current_password", "new_password"}`. `200` with a **new** `Token` (the change invalidates every previously issued access token, including the one used to call this endpoint). `401` if `current_password` is wrong. `400` if `new_password` equals the current one. `422` if too weak. |
 
 ## Endpoints — suppliers
 
@@ -219,11 +239,12 @@ services/api/
 ├── database.py             # suppliers TinyDB setup + lock
 ├── users_db.py               # users/profiles TinyDB setup + lock
 ├── security.py                # password hashing, JWT, get_current_user/get_current_admin
+├── rate_limit.py               # in-memory rate limiter (forgot/reset-password)
 ├── routes/
 │   ├── incidents.py        # /api/incidents
 │   ├── suppliers.py        # /suppliers
 │   ├── users.py               # /users
-│   ├── auth.py                 # /auth
+│   ├── auth.py                 # /auth (login, me, forgot/reset/change-password)
 │   └── profiles.py             # /profiles
 ├── analysis.py             # HTTP adapter over shared/incidents_analysis.py
 ├── store.py                # in-memory store for the last analysis
@@ -231,12 +252,13 @@ services/api/
 ├── seed_users.py              # idempotent admin bootstrap
 ├── fixtures/suppliers.json # seeder input data
 ├── tests/
-│   ├── conftest.py            # shared user/token fixtures
+│   ├── conftest.py            # shared user/token fixtures, rate-limit reset
 │   ├── test_suppliers.py
 │   ├── test_auth.py
 │   ├── test_users.py
 │   ├── test_profiles.py
-│   └── test_protected_routes.py
+│   ├── test_protected_routes.py
+│   └── test_password_reset.py
 └── data/                   # local TinyDB (git-ignored)
 ```
 
