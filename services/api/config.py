@@ -35,3 +35,11 @@ PASSWORD_RESET_EXPIRE_MINUTES = int(os.environ.get("PASSWORD_RESET_EXPIRE_MINUTE
 
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+
+# Envio de emails (mailer.py). Sin RESEND_API_KEY, forgot-password sigue
+# funcionando en modo desarrollo (loguea el token por consola en vez de
+# enviarlo).
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "Nexova <onboarding@resend.dev>")
+# Base para construir el link de /reset-password?token=... en el email.
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3001")

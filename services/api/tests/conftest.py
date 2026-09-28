@@ -18,6 +18,14 @@ def _reset_rate_limits():
     rate_limit._attempts.clear()
 
 
+@pytest.fixture(autouse=True)
+def _no_real_emails(monkeypatch):
+    """Los tests nunca deben mandar un email real via Resend, sin importar
+    que RESEND_API_KEY este seteada en el .env local: fuerza el fallback de
+    log de routes/auth.py (devolver False == "no se envio")."""
+    monkeypatch.setattr("routes.auth.send_password_reset_email", lambda *a, **kw: False)
+
+
 @pytest.fixture
 def users_db(tmp_path):
     db = open_db(tmp_path / "users.json")

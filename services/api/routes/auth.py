@@ -2,10 +2,10 @@
 Login, sesion actual, y recuperacion/cambio de password (/auth), sobre las
 tablas de usuarios de TinyDB.
 
-No hay proveedor de email configurado en el monorepo todavia: en vez de
-enviar un correo real, POST /auth/forgot-password loguea el token (o el link
-con el token) por consola, para poder probar el flujo completo en
-desarrollo. Ver services/api/README.md.
+POST /auth/forgot-password envia el link de reset por email via Resend
+(mailer.py) si RESEND_API_KEY esta configurada; si no, cae a loguear el
+token por consola, para poder probar el flujo completo en desarrollo sin
+cuenta de Resend. Ver services/api/README.md.
 """
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
 
+from config import FRONTEND_URL
+from mailer import send_password_reset_email
 from models import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
@@ -107,9 +109,9 @@ def read_current_user(
     summary="Solicita el reset de password",
     description=(
         "Publico. Siempre responde 200 con el mismo mensaje, exista o no el "
-        "email, para no revelar que cuentas estan registradas. Sin proveedor "
-        "de email configurado: el token se loguea por consola en vez de "
-        "enviarse por correo. Limitado por IP (5 solicitudes / 15 min)."
+        "email, para no revelar que cuentas estan registradas. Envia el link "
+        "de reset por email via Resend si RESEND_API_KEY esta configurada; "
+        "si no, lo loguea por consola. Limitado por IP (5 solicitudes / 15 min)."
     ),
 )
 def forgot_password(
@@ -124,9 +126,12 @@ def forgot_password(
     doc = get_user_by_email(users, payload.email)
     if doc is not None and doc.get("is_active", False):
         token = create_password_reset_token(doc["email"], doc["hashed_password"])
-        # Simula el envio de email: en un entorno real esto iria a un
-        # proveedor de correo con un link tipo /reset-password?token=...
-        logger.info("Password reset solicitado para %s. Token: %s", doc["email"], token)
+        reset_link = f"{FRONTEND_URL}/reset-password?token={token}"
+        sent = send_password_reset_email(doc["email"], reset_link)
+        if not sent:
+            # Sin RESEND_API_KEY (o si Resend fallo): modo desarrollo, se
+            # loguea el token para poder probar el flujo sin email real.
+            logger.info("Password reset solicitado para %s. Token: %s", doc["email"], token)
 
     return MessageResponse(detail=RESET_REQUESTED_MESSAGE)
 
