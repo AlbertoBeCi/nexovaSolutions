@@ -8,20 +8,58 @@ Backend FastAPI único de Nexova, con un router por dominio:
 - **suppliers** (`/suppliers`): directorio de proveedores con su tarifa mensual
   por contrato (Spain en EUR, USA en USD), persistido en TinyDB. Lo consume
   `uis/application` (página `/suppliers`).
+- **users** / **auth** / **profiles**: registro de usuarios, login con JWT y
+  perfiles de usuario, persistidos en su propio fichero TinyDB. Ver
+  "Autenticación" abajo.
+
+### Autenticación
+
+- `User` (email, hash de contraseña, `is_active`, `role`) y `Profile` (name,
+  phone, address, vinculado por `user_id`) viven solo en TinyDB
+  (`users_db.py`, `USERS_DB_PATH`, por defecto `services/api/data/users.json`)
+  — en un fichero separado del de proveedores.
+- Las contraseñas se hashean con `libpass[bcrypt]` (fork mantenido y
+  drop-in de `passlib`; se instala como el paquete `passlib`, asi que el
+  codigo importa `passlib.context.CryptContext`). Las sesiones son JWT sin
+  estado firmados con `python-jose` (`security.py`).
+- `POST /users` es el único endpoint público de `/users`: siempre crea una
+  cuenta con `role="user"` (el body no puede incluir `role` — se rechaza con
+  `422 extra_forbidden`, igual que `id`/`updated_at` en `ProviderCreate`) y
+  opcionalmente crea un `Profile` vinculado en la misma llamada.
+- El resto de rutas de `/users`, `GET /auth/me` y `/profiles/me` exigen un
+  `Authorization: Bearer <token>` válido (obtenido con `POST /auth/login`).
+  `GET/PUT/DELETE /users/{id}` exigen además que quien llama sea ese mismo
+  usuario o un admin (`403` si no); cambiar `role` en `PUT /users/{id}`
+  requiere ser admin.
+- Cinco rutas ya existentes ahora también exigen login (las lecturas siguen
+  públicas): `POST /suppliers`, `PATCH /suppliers/{id}/rate`, `PATCH
+  /suppliers/{id}/status`, `DELETE /suppliers/{id}` y `POST
+  /api/incidents/analyze`.
+- El primer admin se crea con `uv run seed-users` desde
+  `ADMIN_EMAIL`/`ADMIN_PASSWORD` (ver "Variables de entorno"). Es idempotente:
+  volver a ejecutarlo nunca cambia el rol ni la contraseña de una cuenta ya
+  existente.
+- **`uis/application` todavía no se actualizó**: llama a las rutas de
+  `/suppliers` ahora protegidas sin token, asi que esas llamadas devolveran
+  `401` desde la UI actual hasta una tarea de frontend posterior que agregue
+  login/manejo de token.
 
 ## Requisitos
 
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recomendado). Dependencias declaradas en
   `pyproject.toml` (FastAPI, Uvicorn, python-multipart, pandas, TinyDB,
-  email-validator); `requirements.txt` se mantiene igual para quien use pip.
+  email-validator, libpass, python-jose, python-dotenv); `requirements.txt`
+  se mantiene igual para quien use pip.
 
 ## Instalación y arranque (desarrollo)
 
 ```bash
 cd services/api
 uv sync                                      # crea .venv e instala deps + grupo dev
+cp .env.example .env                         # completa SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
 uv run seed                                  # carga los proveedores iniciales (idempotente)
+uv run seed-users                            # crea el primer admin (idempotente)
 uv run uvicorn main:app --reload --port 8000
 ```
 
@@ -35,14 +73,24 @@ http://localhost:8000/docs
 ```
 
 También disponible en formato Redoc en `http://localhost:8000/redoc` y el
-esquema OpenAPI crudo en `http://localhost:8000/openapi.json`.
+esquema OpenAPI crudo en `http://localhost:8000/openapi.json`. Para probar
+rutas protegidas en Swagger: `POST /auth/login`, copia `access_token`, click
+en "Authorize" e ingresa `Bearer <token>`.
 
 ### Variables de entorno
 
 | Variable | Por defecto | Uso |
 | --- | --- | --- |
 | `SUPPLIERS_DB_PATH` | `services/api/data/suppliers.json` | Archivo TinyDB de proveedores (ignorado por git). |
+| `USERS_DB_PATH` | `services/api/data/users.json` | Archivo TinyDB de usuarios/perfiles (ignorado por git). |
 | `CORS_ORIGINS` | `localhost`/`127.0.0.1` en los puertos 3000 y 3001 | Orígenes permitidos, separados por comas. |
+| `SECRET_KEY` | valor de desarrollo (loguea un warning) | Clave de firma del JWT. **Obligatoria** en producción. |
+| `ALGORITHM` | `HS256` | Algoritmo de firma del JWT. |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Minutos de validez del access token. |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | ninguno | Credenciales del primer admin, solo las usa `uv run seed-users`. |
+
+Copia `.env.example` a `.env` (ignorado por git, ver `services/api/.gitignore`)
+y completa valores reales para desarrollo.
 
 ### Tests
 
@@ -51,7 +99,12 @@ uv run pytest
 ```
 
 `tests/test_suppliers.py` cubre todos los endpoints de `/suppliers` y la
-idempotencia del seeder, contra una TinyDB temporal por test.
+idempotencia del seeder; `tests/test_auth.py`, `tests/test_users.py` y
+`tests/test_profiles.py` cubren registro, login, permisos de `/users` y
+`/profiles/me`; `tests/test_protected_routes.py` verifica que las cinco
+rutas recien protegidas rechazan peticiones sin token y aceptan un token
+valido. Todos corren contra una TinyDB temporal por test
+(`tests/conftest.py` tiene las fixtures compartidas de usuario/token).
 
 ## Endpoints — incidencias
 
@@ -67,13 +120,35 @@ guardado en memoria como "último análisis".
   o le faltan columnas requeridas.
 - `422`: no se envió el campo `file` (validación automática de FastAPI).
 
+`POST /api/incidents/analyze` requiere login (`Authorization: Bearer <token>`).
+
 ### `GET /api/incidents/results/export`
 
 Descarga el resultado del último análisis ejecutado en este proceso, como CSV
-(una fila por métrica).
+(una fila por métrica). Pública.
 
 - `200`: archivo `results.csv` descargable (`Content-Disposition: attachment`).
 - `404`: todavía no se ha ejecutado ningún análisis en este proceso.
+
+## Endpoints — usuarios / auth / perfiles
+
+Modelos en `models.py`: `UserCreate` (payload de registro — `extra="forbid"`,
+sin `role`/`id`/`hashed_password`/`created_at`/`is_active`) y `UserResponse`
+(nunca incluye la contraseña ni su hash; embebe `profile` si existe).
+`ProfileCreate`/`ProfileUpdate`/`ProfileResponse` siguen el mismo patrón para
+`/profiles/me`.
+
+| Método y ruta | Protección | Respuesta |
+| --- | --- | --- |
+| `POST /users` | Pública | `201` con el usuario nuevo (+ `profile` si se envió). `409` en email duplicado, `422` en payload inválido. |
+| `GET /users` | Admin | `200` con todos los usuarios. `403` para quien no sea admin. |
+| `GET /users/{id}` | Propio o admin | `200` con el usuario. `403` para otro usuario, `404` si no existe. |
+| `PUT /users/{id}` | Propio o admin | Body `{"email"?, "role"?}`. `200` con el usuario actualizado. `403` si quien no es admin envía `role` o apunta a otro usuario. `409` en email duplicado. |
+| `DELETE /users/{id}` | Propio o admin | `204`, también borra el `Profile` vinculado. `403`/`404`. |
+| `POST /auth/login` | Pública | `OAuth2PasswordRequestForm` (`username`=email, `password`). `200` con `{"access_token", "token_type": "bearer"}`. `401` en credenciales incorrectas. |
+| `GET /auth/me` | Login | `200` con el usuario actual (+ `profile`). |
+| `GET /profiles/me` | Login | `200` con el perfil. `404` si todavía no se creó. |
+| `PUT /profiles/me` | Login | Body `{"name", "phone"?, "address"?}`. Upsert: `200`, crea el perfil en la primera llamada. |
 
 ## Endpoints — proveedores
 
@@ -89,14 +164,14 @@ Validaciones (`422` automático si fallan): `name` no vacío; `country` `Spain` 
 `currency` `EUR` para Spain y `USD` para USA; `status` `active` o `suspended`;
 `contract_renewal_date` (`YYYY-MM-DD`), `contact_email` y `notes` opcionales.
 
-| Método y ruta | Respuesta |
-| --- | --- |
-| `POST /suppliers` | `201` con el proveedor creado. `422` si el payload no es válido. |
-| `GET /suppliers?country=&category=` | `200` con la lista. Filtros opcionales y combinables; sin ellos, todos. |
-| `GET /suppliers/{id}` | `200` con el detalle. `404` si no existe. |
-| `PATCH /suppliers/{id}/rate` | Body `{"monthly_rate": > 0}`. `200` con el registro y `updated_at` nuevo. `422` si ≤ 0, `404` si no existe. |
-| `PATCH /suppliers/{id}/status` | Body `{"status": "active" \| "suspended"}`. `200` con el registro. `422` / `404`. |
-| `DELETE /suppliers/{id}` | `204` sin cuerpo. `404` si no existe. |
+| Método y ruta | Protección | Respuesta |
+| --- | --- | --- |
+| `POST /suppliers` | Login | `201` con el proveedor creado. `401` sin token, `422` si el payload no es válido. |
+| `GET /suppliers?country=&category=` | Pública | `200` con la lista. Filtros opcionales y combinables; sin ellos, todos. |
+| `GET /suppliers/{id}` | Pública | `200` con el detalle. `404` si no existe. |
+| `PATCH /suppliers/{id}/rate` | Login | Body `{"monthly_rate": > 0}`. `200` con el registro y `updated_at` nuevo. `401` sin token, `422` si ≤ 0, `404` si no existe. |
+| `PATCH /suppliers/{id}/status` | Login | Body `{"status": "active" \| "suspended"}`. `200` con el registro. `401` / `422` / `404`. |
+| `DELETE /suppliers/{id}` | Login | `204` sin cuerpo. `401` sin token, `404` si no existe. |
 
 Los errores `404` devuelven `{"detail": "Proveedor no encontrado."}`.
 
@@ -117,6 +192,10 @@ mayúsculas ni espacios extra). Se puede ejecutar tantas veces como se quiera:
   un solo proceso: las lecturas/escrituras se serializan con un lock porque
   TinyDB no es thread-safe. Con varios workers/instancias habría que migrar a
   una base de datos real.
+- **Usuarios / perfiles**: otro archivo JSON de TinyDB (`USERS_DB_PATH`),
+  mismo diseño de un solo proceso y misma estrategia de lock que proveedores,
+  pero con su propio lock y fichero para que el trafico de auth nunca
+  bloquee las lecturas/escrituras de proveedores ni viceversa.
 - **Último análisis de incidencias**: variable en memoria del proceso
   (`store.py`), sin disco. **Se pierde si el proceso se reinicia** y no se
   comparte entre instancias; si hiciera falta, migrar a un store externo
@@ -133,20 +212,35 @@ trabajan con agregados calculados en `shared/incidents_analysis.py::build_summar
 
 ```
 services/api/
-├── pyproject.toml          # proyecto uv: deps, grupo dev, comando `seed`
+├── pyproject.toml          # proyecto uv: deps, grupo dev, comandos `seed`/`seed-users`
 ├── uv.lock
 ├── requirements.txt        # mismas deps, para pip
+├── .env.example             # documenta SECRET_KEY, ADMIN_EMAIL, etc. (sin secretos reales)
+├── .gitignore                # ignora .env (mantiene .env.example)
 ├── main.py                 # app FastAPI: CORS + routers
-├── models.py               # modelos Pydantic (proveedores, incidencias, errores)
-├── database.py             # inicialización de TinyDB + lock
+├── config.py                 # carga .env; configuracion de JWT/admin
+├── models.py               # modelos Pydantic (proveedores, incidencias, usuarios/auth, errores)
+├── database.py             # inicialización de TinyDB de proveedores + lock
+├── users_db.py               # inicializacion de TinyDB de usuarios/perfiles + lock
+├── security.py                # hash de contrasenas, JWT, get_current_user/get_current_admin
 ├── routes/
 │   ├── incidents.py        # /api/incidents
-│   └── suppliers.py        # /suppliers
+│   ├── suppliers.py        # /suppliers
+│   ├── users.py               # /users
+│   ├── auth.py                 # /auth
+│   └── profiles.py             # /profiles
 ├── analysis.py             # adaptador HTTP de shared/incidents_analysis.py
 ├── store.py                # almacén en memoria del último análisis
 ├── seed.py                 # carga idempotente de proveedores
+├── seed_users.py              # creacion idempotente del admin inicial
 ├── fixtures/suppliers.json # datos iniciales del seeder
-├── tests/test_suppliers.py
+├── tests/
+│   ├── conftest.py            # fixtures compartidas de usuario/token
+│   ├── test_suppliers.py
+│   ├── test_auth.py
+│   ├── test_users.py
+│   ├── test_profiles.py
+│   └── test_protected_routes.py
 └── data/                   # TinyDB local (ignorado por git)
 ```
 

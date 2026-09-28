@@ -32,11 +32,37 @@ Monorepo con áreas independientes, cada una con su propio `package.json` y
 
 Todo servicio va en `services/` (FastAPI, una app con routers por dominio).
 `services/api/` es un proyecto `uv` (`pyproject.toml` + `uv.lock`;
-`requirements.txt` sincronizado para pip) con los routers de incidencias y
-proveedores. Env: `SUPPLIERS_DB_PATH`, `CORS_ORIGINS` (por defecto puertos 3000
-y 3001). El pipeline de candidatos del backoffice sigue consumiendo la API
-pública de 4Geek Tracker (`https://playground.4geeks.com/tracker/api/v1`,
-configurable vía `NEXT_PUBLIC_API_URL`).
+`requirements.txt` sincronizado para pip) con los routers de incidencias,
+proveedores y (desde AUTH-01) usuarios/auth/perfiles. Env: `SUPPLIERS_DB_PATH`,
+`USERS_DB_PATH`, `CORS_ORIGINS` (por defecto puertos 3000 y 3001),
+`SECRET_KEY`/`ALGORITHM`/`ACCESS_TOKEN_EXPIRE_MINUTES` (JWT),
+`ADMIN_EMAIL`/`ADMIN_PASSWORD` (bootstrap del admin), todas en
+`services/api/.env` (git-ignored via `services/api/.gitignore`; ver
+`.env.example`). El pipeline de candidatos del backoffice sigue consumiendo la
+API pública de 4Geek Tracker
+(`https://playground.4geeks.com/tracker/api/v1`, configurable vía
+`NEXT_PUBLIC_API_URL`).
+
+### Autenticación (`services/api`, AUTH-01)
+
+- `User`/`Profile` viven solo en TinyDB (`users_db.py`), en un fichero
+  separado del de proveedores (`USERS_DB_PATH`), con su propio lock.
+- Hash de contraseñas con `libpass[bcrypt]` (fork drop-in de `passlib`: se
+  instala como el paquete `passlib`, así que se importa
+  `passlib.context.CryptContext`). JWT con `python-jose`. `.env` cargado con
+  `python-dotenv` (`config.py`).
+- `security.py`: `get_current_user` (login), `get_current_admin` (admin),
+  `ensure_self_or_admin(current_user, target_id)` (propio recurso o admin) —
+  ver convención en `.agents/rules/services.md`.
+- Protegidas: todo `/users` salvo `POST /users` (registro público, siempre
+  `role="user"`), `GET /auth/me`, `/profiles/me`, y 5 rutas ya existentes:
+  `POST/PATCH.../DELETE /suppliers*` y `POST /api/incidents/analyze` (las
+  lecturas de `suppliers`/`incidents` siguen públicas).
+- Bootstrap del primer admin: `uv run seed-users` (idempotente, mismo patrón
+  que `uv run seed` de proveedores).
+- **Pendiente:** `uis/application` no se actualizó — sus llamadas a
+  `/suppliers` (POST/PATCH/DELETE) devuelven 401 sin login/token hasta una
+  tarea de frontend posterior.
 
 ## Restricciones
 

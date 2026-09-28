@@ -18,7 +18,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes import incidents, suppliers
+from routes import auth, incidents, profiles, suppliers, users
 
 # Frontends de desarrollo: uis/backoffice (3000) y uis/application (3001).
 # En produccion, definir CORS_ORIGINS con los origenes reales separados por comas.
@@ -33,9 +33,10 @@ app = FastAPI(
         "Backend interno de Nexova. **incidents**: analiza CSVs de tickets de "
         "soporte (detecta registros invalidos y calcula metricas; nunca expone "
         "customer_email). **suppliers**: directorio de proveedores con sus "
-        "tarifas mensuales por contrato (Spain en EUR, USA en USD)."
+        "tarifas mensuales por contrato (Spain en EUR, USA en USD). **users** / "
+        "**auth** / **profiles**: registro, login (JWT) y perfil de usuarios."
     ),
-    version="1.1.0",
+    version="1.2.0",
 )
 
 app.add_middleware(
@@ -45,9 +46,12 @@ app.add_middleware(
         for origin in os.environ.get("CORS_ORIGINS", DEFAULT_CORS_ORIGINS).split(",")
         if origin.strip()
     ],
-    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
 
 app.include_router(incidents.router)
 app.include_router(suppliers.router)
+app.include_router(users.router)
+app.include_router(auth.router)
+app.include_router(profiles.router)

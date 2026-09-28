@@ -29,7 +29,17 @@ y arranque `uv run uvicorn main:app`. Layout plano (sin paquete `app/`).
 - Persistencia de proveedores en TinyDB (`database.py`): ruta por env
   `SUPPLIERS_DB_PATH`, tabla como dependencia FastAPI (se sustituye en tests) y
   un lock global porque TinyDB no es thread-safe.
-- Seeders idempotentes ejecutables con `uv run <script>` (`[project.scripts]`).
+- Usuarios/perfiles (auth) en su propio TinyDB (`users_db.py`,
+  `USERS_DB_PATH`), mismo patrón (tabla como dependencia, lock propio) pero
+  en un fichero separado de proveedores para no acoplar sus ciclos de vida.
+- Autorización centralizada en `security.py` (transversal a varios routers):
+  `get_current_user` (login), `get_current_admin` (admin), helper plano
+  `ensure_self_or_admin(current_user, target_id)` para "propio recurso o
+  admin". Una ruta que solo necesita "estar logueado" usa
+  `dependencies=[Depends(get_current_user)]` en el decorador, no un parámetro
+  sin usar. Convención documentada en `.agents/rules/services.md`.
+- Seeders idempotentes ejecutables con `uv run <script>` (`[project.scripts]`),
+  incluye `uv run seed-users` para el admin inicial.
 - Mensajes de error de negocio en español; la UI traduce los 422 genéricos de
   Pydantic por `type`/`loc`.
 - Interfaces compartidas con el frontend → `packages/` cuando haya dos consumidores.

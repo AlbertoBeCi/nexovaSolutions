@@ -2,7 +2,32 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — directorio de proveedores (`/suppliers`)
+## Ahora — autenticación y protección de rutas (AUTH-01)
+
+Rama: `feature/auth-api` (partiendo de `feature/suppliers-api`).
+
+- `services/api/`: nuevos módulos `config.py` (carga `.env`), `users_db.py`
+  (TinyDB propio de `users`/`profiles`, `USERS_DB_PATH`), `security.py`
+  (hash bcrypt vía `libpass`, JWT vía `python-jose`, `get_current_user`,
+  `get_current_admin`, `ensure_self_or_admin`), `seed_users.py` (bootstrap
+  idempotente del admin, `uv run seed-users`).
+- Nuevos routers: `/users` (CRUD, `POST /users` público y siempre
+  `role="user"`), `/auth` (`POST /auth/login`, `GET /auth/me`), `/profiles`
+  (`GET`/`PUT /profiles/me`, upsert).
+- Protegidas con `get_current_user` 5 rutas ya existentes:
+  `POST/PATCH.../DELETE /suppliers*` y `POST /api/incidents/analyze`; las
+  lecturas siguen públicas. CORS ahora incluye `PUT`.
+- `.env`/`.env.example`/`.gitignore` nuevos en `services/api/` (no se tocó el
+  `.gitignore` raíz).
+- Tests nuevos (`tests/conftest.py`, `test_auth.py`, `test_users.py`,
+  `test_profiles.py`, `test_protected_routes.py`); `test_suppliers.py`
+  ajustado para autenticar su `client`. `uv run pytest` → 55 tests en verde.
+- **Pendiente explícito:** `uis/application` no se tocó en esta tarea — sus
+  llamadas a `/suppliers` (alta, tarifa, activar/suspender, eliminar)
+  devolverán 401 sin login hasta una tarea de frontend que añada
+  autenticación (login + envío de `Authorization: Bearer`).
+
+## Anterior — directorio de proveedores (`/suppliers`)
 
 Rama: `feature/suppliers-api` (parte de `feature/incidents-analysis-script`).
 

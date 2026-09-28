@@ -20,6 +20,18 @@ globs: ["services/**"]
   credenciales. `.env*` reales no se commitean.
 - Errores con mensajes claros que la UI pueda mostrar al usuario.
 
+### Proteger una ruta nueva (`services/api/security.py`)
+
+- "Requiere login" sin usar el usuario en el handler → `dependencies=[Depends(get_current_user)]`
+  en el decorador del router (no un parámetro sin usar en la firma). Ver
+  `routes/suppliers.py` o `routes/incidents.py`.
+- Necesitas el usuario autenticado (por ejemplo para filtrar por `user_id`) →
+  parámetro `current_user: CurrentUser` en la firma del handler.
+- Solo admin → dependencia `get_current_admin` en vez de `get_current_user`.
+- "Propio recurso o admin" (rutas con un `{id}` de otro dominio, ej. `/users/{id}`)
+  → llama a `ensure_self_or_admin(current_user, target_id)` al principio del
+  handler (función plana, no `Depends`, porque necesita el id del path).
+
 ## Antes de commit
 
 - Linter y tests del servicio en verde.

@@ -230,6 +230,96 @@ class AnalysisSummary(BaseModel):
     }
 
 
+# ─── Usuarios / Autenticacion ────────────────────────────────────────
+#
+# User y Profile viven exclusivamente en TinyDB (users_db.py). User guarda
+# solo credenciales/autorizacion (email, hash, is_active, role); los datos de
+# perfil (name, phone, address) viven en Profile, vinculado por user_id.
+
+
+class RoleEnum(str, Enum):
+    ADMIN = "admin"
+    MANAGER = "manager"
+    USER = "user"
+
+
+class ProfileCreate(BaseModel):
+    """Datos de perfil. `extra="forbid"`: id y user_id los asigna el sistema."""
+
+    name: str = Field(..., min_length=1, description="Nombre visible del usuario")
+    phone: Optional[str] = Field(default=None, description="Telefono de contacto")
+    address: Optional[str] = Field(default=None, description="Direccion postal")
+
+    model_config = {"extra": "forbid"}
+
+
+class ProfileUpdate(ProfileCreate):
+    """Payload de PUT /profiles/me. Mismo shape que ProfileCreate (upsert)."""
+
+
+class ProfileResponse(ProfileCreate):
+    id: int = Field(..., description="ID unico asignado por TinyDB")
+    user_id: int = Field(..., description="ID del User propietario del perfil")
+
+
+class UserCreate(BaseModel):
+    """Payload de POST /users (registro publico).
+
+    `extra="forbid"`: no se acepta `role`, `id`, `hashed_password`,
+    `is_active` ni `created_at` en el body — todos los asigna el sistema, y
+    un registro publico jamas puede autoasignarse un rol.
+    """
+
+    email: EmailStr = Field(..., description="Email unico del usuario")
+    password: str = Field(..., min_length=8, description="Contrasena en texto plano (nunca se persiste)")
+    profile: Optional[ProfileCreate] = Field(
+        default=None, description="Perfil a crear junto con el usuario (opcional)"
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+class UserUpdate(BaseModel):
+    """Payload de PUT /users/{id}. `role` solo lo puede enviar un admin."""
+
+    email: Optional[EmailStr] = Field(default=None, description="Nuevo email")
+    role: Optional[RoleEnum] = Field(
+        default=None, description="Nuevo rol (requiere permisos de administrador)"
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+class UserInDB(BaseModel):
+    """Representacion interna completa de un usuario. Nunca es response_model."""
+
+    id: int
+    email: EmailStr
+    hashed_password: str
+    is_active: bool
+    role: RoleEnum
+    created_at: datetime
+
+
+class UserResponse(BaseModel):
+    """Respuesta publica de un usuario. No hereda de UserCreate: nunca expone
+    `password` ni `hashed_password`."""
+
+    id: int = Field(..., description="ID unico asignado por TinyDB")
+    email: EmailStr
+    is_active: bool
+    role: RoleEnum
+    created_at: datetime
+    profile: Optional[ProfileResponse] = Field(
+        default=None, description="Perfil vinculado, si existe"
+    )
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
 # ─── Comun ────────────────────────────────────────────────────────────
 
 

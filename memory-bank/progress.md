@@ -29,10 +29,23 @@
 - **`uis/application/`** — app interna de operaciones (Next.js 16, puerto 3001):
   `/suppliers` con listado, filtros en URL, alta, edición rápida de tarifa,
   activar/suspender y eliminar. `lint`/`build` en verde, probado en navegador.
+- **AUTH-01** — Autenticación en `services/api/`: registro (`POST /users`),
+  login JWT (`POST /auth/login`), `GET /auth/me`, `/profiles/me`
+  (`GET`/`PUT`, upsert), CRUD `/users/{id}` con permisos propio-o-admin.
+  Hash bcrypt con `libpass`, JWT con `python-jose`, TinyDB propio para
+  users/profiles. 5 rutas existentes de `/suppliers`/`/api/incidents`
+  protegidas con login. Bootstrap del admin con `uv run seed-users`
+  (idempotente). `uv run pytest` → 55 tests en verde (27 de `/suppliers` +
+  28 nuevos de auth/users/profiles/rutas protegidas).
 
 ## Falta
 
 - Persistencia real (TinyDB es de un solo proceso) si `services/api` se despliega con varios workers.
+- **Frontend de `uis/application` sin login**: no envía `Authorization`
+  todavía, así que alta/edición/eliminación de proveedores devuelven 401
+  desde la UI hasta una tarea de frontend que añada login y token.
+- JWT sin revocación/logout (fuera de alcance de AUTH-01): el token solo
+  expira por tiempo (`ACCESS_TOKEN_EXPIRE_MINUTES`).
 - Hitos posteriores (Telemetría, RAG, Agentes, Workflows, Real-time).
 
 ## Problemas conocidos

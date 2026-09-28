@@ -23,6 +23,7 @@ from models import (
     UpdateRateRequest,
     UpdateStatusRequest,
 )
+from security import get_current_user
 
 router = APIRouter(prefix="/suppliers", tags=["suppliers"])
 
@@ -58,10 +59,11 @@ def _update_or_404(table: Table, supplier_id: int, fields: dict) -> ProviderResp
     status_code=201,
     summary="Registra un proveedor",
     description=(
-        "Valida el payload (tarifa > 0, al menos una categoria, moneda coherente "
-        "con el pais) y lo guarda en TinyDB. Devuelve el registro con su id y "
-        "updated_at asignados por el sistema."
+        "Requiere login. Valida el payload (tarifa > 0, al menos una categoria, "
+        "moneda coherente con el pais) y lo guarda en TinyDB. Devuelve el "
+        "registro con su id y updated_at asignados por el sistema."
     ),
+    dependencies=[Depends(get_current_user)],
 )
 def create_supplier(provider: ProviderCreate, table: SuppliersTable) -> ProviderResponse:
     record = {**provider.model_dump(mode="json"), "updated_at": utc_now_iso()}
@@ -111,8 +113,9 @@ def get_supplier(supplier_id: int, table: SuppliersTable) -> ProviderResponse:
     "/{supplier_id}/rate",
     response_model=ProviderResponse,
     summary="Actualiza la tarifa mensual",
-    description="La nueva tarifa debe ser mayor que 0. Actualiza updated_at.",
+    description="Requiere login. La nueva tarifa debe ser mayor que 0. Actualiza updated_at.",
     responses=NOT_FOUND_RESPONSE,
+    dependencies=[Depends(get_current_user)],
 )
 def update_supplier_rate(
     supplier_id: int, body: UpdateRateRequest, table: SuppliersTable
@@ -124,7 +127,9 @@ def update_supplier_rate(
     "/{supplier_id}/status",
     response_model=ProviderResponse,
     summary="Activa o suspende un proveedor",
+    description="Requiere login.",
     responses=NOT_FOUND_RESPONSE,
+    dependencies=[Depends(get_current_user)],
 )
 def update_supplier_status(
     supplier_id: int, body: UpdateStatusRequest, table: SuppliersTable
@@ -137,7 +142,9 @@ def update_supplier_status(
     status_code=204,
     response_class=Response,
     summary="Elimina un proveedor",
+    description="Requiere login.",
     responses=NOT_FOUND_RESPONSE,
+    dependencies=[Depends(get_current_user)],
 )
 def delete_supplier(supplier_id: int, table: SuppliersTable) -> Response:
     with db_lock:

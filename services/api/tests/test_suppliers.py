@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from database import SUPPLIERS_TABLE, get_suppliers_table, open_db
 from main import app
 from seed import load_fixtures, seed_suppliers
+from users_db import get_profiles_table, get_users_table
 
 VALID_SPAIN = {
     "name": "Factorial",
@@ -38,9 +39,15 @@ def table(tmp_path):
 
 
 @pytest.fixture
-def client(table):
+def client(table, users_table, profiles_table, auth_headers):
+    # /suppliers protege sus mutaciones con get_current_user (AUTH-01): este
+    # cliente autentica por defecto para que los tests existentes no cambien.
     app.dependency_overrides[get_suppliers_table] = lambda: table
-    yield TestClient(app)
+    app.dependency_overrides[get_users_table] = lambda: users_table
+    app.dependency_overrides[get_profiles_table] = lambda: profiles_table
+    test_client = TestClient(app)
+    test_client.headers.update(auth_headers)
+    yield test_client
     app.dependency_overrides.clear()
 
 
