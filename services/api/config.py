@@ -36,6 +36,13 @@ PASSWORD_RESET_EXPIRE_MINUTES = int(os.environ.get("PASSWORD_RESET_EXPIRE_MINUTE
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 
+# "development" (por defecto, incluye los tests) o "production". Unico uso
+# hoy: routes/auth.py la consulta para decidir si el fallback de
+# forgot-password puede loguear el token de reset en claro (ver auditoria
+# de manejo de errores) — nunca en produccion, donde ese log equivaldria a
+# dejar una contrasena reseteable en el sistema de logs.
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
+
 # Envio de emails (mailer.py). Sin RESEND_API_KEY, forgot-password sigue
 # funcionando en modo desarrollo (loguea el token por consola en vez de
 # enviarlo).
