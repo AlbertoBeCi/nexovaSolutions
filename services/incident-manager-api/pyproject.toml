@@ -1,0 +1,50 @@
+[project]
+name = "nexova-incident-manager-api"
+version = "0.1.0"
+description = "Gestor de incidencias centralizado de Nexova: modelo persistente, API REST y seed desde el CSV del analizador."
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "python-dotenv>=1.2.3",
+    # pandas: no la usa este servicio directamente, pero
+    # nexova_shared.incidents_analysis (que scripts/seed_incidents.py
+    # importa para reutilizar las 7 reglas del analizador) la requiere. Se
+    # declara aqui para poder ejecutar el seed con
+    # `uv run --project services/incident-manager-api python scripts/seed_incidents.py`,
+    # un unico entorno con todas las dependencias que el seed necesita
+    # (SQLAlchemy + nexova_shared).
+    "pandas>=2.2",
+]
+
+[project.scripts]
+serve = "main:run"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "httpx2>=2.13",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+# Layout plano (modulos sueltos), igual que services/api: se declaran a mano
+# para que setuptools no intente autodescubrir paquetes.
+[tool.setuptools]
+py-modules = [
+    "main",
+    "config",
+    "db",
+    "models",
+    "schemas",
+    "errors",
+    "shared_bootstrap",
+]
+packages = ["routes"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

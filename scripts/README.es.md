@@ -20,3 +20,20 @@ python scripts/analyze.py scripts/incidents-COMPANY.csv   # o sin argumento: pid
   (`incidents-COMPANY.csv`) con datos ficticios, útil para probar `analyze.py`.
 - `APRENDIENDO.md`: explicación paso a paso del script pensada para quien recién
   empieza con Python y pandas.
+
+## `seed_incidents.py` — carga el gestor de incidencias (Nexova)
+
+Carga `incidents-COMPANY.csv` en el gestor de incidencias persistente
+(`services/incident-manager-api/`), aplicando las mismas 7 reglas de
+validación que `analyze.py` más un mapeo CSV → `Incident` (ver el README de
+ese servicio). Necesita las dependencias de `services/incident-manager-api`
+(SQLAlchemy + pandas), así que se ejecuta con su entorno `uv` en vez de un
+`python` a secas:
+
+```bash
+uv run --project services/incident-manager-api python scripts/seed_incidents.py
+```
+
+Idempotente: ejecutarlo dos veces inserta 0 la segunda vez (ver
+`services/incident-manager-api/README.md` para los conteos esperados y el
+modelo de datos con restricciones CHECK que alimenta).

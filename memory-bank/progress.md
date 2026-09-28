@@ -63,9 +63,36 @@
   ambas apps, probado en navegador real con Playwright (headless, sin
   quedar como dependencia del proyecto) cubriendo las dos apps a la vez.
 
+- **Gestor de Incidencias Centralizado** — servicio nuevo
+  `services/incident-manager-api/` (FastAPI + SQLAlchemy/SQLite, puerto
+  8001, sin auth propia): modelo `Incident` con CHECK constraints (mismos
+  valores que `nexova_shared.incident_constants`), índices en
+  status/origin/branch/category, timestamps UTC reales vía un
+  `TypeDecorator` propio. `packages/shared/nexova_shared` (paquete Python
+  nuevo): constantes/validación/mapeo CSV del gestor, más
+  `shared/incidents_analysis.py` (lógica del analizador) movida aquí con
+  un shim de compatibilidad. `scripts/seed_incidents.py` carga
+  `scripts/incidents-COMPANY.csv` reutilizando las 7 reglas del analizador;
+  idempotente, 96 insertadas / 4 descartadas sobre el CSV real, conteos de
+  `GET /api/incidents/summary` verificados contra lo esperado. API bajo
+  `/api/incidents` (POST, GET con filtros, `/summary`, `/{id}`, PATCH
+  `/status` con validación de transiciones) con un formato de error
+  uniforme nuevo (`{"error": {...}}`). `uis/application`: 3 páginas
+  (`/incidents/new`, `/incidents`, `/incidents/summary`) con su propio
+  cliente HTTP (`lib/incidents-api.ts`, formato de error incompatible con
+  `lib/api-client.ts`), listado con filtros/paginación/cambio de estado
+  optimista, `types/incident.ts` como espejo TS del dominio. `uv run
+  pytest` → 63 tests en `packages/shared`, 43 en
+  `services/incident-manager-api`; `npm run lint`/`build` y el verificador
+  de textos de UI en verde; probado en navegador real con Playwright.
+
 ## Falta
 
 - Persistencia real (TinyDB es de un solo proceso) si `services/api` se despliega con varios workers.
+- `services/incident-manager-api` no tiene autenticación (el ejercicio no la
+  pedía); si pasa a producción, evaluar si necesita el mismo sistema de auth
+  que `services/api`. Tampoco tiene Alembic/migraciones formales (una sola
+  tabla de negocio; `create_all` alcanza por ahora).
 - `uis/website` (Hito 1, público) no tiene login ni debe tenerlo.
 - No hay workspace tooling real en el monorepo (confirmado explorando): el
   cliente de auth de frontend está duplicado entre `uis/application` y

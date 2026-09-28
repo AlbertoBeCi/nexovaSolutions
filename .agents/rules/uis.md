@@ -12,8 +12,11 @@ globs: ["uis/**"]
 ## Reglas
 
 - Web pública → `uis/website/`. Apps internas (operadores, RRHH) → `uis/backoffice/`.
-  Aplicación de operaciones (directorio de proveedores) → `uis/application/`
-  (puerto 3001; consume `services/api`).
+  Aplicación de operaciones (proveedores + gestor de incidencias) →
+  `uis/application/` (puerto 3001; consume `services/api` y
+  `services/incident-manager-api`, dos backends con formatos de error
+  distintos — cada uno con su propio cliente HTTP, ver
+  `.agents/rules/services.md`).
 - Cada app: su propio `package.json`, `README.md`, layout y **vista de entrada
   funcional desde el primer commit** (algo visible desde el día uno).
 - Stack por defecto: Next.js (App Router) + React + Tailwind, salvo que una app

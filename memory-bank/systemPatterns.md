@@ -17,8 +17,19 @@
   traduce entre el DTO de la API (snake_case) y el modelo de la UI
   (camelCase) en ambas direcciones. El fetch genérico
   (`apiRequest`/`extractErrorMessage`/`jsonInit`) vive en `lib/api-client.ts`
-  en cada app; cada dominio (`suppliers-api.ts`, `auth-api.ts`,
-  `incidents-api.ts`) solo aporta su propio `translateIssue`.
+  en cada app; cada dominio contra **`services/api`** (`suppliers-api.ts`,
+  `auth-api.ts`, `uis/backoffice/.../incidents-api.ts` — el del analizador
+  de CSV) solo aporta su propio `translateIssue`, porque todos comparten el
+  formato de error `{"detail": [...]}` de Pydantic.
+  **Excepción**: `uis/application/lib/incidents-api.ts` (el del **gestor**
+  de incidencias, contra `services/incident-manager-api`) NO reutiliza
+  `apiRequest`/`extractErrorMessage`: ese backend usa un formato de error
+  propio, `{"error": {"code","message","fields"?}}` (ver "Backend" más
+  abajo), incompatible con el `translateIssue` pensado para Pydantic. Tiene
+  su propio fetch de bajo nivel con la misma idea (nunca deja escapar una
+  excepción nativa, siempre da un mensaje en español) pero un parseo de
+  error distinto. Antes de asumir que un backend nuevo puede reutilizar
+  `api-client.ts` tal cual, comprobar qué forma tiene su error.
 - **`lib/api-client.ts::apiRequest` es tambien el interceptor de auth**: si
   hay un token guardado lo adjunta como `Authorization` en toda llamada
   (ningún cliente de dominio lo arma a mano), y si una llamada *con* token
@@ -46,6 +57,15 @@
   (`lib/auth-storage.ts::subscribeToken`), no con `useEffect` + `setState`: el
   lint de `eslint-plugin-react-hooks` de este repo bloquea ese patrón
   ("Avoid calling setState() directly within an effect").
+- La misma regla de lint aplica a cualquier `useEffect` que quiera resetear
+  o marcar estado como "cargando" a mano: en vez de un `setState` directo
+  dentro del efecto, **derivar** ese estado comparando una clave de
+  petición (`result?.key !== requestKey`, ver `suppliers-directory.tsx` e
+  `incidents-panel.tsx`) o, para "resetear X cuando cambia Y", ajustarlo
+  durante el render (`if (requestKey !== lastKey) { setLastKey(requestKey);
+  setX(inicial); }`, el patrón que React recomienda para "adjusting state
+  when a prop changes" — ver `incidents-panel.tsx`, reinicio de página al
+  cambiar de filtro).
 - Los mensajes de error que arma el backend en Python (`services/api/`) no
   llevan tildes (ver más abajo); si un cliente de `uis/` los muestra tal
   cual, hay que reescribirlos con la ortografía correcta antes de
@@ -91,6 +111,41 @@ y arranque `uv run uvicorn main:app`. Layout plano (sin paquete `app/`).
   consumidores **y** haya workspace tooling que lo haga importable (ver
   nota de "Auth de frontend" arriba: hoy no lo hay, así que dos
   consumidores por ahora significa duplicar, no extraer).
+- **Lógica Python compartida entre proyectos `uv` independientes**: SÍ vale
+  la pena extraerla a `packages/shared/` (paquete `nexova_shared`) aunque
+  no haya workspace tooling, porque el problema que resuelve no es
+  "importar entre apps" (npm) sino "no repetir reglas de validación" (ver
+  `nexova_shared.incidents_analysis`, usado por `scripts/` y
+  `services/api`, y `nexova_shared.incident_validation`, usado por
+  `services/incident-manager-api` y `scripts/seed_incidents.py`). Se
+  alcanza con `sys.path` (mismo patrón que ya usaba `shared/`), no como
+  dependencia `uv`/`pip` instalada — cada proyecto Python en este repo
+  sigue siendo independiente (su propio `pyproject.toml`/`.venv`/`uv.lock`).
+- **Segundo backend FastAPI** (`services/incident-manager-api/`, excepción
+  documentada a "una sola app"): cuando un dominio nuevo tiene un modelo de
+  persistencia genuinamente distinto (SQLAlchemy/SQLite con restricciones
+  CHECK, frente a TinyDB), puede justificar un servicio propio en vez de un
+  router más en `services/api`. Trae su propio formato de error uniforme,
+  `{"error": {"code","message","fields"?}}` (`ApiError` + 4
+  `exception_handler`s: la excepción propia, `RequestValidationError`,
+  `StarletteHTTPException` y `Exception`), distinto del `{"detail": [...]}`
+  por defecto de FastAPI que usa `services/api` — un cliente frontend
+  contra el backend nuevo necesita su propio parseo de error, no puede
+  reutilizar el existente (ver "Frontend" arriba).
+- **Restricciones de enum a nivel de BD generadas desde Python, no
+  duplicadas a mano**: `services/incident-manager-api/models.py` construye
+  sus `CheckConstraint` (`category IN (...)`, etc.) a partir de las mismas
+  tuplas de `nexova_shared.incident_constants` que usa la validación de
+  aplicación, para que la base de datos y la app nunca puedan permitir
+  valores distintos.
+- **SQLite y timezone-aware datetimes**: `DateTime(timezone=True)` de
+  SQLAlchemy sobre SQLite escribe bien un datetime UTC-aware pero lo
+  devuelve *naive* al leerlo (comprobado a mano, no es solo un detalle
+  teórico). Si un campo debe ser siempre UTC-aware en Python (para
+  serializar con el sufijo `+00:00`), envolver el tipo en un
+  `TypeDecorator` que reasigne `tzinfo=UTC` en `process_result_value` (ver
+  `UTCDateTime` en `services/incident-manager-api/models.py`) — no basta
+  con poner `timezone=True` y confiar en que SQLAlchemy lo preserve.
 
 ## Convenciones transversales
 

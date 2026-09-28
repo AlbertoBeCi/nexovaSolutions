@@ -12,6 +12,23 @@ const MODULES = [
     description:
       "Consulta los proveedores de las sedes de Valencia y Miami, sus tarifas mensuales y el estado de cada contrato.",
   },
+  {
+    href: "/incidents/new",
+    title: "Registrar incidencia",
+    description:
+      "Da de alta una incidencia en el gestor centralizado: fallos técnicos, quejas de clientes, incumplimientos de SLA y más.",
+  },
+  {
+    href: "/incidents",
+    title: "Incidencias",
+    description:
+      "Consulta y filtra las incidencias registradas por estado, origen y sede, y gestiona su ciclo de vida.",
+  },
+  {
+    href: "/incidents/summary",
+    title: "Resumen de incidencias",
+    description: "Totales de incidencias por estado, categoría, origen y sede.",
+  },
 ] as const;
 
 export default function HomePage() {

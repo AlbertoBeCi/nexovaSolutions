@@ -36,8 +36,9 @@ Each app has its own `package.json` and `node_modules` — run commands from its
 | --- | --- | --- |
 | Public website (Milestone 1) | [`uis/website/`](./uis/website/) | `npm install` · `npm run dev` (→ http://localhost:3000) |
 | Backoffice — talent pipeline (Milestone 3) | [`uis/backoffice/`](./uis/backoffice/) | `npm install` · `npm run dev` — needs `.env.local` (see `.env.example`) |
-| Operations — supplier directory | [`uis/application/`](./uis/application/) | `npm install` · `npm run dev` (→ http://localhost:3001) — needs `services/api` running |
-| API — incidents + suppliers | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
+| Operations — supplier directory + incident manager | [`uis/application/`](./uis/application/) | `npm install` · `npm run dev` (→ http://localhost:3001) — needs `services/api` and `services/incident-manager-api` running |
+| API — incidents (CSV analysis) + suppliers | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
+| API — incident manager (persisted incidents) | [`services/incident-manager-api/`](./services/incident-manager-api/) | `uv sync` · `uv run --project services/incident-manager-api python scripts/seed_incidents.py` · `uv run serve` (→ http://localhost:8001) |
 | Domain model + logic (Milestone 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
 
 ---
@@ -110,7 +111,11 @@ Each app: its own `package.json`, `README.md`, layout and a working entry view f
 - One main FastAPI app (e.g. `api/`) with routers/modules per domain
 - Background workers only when they truly need to run separately from the API
 
-**Recommendation:** avoid splitting into many microservices early.
+**Recommendation:** avoid splitting into many microservices early. Exception in this
+repo: [`services/incident-manager-api/`](./services/incident-manager-api/) is a
+second, independent FastAPI app (its own `pyproject.toml`/port), because the
+incident-manager exercise explicitly asked for a new service — see that
+folder's `README.md` for the tradeoff.
 
 → See [`services/README.md`](./services/README.md)
 
@@ -177,7 +182,8 @@ Each app: its own `package.json`, `README.md`, layout and a working entry view f
 **Put here:**
 
 - [`packages/domain/`](./packages/domain/) → `@repo/domain` — recruitment domain model + logic (Milestone 2)
-- [`packages/shared/`](./packages/shared/) → `@repo/shared-types` — types shared across apps and services
+- [`packages/shared/`](./packages/shared/) → `@repo/shared-types` (TS, types shared across apps and services) +
+  `nexova-shared` (Python, incident/analyzer validation shared by `scripts/` and `services/*`)
 - UI component libraries, API clients, analytics SDKs
 
 **Rule:** if `uis/` and `services/` both need the same interface → extract it here.
@@ -258,8 +264,10 @@ nexovaSolutions/
 │   └── application/           # Operations app: supplier directory (Next.js)
 ├── packages/
 │   ├── domain/                # @repo/domain — recruitment logic — Milestone 2
-│   └── shared/                # @repo/shared-types
-├── services/api/              # Centralized FastAPI API: incidents + suppliers (TinyDB)
+│   └── shared/                # @repo/shared-types (TS) + nexova-shared (Python: incident/analyzer validation)
+├── services/
+│   ├── api/                   # Centralized FastAPI API: incidents (CSV analysis) + suppliers (TinyDB)
+│   └── incident-manager-api/  # Incident manager: persisted model (SQLAlchemy/SQLite), REST API, CSV seed
 ├── data/{raw,pipelines,process,eval}/   # Data lifecycle (empty)
 ├── agents/                    # AI agents (+ _template/ starter) (empty)
 ├── skills/  mcps/  workflows/ # Template scaffolding (empty)

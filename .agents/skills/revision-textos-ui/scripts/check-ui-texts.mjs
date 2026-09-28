@@ -18,7 +18,9 @@ const RAW_TOKENS = [
 ];
 // Literal como string entre comillas: "received" / 'in_progress' / `pending`
 const rawLiteralRe = new RegExp(`["'\`](${RAW_TOKENS.join("|")})["'\`]`);
-const LABELS_FILE = `types${sep}candidate.ts`;
+// Unico sitio donde pueden vivir los codigos crudos de estado/etapa: el
+// diccionario de candidato (backoffice) y el de incidencia (application).
+const LABELS_FILES = [`types${sep}candidate.ts`, `types${sep}incident.ts`];
 
 function walk(dir, acc = []) {
   for (const entry of readdirSync(dir)) {
@@ -45,7 +47,7 @@ let fail = 0;
 // ── Criterio 1: literales crudos de estado/etapa fuera de candidate.ts ──
 const offenders = [];
 for (const f of files) {
-  if (f.endsWith(LABELS_FILE)) continue;
+  if (LABELS_FILES.some((labelsFile) => f.endsWith(labelsFile))) continue;
   const lines = readFileSync(f, "utf8").split("\n");
   lines.forEach((line, i) => {
     if (rawLiteralRe.test(line) && !/\b(statusLabels|stageLabels|CandidateStatus|CandidateStage|keyof|as const)\b/.test(line)) {
@@ -58,7 +60,7 @@ if (offenders.length) {
   console.log(`  [FAIL] 1. literales crudos de estado/etapa en JSX/código:`);
   offenders.forEach((o) => console.log(`         ${o}`));
 } else {
-  console.log(`  [PASS] 1. sin literales crudos de estado/etapa fuera de candidate.ts`);
+  console.log(`  [PASS] 1. sin literales crudos de estado/etapa fuera de candidate.ts/incident.ts`);
 }
 
 // ── Criterio 5: JSON-LD Organization en uis/website ──

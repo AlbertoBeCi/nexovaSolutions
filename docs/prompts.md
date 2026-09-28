@@ -291,3 +291,19 @@ Estructura pedida: `services/api/{main,models,database,seed}.py`, `services/api/
    - Formulario de alta contra `POST /suppliers` que muestre los errores de la API (422 o de servidor).
    - Acciones rápidas: actualizar tarifa (`PATCH …/rate`) y alternar estado (`PATCH …/status`), actualizando la UI en cuanto la petición tiene éxito.
 4. Verificación: `uv run seed` idempotente, pruebas de los endpoints y comportamiento del frontend.
+
+# Milestone 10
+
+## Prompt 1: Gestor de Incidencias Centralizado
+
+Construir el "Gestor de Incidencias Centralizado" de Nexova dentro del monorepo existente, por fases, en una rama nueva `gestor de incidencias`:
+
+- **Fase 0 (exploración obligatoria)**: localizar el proyecto anterior `incidents-file-analyzer` y su CSV `incidents-nexova.csv`; reutilizar el stack ya usado (Python/FastAPI/pytest para backend, el framework de la UI existente).
+- **Estructura de carpetas**: `scripts/seed_incidents.py`, `packages/shared/` (validación y constantes compartidas entre script y API), `services/<nombre-del-servicio-api>/` (backend nuevo), `uis/<ui>/` (o integrado en la UI existente).
+- **Datos de dominio exactos** (sin inventar ni renombrar): `branch` (`central`→"Central — Sede Valencia", `valencia_operations`→"Valencia — Operaciones", `miami_office`→"Miami Office", `remote`→"Remoto (empleado sin sede fija)"), `category` (8 valores, incluye `sla_breach`), `status` (`open`/`in_progress`/`resolved`/`discarded`, con transiciones válidas y estados finales), `origin` (`customer`/`branch`/`internal`).
+- **Fase 1 — `packages/shared`**: enums/etiquetas/transiciones, validación reutilizada del analizador (no reescrita), validador de incidencia con errores por campo, `is_valid_transition(from, to)`, mapeos CSV→modelo. Con tests.
+- **Fase 2 — modelo**: `Incident` con `branch` obligatorio para todos los orígenes, restricciones a nivel de BD (NOT NULL + CHECK/Enum) además de validación de aplicación, índices en status/origin/branch/category.
+- **Fase 3 — `scripts/seed_incidents.py`**: lee el CSV, valida cada fila con la lógica compartida, transforma (`description`→`title`/`description`, `date`→`created_at` UTC, `origin`="customer", `branch`="central", remapeo de `status`/`category`), es idempotente (tabla auxiliar `seed_ticket_ids`, sin guardar `ticket_id` en el modelo), reporta filas descartadas con motivo, y compara los conteos resultantes contra unos valores esperados (sin forzarlos si no coinciden).
+- **Fase 4 — backend**: `POST/GET /api/incidents`, `GET /api/incidents/summary` (declarado antes que `/{id}`, con todas las claves de cada enum aunque sea 0), `GET /api/incidents/{id}`, `PATCH /api/incidents/{id}/status` (valida la transición); formato de error uniforme con campo identificado; 500 genérico sin stack trace; CORS y configuración por variables de entorno; tests de integración.
+- **Fase 5 — frontend**: páginas de Registro, Listado y Resumen en el menú de la aplicación, con un cliente HTTP centralizado que traduzca errores; formulario con `branch` siempre visible y resaltado cuando `origin = branch`; listado con filtros, tres estados (cargando/error/vacío) y cambio de estado optimista que revierte si falla; panel de resumen con estados de carga/error aislados.
+- **Entrega**: árbol de carpetas, comandos exactos, salida del seed (dos ejecuciones) y del summary comparada con lo esperado, decisiones asumidas, y checklist de criterios de evaluación.
