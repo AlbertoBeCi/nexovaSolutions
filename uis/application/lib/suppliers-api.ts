@@ -8,6 +8,7 @@
  * uis/backoffice/src/services/incidents-api.ts.
  */
 
+import { apiRequest, jsonInit, type ValidationIssue } from "@/lib/api-client";
 import {
   COUNTRY_LABELS,
   COUNTRY_CURRENCY,
@@ -19,8 +20,6 @@ import {
   type SupplierFilters,
   type SupplierStatus,
 } from "@/types/supplier";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // ─── DTO de la API (snake_case, ver services/api/models.py) ──────────
 
@@ -39,12 +38,6 @@ interface SupplierDto {
 }
 
 type SupplierCreateDto = Omit<SupplierDto, "id" | "updated_at">;
-
-interface ValidationIssue {
-  type?: string;
-  loc?: (string | number)[];
-  msg?: string;
-}
 
 // ─── Mappers DTO ↔ modelo de la UI ────────────────────────────────────
 
@@ -109,47 +102,6 @@ function translateIssue(issue: ValidationIssue): string {
   return "Alguno de los datos enviados no es válido.";
 }
 
-/** Extrae un mensaje legible del cuerpo de error de la API; si no reconoce
- *  el formato, o el cuerpo no es JSON, cae al mensaje por defecto. */
-async function extractErrorMessage(response: Response, fallbackMessage: string): Promise<string> {
-  try {
-    const body = await response.json();
-
-    if (Array.isArray(body?.detail)) {
-      const messages = [...new Set((body.detail as ValidationIssue[]).map(translateIssue))];
-      if (messages.length > 0) return messages.join(" ");
-    }
-
-    if (typeof body?.detail === "string") return body.detail;
-  } catch {
-    // el cuerpo de la respuesta no es JSON o está vacío, se usa el mensaje por defecto
-  }
-  return fallbackMessage;
-}
-
-/** fetch contra la API que convierte fallos de red y respuestas no-2xx en Error con mensaje en español. */
-async function request(path: string, init: RequestInit, fallbackMessage: string): Promise<Response> {
-  let response: Response;
-  try {
-    response = await fetch(`${API_URL}${path}`, init);
-  } catch {
-    throw new Error("No se pudo conectar con el servidor. Comprueba que la API está en marcha.");
-  }
-
-  if (!response.ok) {
-    throw new Error(await extractErrorMessage(response, fallbackMessage));
-  }
-  return response;
-}
-
-function jsonInit(method: string, body: unknown): RequestInit {
-  return {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  };
-}
-
 // ─── Endpoints: proveedores ───────────────────────────────────────────
 
 /** Lista proveedores; los filtros vacíos no se envían. */
@@ -159,42 +111,51 @@ export async function listSuppliers(filters: SupplierFilters): Promise<Supplier[
   if (filters.category) params.set("category", filters.category);
   const query = params.size > 0 ? `?${params.toString()}` : "";
 
-  const response = await request(
+  const response = await apiRequest(
     `/suppliers${query}`,
     { method: "GET" },
-    "No se pudo cargar el directorio de proveedores."
+    "No se pudo cargar el directorio de proveedores.",
+    translateIssue
   );
   const dtos = (await response.json()) as SupplierDto[];
   return dtos.map(toSupplier);
 }
 
 export async function createSupplier(supplier: NewSupplier): Promise<Supplier> {
-  const response = await request(
+  const response = await apiRequest(
     "/suppliers",
     jsonInit("POST", toCreateDto(supplier)),
-    "No se pudo registrar el proveedor."
+    "No se pudo registrar el proveedor.",
+    translateIssue
   );
   return toSupplier((await response.json()) as SupplierDto);
 }
 
 export async function updateSupplierRate(id: number, monthlyRate: number): Promise<Supplier> {
-  const response = await request(
+  const response = await apiRequest(
     `/suppliers/${id}/rate`,
     jsonInit("PATCH", { monthly_rate: monthlyRate }),
-    "No se pudo actualizar la tarifa."
+    "No se pudo actualizar la tarifa.",
+    translateIssue
   );
   return toSupplier((await response.json()) as SupplierDto);
 }
 
 export async function updateSupplierStatus(id: number, status: SupplierStatus): Promise<Supplier> {
-  const response = await request(
+  const response = await apiRequest(
     `/suppliers/${id}/status`,
     jsonInit("PATCH", { status }),
-    "No se pudo cambiar el estado del proveedor."
+    "No se pudo cambiar el estado del proveedor.",
+    translateIssue
   );
   return toSupplier((await response.json()) as SupplierDto);
 }
 
 export async function deleteSupplier(id: number): Promise<void> {
-  await request(`/suppliers/${id}`, { method: "DELETE" }, "No se pudo eliminar el proveedor.");
+  await apiRequest(
+    `/suppliers/${id}`,
+    { method: "DELETE" },
+    "No se pudo eliminar el proveedor.",
+    translateIssue
+  );
 }
