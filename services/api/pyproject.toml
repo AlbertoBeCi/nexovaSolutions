@@ -10,10 +10,14 @@ dependencies = [
     "pandas>=2.2",
     "tinydb>=4.8",
     "email-validator>=2.0",
+    "libpass[bcrypt]>=1.9.3",
+    "python-jose[cryptography]>=3.5.0",
+    "python-dotenv>=1.2.3",
 ]
 
 [project.scripts]
 seed = "seed:main"
+seed-users = "seed_users:main"
 
 [dependency-groups]
 dev = [
@@ -28,7 +32,18 @@ build-backend = "setuptools.build_meta"
 # Layout plano (modulos sueltos en services/api): se declaran a mano para que
 # setuptools no intente autodescubrir paquetes y `uv run seed` encuentre seed:main.
 [tool.setuptools]
-py-modules = ["main", "models", "database", "seed", "analysis", "store"]
+py-modules = [
+    "main",
+    "models",
+    "database",
+    "seed",
+    "analysis",
+    "store",
+    "config",
+    "security",
+    "users_db",
+    "seed_users",
+]
 packages = ["routes"]
 
 [tool.pytest.ini_options]

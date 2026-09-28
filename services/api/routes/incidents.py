@@ -7,12 +7,13 @@ cualquier cliente HTTP en lugar de ejecutarse por linea de comandos.
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import Response
 
 import store
 from analysis import InvalidCsvError, analyze_csv, summary_to_csv_bytes
 from models import AnalysisSummary, ErrorResponse
+from security import get_current_user
 
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
@@ -23,11 +24,12 @@ router = APIRouter(prefix="/api/incidents", tags=["incidents"])
     status_code=200,
     summary="Analiza un CSV de tickets de soporte",
     description=(
-        "Recibe un archivo CSV de tickets de soporte (multipart/form-data), "
-        "aplica las 7 reglas de validacion de negocio y devuelve un resumen "
-        "agregado (nunca datos de fila, nunca emails individuales). El "
-        "resultado se guarda en memoria como 'ultimo analisis' para "
-        "poder exportarlo despues con GET /api/incidents/results/export."
+        "Requiere login. Recibe un archivo CSV de tickets de soporte "
+        "(multipart/form-data), aplica las 7 reglas de validacion de negocio y "
+        "devuelve un resumen agregado (nunca datos de fila, nunca emails "
+        "individuales). El resultado se guarda en memoria como 'ultimo "
+        "analisis' para poder exportarlo despues con "
+        "GET /api/incidents/results/export."
     ),
     responses={
         400: {
@@ -35,6 +37,7 @@ router = APIRouter(prefix="/api/incidents", tags=["incidents"])
             "description": "El archivo no se adjunto, no es un CSV o le faltan columnas requeridas.",
         },
     },
+    dependencies=[Depends(get_current_user)],
 )
 async def analyze_incidents(
     file: UploadFile = File(..., description="Archivo CSV de tickets de soporte"),
