@@ -22,7 +22,7 @@ cada vez que el diff toca `uis/**`.
 | --- | --- | --- |
 | `rutas` | archivos `*.tsx`/`*.ts` del `git diff` bajo `uis/` | Qué revisar. Acepta `uis/website`, `uis/backoffice` o `uis/**`. |
 | `contexto` | `CONTEXT.md` | Fuente de los literales de error/éxito y del bloque Schema.org. |
-| `etiquetas` | `uis/backoffice/src/types/candidate.ts` | Define `statusLabels` y `stageLabels`; único sitio donde pueden vivir los códigos crudos. |
+| `etiquetas` | `uis/backoffice/src/types/candidate.ts`, `uis/application/types/incident.ts` | Definen `statusLabels`/`stageLabels` e `INCIDENT_STATUS_LABELS`/etc.; únicos sitios donde pueden vivir los códigos crudos. |
 
 Ejecutar el verificador automático:
 
@@ -36,7 +36,7 @@ Sin argumentos revisa `uis/`. Devuelve exit 0 si todo PASS, exit 1 si algún FAI
 
 | # | Criterio | Cómo se verifica |
 | --- | --- | --- |
-| 1 | Ningún literal crudo de estado/etapa de la API (`"received"`, `"in_progress"`, `"selected"`, `"discarded"`, `"pending"`, `"review"`, `"personal_interview"`, `"technical_interview"`, `"offer_presented"`) aparece como texto en JSX fuera de `candidate.ts`. | Script — regex sobre `.tsx`; falla si hay match fuera de `types/candidate.ts`. |
+| 1 | Ningún literal crudo de estado/etapa de la API (`"received"`, `"in_progress"`, `"selected"`, `"discarded"`, `"pending"`, `"review"`, `"personal_interview"`, `"technical_interview"`, `"offer_presented"`) aparece como texto en JSX fuera de `candidate.ts`/`incident.ts`. | Script — regex sobre `.tsx`; falla si hay match fuera de `types/candidate.ts` o `types/incident.ts`. |
 | 2 | Todo texto visible de estado/etapa se resuelve vía `statusLabels[...]` / `stageLabels[...]`. | Revisión manual guiada: cada `<option>`, badge o celda de estado/etapa usa el diccionario. |
 | 3 | Los mensajes de validación y el mensaje de éxito presentes en el código coinciden **carácter a carácter** con `CONTEXT.md` (secciones "Mensajes de error esperados" y "Mensaje de éxito"). | Comparación manual contra `CONTEXT.md`. El script lista los strings largos añadidos en el diff para facilitarla. |
 | 4 | Cada página/componente de `uis/` que hace `fetch`/llama a `services/api` renderiza un estado de **carga** y un estado de **error** visibles. | Revisión manual: buscar `loading` y `error`/`catch` con render asociado. |

@@ -25,10 +25,16 @@ function getHasSessionServerSnapshot(): boolean {
 const NAV_ITEMS = [
   { href: "/", label: "Inicio" },
   { href: "/suppliers", label: "Proveedores" },
+  { href: "/incidents/new", label: "Registrar incidencia" },
+  // exact: true — /incidents/new y /incidents/summary ya son items propios
+  // del menu; sin esto, el prefijo "/incidents/" marcaria "Incidencias"
+  // como activo tambien en esas dos rutas.
+  { href: "/incidents", label: "Incidencias", exact: true },
+  { href: "/incidents/summary", label: "Resumen de incidencias" },
 ] as const;
 
-function isActive(pathname: string, href: string): boolean {
-  if (href === "/") return pathname === "/";
+function isActive(pathname: string, href: string, exact?: boolean): boolean {
+  if (href === "/" || exact) return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -63,7 +69,7 @@ export function NavLinks({ orientation = "vertical" }: { orientation?: "vertical
       }
     >
       {NAV_ITEMS.map((item) => {
-        const active = isActive(pathname, item.href);
+        const active = isActive(pathname, item.href, "exact" in item && item.exact);
         return (
           <Link
             key={item.href}
