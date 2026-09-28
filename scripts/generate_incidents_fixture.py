@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import csv
 import random
+import sys
 from pathlib import Path
 
 SEED = 42
@@ -36,6 +37,19 @@ CLIENT_COMPANIES = [
 ]
 AGENT_IDS = [f"AGT-{i:02d}" for i in range(1, 11)]
 DATE_POOL = [f"2026-08-{day:02d}" for day in range(1, 32)]
+
+
+class FixtureIntegrityError(RuntimeError):
+    """Se lanza cuando el CSV generado no cumple las cifras de negocio
+    esperadas (ver verify()). A proposito NO se usa `assert` para esto:
+    `assert` se elimina por completo si el script se ejecuta con
+    `python -O`, lo que dejaria escribir un CSV incorrecto y terminar con
+    exit code 0 como si todo estuviera bien."""
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise FixtureIntegrityError(message)
 
 
 def expand_counts(counts: dict, rng: random.Random) -> list:
@@ -72,7 +86,7 @@ def build_valid_rows(rng: random.Random) -> list[dict]:
         })
 
     leftover = list(score_iter)
-    assert not leftover, "Sobraron puntajes sin asignar a tickets CLOSED"
+    _require(not leftover, "Sobraron puntajes sin asignar a tickets CLOSED")
     return rows
 
 
@@ -120,33 +134,37 @@ def verify(rows: list[dict]) -> None:
         and not (r["status"] == "CLOSED" and not r["satisfaction_score"])
         and (r["satisfaction_score"] == "" or 1 <= int(r["satisfaction_score"]) <= 5)
     ]
-    assert len(valid_rows) == 96, f"Se esperaban 96 validos, hay {len(valid_rows)}"
-    assert len(rows) - len(valid_rows) == 4, "Se esperaban 4 invalidos"
+    _require(len(valid_rows) == 96, f"Se esperaban 96 validos, hay {len(valid_rows)}")
+    _require(len(rows) - len(valid_rows) == 4, "Se esperaban 4 invalidos")
 
     for category, expected in CATEGORY_COUNTS.items():
         actual = sum(1 for r in valid_rows if r["category"] == category)
-        assert actual == expected, f"{category}: esperado {expected}, obtenido {actual}"
+        _require(actual == expected, f"{category}: esperado {expected}, obtenido {actual}")
 
     for status, expected in STATUS_COUNTS.items():
         actual = sum(1 for r in valid_rows if r["status"] == status)
-        assert actual == expected, f"{status}: esperado {expected}, obtenido {actual}"
+        _require(actual == expected, f"{status}: esperado {expected}, obtenido {actual}")
 
     closed_scores = [
         int(r["satisfaction_score"]) for r in valid_rows
         if r["status"] == "CLOSED" and r["satisfaction_score"]
     ]
-    assert len(closed_scores) == 56, f"Se esperaban 56 puntajes, hay {len(closed_scores)}"
+    _require(len(closed_scores) == 56, f"Se esperaban 56 puntajes, hay {len(closed_scores)}")
     for score, expected in SCORE_COUNTS.items():
         actual = closed_scores.count(score)
-        assert actual == expected, f"score {score}: esperado {expected}, obtenido {actual}"
+        _require(actual == expected, f"score {score}: esperado {expected}, obtenido {actual}")
     average = sum(closed_scores) / len(closed_scores)
-    assert round(average, 2) == 3.84, f"Promedio esperado 3.84, obtenido {average:.2f}"
+    _require(round(average, 2) == 3.84, f"Promedio esperado 3.84, obtenido {average:.2f}")
 
 
 def main() -> None:
     rng = random.Random(SEED)
     rows = build_valid_rows(rng) + build_invalid_rows(rng)
-    verify(rows)
+    try:
+        verify(rows)
+    except FixtureIntegrityError as exc:
+        print(f"Error: {exc}")
+        sys.exit(1)
 
     rng.shuffle(rows)
     for i, row in enumerate(rows, start=1):
