@@ -32,6 +32,34 @@ globs: ["services/**"]
   → llama a `ensure_self_or_admin(current_user, target_id)` al principio del
   handler (función plana, no `Depends`, porque necesita el id del path).
 
+### Invalidar tokens sin tabla de revocados
+
+Un JWT (access token o de un solo uso, como el de reset de password) puede
+llevar `pwd_fp` (huella `sha256` del `hashed_password` vigente al emitirlo,
+ver `password_fingerprint()` en `security.py`). Quien lo valida recalcula la
+huella contra el hash *actual* y la compara; si no coincide, el token es
+inválido. Reutiliza esto en vez de agregar una tabla de tokens revocados
+cuando necesites invalidar sesiones tras un cambio de credenciales.
+
+### Rate limiting
+
+`rate_limit.py::enforce_rate_limit(key, max_attempts, window_seconds)` — dict
+en memoria + lock, sin dependencia nueva. Úsalo en endpoints públicos
+sensibles a fuerza bruta/abuso (login, forgot-password, reset-password).
+Limitación conocida: no se comparte entre workers/instancias. En tests,
+limpia `rate_limit._attempts` entre casos (ver la fixture `autouse` en
+`tests/conftest.py`) para que no haya fugas de estado.
+
+### Enviar un email
+
+`mailer.py` es el único punto de envío (Resend). Sigue su patrón para
+cualquier email nuevo: la función de envío nunca lanza (atrapa la excepción,
+loguea y devuelve `False`), y si no hay API key configurada devuelve `False`
+sin intentar nada — el caller decide el fallback (en `forgot-password`, es
+loguear el link por consola). Así el flujo se puede probar en un checkout
+nuevo sin cuenta de ningún proveedor externo. **No lo llames `email.py`**:
+tapa el paquete `email` de la stdlib en este layout plano.
+
 ## Antes de commit
 
 - Linter y tests del servicio en verde.

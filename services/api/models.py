@@ -9,11 +9,12 @@ JSON y su documentacion en Swagger.
 """
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 from enum import Enum
-from typing import Dict, List, Literal, Optional
+from typing import Annotated, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import AfterValidator, BaseModel, EmailStr, Field, model_validator
 
 
 # ─── Proveedores ──────────────────────────────────────────────────────
@@ -320,8 +321,56 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 
+def validate_password_strength(value: str) -> str:
+    """Politica de password para reset/change (no aplica al registro en
+    POST /users, que solo pide min_length=8): minimo 8 caracteres, al menos
+    una mayuscula, una minuscula y un numero."""
+    if len(value) < 8:
+        raise ValueError("La contrasena debe tener al menos 8 caracteres.")
+    if not re.search(r"[A-Z]", value):
+        raise ValueError("La contrasena debe incluir al menos una mayuscula.")
+    if not re.search(r"[a-z]", value):
+        raise ValueError("La contrasena debe incluir al menos una minuscula.")
+    if not re.search(r"\d", value):
+        raise ValueError("La contrasena debe incluir al menos un numero.")
+    return value
+
+
+StrongPassword = Annotated[str, AfterValidator(validate_password_strength)]
+
+
+class ForgotPasswordRequest(BaseModel):
+    """Payload de POST /auth/forgot-password."""
+
+    email: EmailStr
+
+    model_config = {"extra": "forbid"}
+
+
+class ResetPasswordRequest(BaseModel):
+    """Payload de POST /auth/reset-password."""
+
+    token: str = Field(..., description="Token recibido al solicitar el reset")
+    new_password: StrongPassword
+
+    model_config = {"extra": "forbid"}
+
+
+class ChangePasswordRequest(BaseModel):
+    """Payload de POST /auth/change-password (usuario autenticado)."""
+
+    current_password: str = Field(..., description="Contrasena actual, para reautenticar")
+    new_password: StrongPassword
+
+    model_config = {"extra": "forbid"}
+
+
 # ─── Comun ────────────────────────────────────────────────────────────
 
 
 class ErrorResponse(BaseModel):
     detail: str = Field(..., description="Mensaje de error legible para el cliente")
+
+
+class MessageResponse(BaseModel):
+    detail: str = Field(..., description="Mensaje informativo para el cliente")

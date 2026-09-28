@@ -39,18 +39,36 @@ Backend FastAPI único de Nexova, con un router por dominio:
   `ADMIN_EMAIL`/`ADMIN_PASSWORD` (ver "Variables de entorno"). Es idempotente:
   volver a ejecutarlo nunca cambia el rol ni la contraseña de una cuenta ya
   existente.
-- **`uis/application` todavía no se actualizó**: llama a las rutas de
-  `/suppliers` ahora protegidas sin token, asi que esas llamadas devolveran
-  `401` desde la UI actual hasta una tarea de frontend posterior que agregue
-  login/manejo de token.
+- **Olvidé mi contraseña / cambio de contraseña**
+  (`POST /auth/forgot-password`, `POST /auth/reset-password`,
+  `POST /auth/change-password`): los tokens de reset son JWT sin estado
+  (`type="password_reset"`) que llevan la huella del hash vigente al
+  emitirlos, asi que — igual que cualquier **access token** emitido antes —
+  dejan de validar en cuanto la contraseña realmente cambia. No hace falta
+  ninguna tabla de tokens revocados. `new_password` en reset/change debe
+  tener 8+ caracteres con al menos una mayúscula, una minúscula y un número
+  (esta política **no** aplica al registro de `POST /users`, que solo pide
+  8+ caracteres). `forgot-password` y `reset-password` estan limitados por
+  IP (5 solicitudes / 15 min, en memoria).
+- **Envio de emails** (`mailer.py`): `forgot-password` envia el link de
+  reset por [Resend](https://resend.com) cuando hay `RESEND_API_KEY`
+  configurada. Sin ella (o si Resend falla), cae a loguear el token en la
+  consola del servidor (logger `auth`) — es el comportamiento por defecto
+  en un checkout nuevo, asi que el flujo se puede probar sin nada externo.
+  Con el remitente de pruebas de Resend (`onboarding@resend.dev`, el
+  default de `RESEND_FROM_EMAIL`), la entrega solo llega al email con el
+  que se creo la cuenta de Resend, hasta verificar un dominio propio ahi.
+- `uis/application` ya tiene un login minimo (`/login`), `/forgot-password`,
+  `/reset-password` y `/account/change-password` (ver el README de esa app).
+  `uis/website` y `uis/backoffice` todavia no consumen este sistema de auth.
 
 ## Requisitos
 
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recomendado). Dependencias declaradas en
   `pyproject.toml` (FastAPI, Uvicorn, python-multipart, pandas, TinyDB,
-  email-validator, libpass, python-jose, python-dotenv); `requirements.txt`
-  se mantiene igual para quien use pip.
+  email-validator, libpass, python-jose, python-dotenv, resend);
+  `requirements.txt` se mantiene igual para quien use pip.
 
 ## Instalación y arranque (desarrollo)
 
@@ -87,7 +105,11 @@ en "Authorize" e ingresa `Bearer <token>`.
 | `SECRET_KEY` | valor de desarrollo (loguea un warning) | Clave de firma del JWT. **Obligatoria** en producción. |
 | `ALGORITHM` | `HS256` | Algoritmo de firma del JWT. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Minutos de validez del access token. |
+| `PASSWORD_RESET_EXPIRE_MINUTES` | `15` | Minutos de validez del token de reset de password. |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | ninguno | Credenciales del primer admin, solo las usa `uv run seed-users`. |
+| `RESEND_API_KEY` | ninguno (cae a loguear por consola) | API key de [Resend](https://resend.com). Habilita el envio real del email de `forgot-password`. |
+| `RESEND_FROM_EMAIL` | `Nexova <onboarding@resend.dev>` | Remitente. Necesita un dominio verificado en Resend para entregar a cualquier destinatario. |
+| `FRONTEND_URL` | `http://localhost:3001` | Base para construir el link `/reset-password?token=...` del email (y del fallback de consola). |
 
 Copia `.env.example` a `.env` (ignorado por git, ver `services/api/.gitignore`)
 y completa valores reales para desarrollo.
@@ -103,8 +125,12 @@ idempotencia del seeder; `tests/test_auth.py`, `tests/test_users.py` y
 `tests/test_profiles.py` cubren registro, login, permisos de `/users` y
 `/profiles/me`; `tests/test_protected_routes.py` verifica que las cinco
 rutas recien protegidas rechazan peticiones sin token y aceptan un token
-valido. Todos corren contra una TinyDB temporal por test
-(`tests/conftest.py` tiene las fixtures compartidas de usuario/token).
+valido; `tests/test_password_reset.py` cubre forgot/reset/change-password
+(tokens de un solo uso, rechazo de contraseñas débiles, rate limiting, y que
+los access tokens emitidos antes de un cambio de contraseña dejan de
+servir). Todos corren contra una TinyDB temporal por test
+(`tests/conftest.py` tiene las fixtures compartidas de usuario/token, más
+una fixture autouse que resetea el rate limiter en memoria entre tests).
 
 ## Endpoints — incidencias
 
@@ -149,6 +175,9 @@ sin `role`/`id`/`hashed_password`/`created_at`/`is_active`) y `UserResponse`
 | `GET /auth/me` | Login | `200` con el usuario actual (+ `profile`). |
 | `GET /profiles/me` | Login | `200` con el perfil. `404` si todavía no se creó. |
 | `PUT /profiles/me` | Login | Body `{"name", "phone"?, "address"?}`. Upsert: `200`, crea el perfil en la primera llamada. |
+| `POST /auth/forgot-password` | Pública | Body `{"email"}`. Siempre `200` con el mismo mensaje genérico. `429` si esta limitado (5/15min por IP). No envia email: el token de reset se loguea en consola. |
+| `POST /auth/reset-password` | Pública | Body `{"token", "new_password"}`. `200` si tiene éxito. `400` si el token es inválido/expiró/ya se usó, o si `new_password` es igual a la actual. `422` si `new_password` es débil. `429` si esta limitado. |
+| `POST /auth/change-password` | Login | Body `{"current_password", "new_password"}`. `200` con un `Token` **nuevo** (el cambio invalida todos los access tokens emitidos antes, incluido el usado para llamar a este endpoint). `401` si `current_password` esta mal. `400` si `new_password` es igual a la actual. `422` si es débil. |
 
 ## Endpoints — proveedores
 
@@ -223,11 +252,13 @@ services/api/
 ├── database.py             # inicialización de TinyDB de proveedores + lock
 ├── users_db.py               # inicializacion de TinyDB de usuarios/perfiles + lock
 ├── security.py                # hash de contrasenas, JWT, get_current_user/get_current_admin
+├── rate_limit.py               # rate limiter en memoria (forgot/reset-password)
+├── mailer.py                    # envio de emails via Resend (forgot-password), fallback de consola
 ├── routes/
 │   ├── incidents.py        # /api/incidents
 │   ├── suppliers.py        # /suppliers
 │   ├── users.py               # /users
-│   ├── auth.py                 # /auth
+│   ├── auth.py                 # /auth (login, me, forgot/reset/change-password)
 │   └── profiles.py             # /profiles
 ├── analysis.py             # adaptador HTTP de shared/incidents_analysis.py
 ├── store.py                # almacén en memoria del último análisis
@@ -235,12 +266,13 @@ services/api/
 ├── seed_users.py              # creacion idempotente del admin inicial
 ├── fixtures/suppliers.json # datos iniciales del seeder
 ├── tests/
-│   ├── conftest.py            # fixtures compartidas de usuario/token
+│   ├── conftest.py            # fixtures compartidas de usuario/token, reset de rate limit
 │   ├── test_suppliers.py
 │   ├── test_auth.py
 │   ├── test_users.py
 │   ├── test_profiles.py
-│   └── test_protected_routes.py
+│   ├── test_protected_routes.py
+│   └── test_password_reset.py
 └── data/                   # TinyDB local (ignorado por git)
 ```
 

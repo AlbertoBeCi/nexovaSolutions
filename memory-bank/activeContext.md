@@ -2,9 +2,114 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — autenticación y protección de rutas (AUTH-01)
+## Ahora — auth de frontend: register/profile + interceptor + `uis/backoffice`
 
-Rama: `feature/auth-api` (partiendo de `feature/suppliers-api`).
+Rama: `feature/auth-frontend` (partiendo de `feature/password-reset`, con
+forgot/reset/change-password + Resend ya hechos ahí).
+
+- **Interceptor centralizado** (`lib/api-client.ts::apiRequest`, en las dos
+  apps): adjunta el token guardado automáticamente en toda llamada — ya no
+  hace falta pasarlo a mano por función (resuelve de paso el pendiente de
+  `lib/suppliers-api.ts` sin token, documentado en la tarea anterior). Si
+  una llamada *que llevaba* token responde 401, limpia el storage y hace
+  `window.location.href = "/login"` (navegación dura a propósito: corre
+  fuera de un componente/evento de React). Un 401 en una llamada *sin*
+  token (login con credenciales malas) no dispara nada de esto.
+- **`uis/application`**: `/register` (un solo formulario, `POST /users` con
+  `profile` embebido si se llena `name` → `POST /auth/login` automático) y
+  `/account/profile` (`GET /auth/me` + `PUT /profiles/me`, upsert). `Mi
+  cuenta` en el nav ahora apunta a `/account/profile` (antes iba directo a
+  change-password). `<RequireAuth>` ahora acepta `children` como funcion
+  `(currentUser) => nodo`, para que `/account/profile` reuse el usuario que
+  el guard ya resolvió en vez de repetir `GET /auth/me`.
+- **`uis/backoffice`** (nuevo, antes sin auth): duplicado completo del
+  cliente de auth (`lib/{api-client,auth-api,auth-storage}.ts`,
+  `types/auth.ts`, `_components/{require-auth,form-styles}`) más
+  `/login`, `/register`, `/account/profile`, `/account/change-password`.
+  **Sin duplicar `/forgot-password`/`/reset-password`**: el email de reset
+  de `services/api` apunta a un único `FRONTEND_URL` (hoy `uis/application`),
+  así que `/login` de backoffice enlaza ahí de forma cruzada
+  (`NEXT_PUBLIC_APPLICATION_URL`, nueva env var) en vez de duplicar el
+  flujo. No hay workspace tooling real en el repo (ni `pnpm-workspace.yaml`
+  ni `workspaces` en ningún `package.json`, confirmado explorando) — por
+  eso se duplica el cliente por app en vez de extraerlo a `packages/`.
+- **Regresión real encontrada y arreglada**: `uis/backoffice/incidencias`
+  llama a `POST /api/incidents/analyze`, protegida desde AUTH-01 — como
+  backoffice nunca tuvo login, esa página daba 401 silencioso desde
+  entonces. `services/incidents-api.ts` se migró a `lib/api-client.ts` (ya
+  no arma su propio `fetch`) y la página quedó envuelta en `<RequireAuth>`.
+- Verificado end-to-end con Playwright (headless, instalado temporalmente,
+  no quedó como dependencia) en ambas apps a la vez: registro con perfil,
+  perfil precargado sin llamada duplicada, editar perfil, crear un
+  proveedor logueado (confirma el interceptor), cambiar contraseña, logout,
+  login con la contraseña nueva, `/account/profile` sin sesión redirige;
+  en backoffice: `/incidencias` sin sesión redirige, registro, y analizar
+  un CSV logueado funciona (confirma el fix de la regresión). Cero errores
+  de consola en ambas.
+
+## Anterior — recuperación/cambio de contraseña + login en `uis/application`
+
+Rama: `feature/password-reset` (partiendo de `main`, con AUTH-01 ya
+mergeado).
+
+- `services/api/routes/auth.py`: 3 endpoints nuevos —
+  `POST /auth/forgot-password`, `POST /auth/reset-password`,
+  `POST /auth/change-password` (autenticado). Reset con JWT stateless
+  (`type="password_reset"`) que lleva `pwd_fp` (huella del hash vigente al
+  emitirlo): tanto los tokens de reset como los **access token** normales
+  ahora incluyen `pwd_fp` y `get_current_user` lo valida, así que cualquier
+  cambio de contraseña invalida de inmediato todas las sesiones anteriores
+  sin necesitar una tabla de tokens revocados. `create_access_token` cambió
+  de firma (`subject, hashed_password, expires_delta=None`).
+- Política de contraseña nueva (`validate_password_strength` en
+  `models.py`, vía `Annotated[str, AfterValidator(...)]`): 8+ caracteres,
+  mayúscula, minúscula, número. Solo aplica a reset/change-password, **no**
+  a `POST /users` (se queda en `min_length=8` para no romper AUTH-01).
+  `rate_limit.py` (nuevo): limitador en memoria simple, 5 intentos/15min
+  por IP en `forgot-password` y `reset-password`.
+  `main.py` ahora llama `logging.basicConfig` (si no, el logger `auth` no
+  imprime nada al correr `uvicorn`, aunque sí lo capturan los tests).
+  `uv run pytest` → 79 tests en verde (55 de antes + 24 nuevos en
+  `tests/test_password_reset.py`).
+- `uis/application`: primera integración de auth en un frontend.
+  `lib/auth-api.ts` + `lib/auth-storage.ts` (token en `localStorage`,
+  `useSyncExternalStore` para que `nav-links.tsx` refleje la sesión sin
+  leer `localStorage` en un efecto) + páginas `/login`, `/forgot-password`,
+  `/reset-password`, `/account/change-password` (esta última envuelta en
+  `<RequireAuth>`). Se extrajo `lib/api-client.ts` desde
+  `lib/suppliers-api.ts` (fetch genérico + traducción de errores) para no
+  duplicarlo entre proveedores y auth.
+  **Sigue pendiente:** `lib/suppliers-api.ts` todavía no adjunta el token,
+  así que las mutaciones de `/suppliers` seguirán devolviendo 401 aunque el
+  usuario esté logueado.
+- Verificado en navegador real con Playwright (headless, instalado
+  temporalmente con `npm install --no-save playwright`, no quedó como
+  dependencia): login con credenciales inválidas, forgot→reset→login con la
+  contraseña nueva, nav reflejando la sesión, change-password invalidando
+  el token viejo, y `/account/change-password` redirigiendo a `/login` sin
+  sesión. Sin errores de consola salvo los 401 esperados de los intentos
+  fallidos/no autenticados.
+- **Envío real por email (Resend)**: `mailer.py` nuevo —
+  `send_password_reset_email(to_email, reset_link)`, usando el SDK oficial
+  `resend`. Solo envía si `RESEND_API_KEY` está en `.env` (el desarrollador
+  ya tiene una cuenta y la configuró); sin la key, o si Resend falla,
+  `forgot-password` cae al log por consola de siempre — así el flujo sigue
+  siendo probable en un checkout nuevo sin cuenta de ningún proveedor.
+  Nuevas env vars: `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (default
+  `onboarding@resend.dev`, el remitente de pruebas de Resend — solo entrega
+  al email dueño de la cuenta hasta verificar un dominio propio ahí) y
+  `FRONTEND_URL` (default `http://localhost:3001`, para construir el link
+  `/reset-password?token=...` del email). Los tests nunca disparan un envío
+  real: `tests/conftest.py` tiene una fixture `autouse` que monkeypatchea
+  `routes.auth.send_password_reset_email` a `False`, sin importar lo que
+  tenga el `.env` local. **Importante:** el módulo se llama `mailer.py`, no
+  `email.py` — ese nombre taparía el paquete `email` de la stdlib en este
+  layout plano.
+
+## Anterior — autenticación y protección de rutas (AUTH-01)
+
+Mergeado a `main` (PR #16). Rama original: `feature/auth-api` (partiendo de
+`feature/suppliers-api`).
 
 - `services/api/`: nuevos módulos `config.py` (carga `.env`), `users_db.py`
   (TinyDB propio de `users`/`profiles`, `USERS_DB_PATH`), `security.py`

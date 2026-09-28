@@ -13,12 +13,18 @@ Documentacion interactiva (Swagger UI) una vez arrancado:
 """
 from __future__ import annotations
 
+import logging
 import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routes import auth, incidents, profiles, suppliers, users
+
+# Sin este basicConfig, logger.info (p. ej. el token de reset que loguea
+# routes/auth.py a falta de un proveedor de email) no se ve en la consola de
+# `uvicorn main:app`: el logger raiz no tiene handler propio por defecto.
+logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(name)s: %(message)s")
 
 # Frontends de desarrollo: uis/backoffice (3000) y uis/application (3001).
 # En produccion, definir CORS_ORIGINS con los origenes reales separados por comas.

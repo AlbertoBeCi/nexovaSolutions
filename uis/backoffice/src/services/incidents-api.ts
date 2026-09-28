@@ -5,8 +5,12 @@
  * (snake_case, ver services/api/models.py) al modelo de la UI
  * (camelCase, types/incidents.ts), igual que services/api.ts hace con el
  * DTO de 4Geek Tracker.
+ *
+ * POST /api/incidents/analyze requiere login: usa apiRequest (lib/api-client.ts)
+ * para que el token se adjunte solo y un 401 redirija a /login.
  */
 
+import { apiRequest, type ValidationIssue } from "../lib/api-client";
 import {
   INCIDENT_CATEGORIES,
   INCIDENT_STATUSES,
@@ -16,9 +20,6 @@ import {
   incidentStatusLabels,
   invalidRuleLabels,
 } from "../types/incidents";
-
-const INCIDENTS_API_URL =
-  process.env.NEXT_PUBLIC_INCIDENTS_API_URL ?? "http://localhost:8000";
 
 const SATISFACTION_SCORES = [1, 2, 3, 4, 5] as const;
 
@@ -99,27 +100,10 @@ function toIncidentsAnalysisSummary(dto: AnalysisSummaryDto): IncidentsAnalysisS
 
 // ─── Manejo de errores ────────────────────────────────────────────────
 
-/** Extrae un mensaje legible del cuerpo de error de la API (formato de
- *  validación FastAPI, o `detail`/`error`/`message`); si no reconoce el
- *  formato, o el cuerpo no es JSON, cae al mensaje por defecto. */
-async function extractErrorMessage(response: Response, fallbackMessage: string): Promise<string> {
-  try {
-    const body = await response.json();
-
-    if (Array.isArray(body?.detail)) {
-      const messages = body.detail
-        .map((issue: { msg?: unknown }) => issue.msg)
-        .filter((msg: unknown): msg is string => typeof msg === "string");
-      if (messages.length > 0) return messages.join(" ");
-    }
-
-    if (typeof body?.detail === "string") return body.detail;
-    if (typeof body?.error === "string") return body.error;
-    if (typeof body?.message === "string") return body.message;
-  } catch {
-    // el cuerpo de la respuesta no es JSON o esta vacio, se usa el mensaje por defecto
-  }
-  return fallbackMessage;
+/** Este dominio no tiene mensajes por campo propios: devuelve el `msg` de
+ *  Pydantic tal cual (o un mensaje generico si no hay). */
+function translateIssue(issue: ValidationIssue): string {
+  return issue.msg ?? "Alguno de los datos enviados no es válido.";
 }
 
 // ─── Endpoints: incidencias ───────────────────────────────────────────
@@ -129,14 +113,12 @@ export async function analyzeIncidentsCsv(file: File): Promise<IncidentsAnalysis
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`${INCIDENTS_API_URL}/api/incidents/analyze`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error(await extractErrorMessage(response, "No se pudo analizar el archivo."));
-  }
+  const response = await apiRequest(
+    "/api/incidents/analyze",
+    { method: "POST", body: formData },
+    "No se pudo analizar el archivo.",
+    translateIssue
+  );
 
   const dto = (await response.json()) as AnalysisSummaryDto;
   return toIncidentsAnalysisSummary(dto);
@@ -144,13 +126,12 @@ export async function analyzeIncidentsCsv(file: File): Promise<IncidentsAnalysis
 
 /** Descarga el resultado del último análisis como CSV y dispara la descarga en el navegador. */
 export async function downloadIncidentsResultsCsv(): Promise<void> {
-  const response = await fetch(`${INCIDENTS_API_URL}/api/incidents/results/export`);
-
-  if (!response.ok) {
-    throw new Error(
-      await extractErrorMessage(response, "No se pudo exportar el resultado del análisis.")
-    );
-  }
+  const response = await apiRequest(
+    "/api/incidents/results/export",
+    { method: "GET" },
+    "No se pudo exportar el resultado del análisis.",
+    translateIssue
+  );
 
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
