@@ -8,12 +8,21 @@
 "use client";
 
 import { useState } from "react";
+import { RequireAuth } from "../_components/require-auth";
 import { analyzeIncidentsCsv, downloadIncidentsResultsCsv } from "../../services/incidents-api";
 import type { IncidentsAnalysisSummary } from "../../types/incidents";
 import { AnalysisSummaryView } from "./_components/analysis-summary";
 import { CsvUploader } from "./_components/csv-uploader";
 
 export default function IncidenciasPage() {
+  return (
+    <RequireAuth>
+      <IncidenciasView />
+    </RequireAuth>
+  );
+}
+
+function IncidenciasView() {
   const [summary, setSummary] = useState<IncidentsAnalysisSummary | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [exporting, setExporting] = useState(false);
