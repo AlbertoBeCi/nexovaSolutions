@@ -43,12 +43,15 @@ function EditCandidateContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
   const [loaded, setLoaded] = useState<LoadedCandidate | null>(null);
+  const [loadedToken, setLoadedToken] = useState<number | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const [fields, setFields] = useState<CandidateFieldsValue>(EMPTY_CANDIDATE_FIELDS);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const loading = loaded === null || loaded.id !== id;
+  // `reloadToken` cambia al pulsar "Reintentar" tras un error de carga.
+  const loading = loaded === null || loaded.id !== id || loadedToken !== reloadToken;
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +65,7 @@ function EditCandidateContent({ params }: { params: Promise<{ id: string }> }) {
           setLoaded({ id, outcome: "found", candidate, errorMessage: null });
           setFields(toFieldsValue(candidate));
         }
+        setLoadedToken(reloadToken);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -71,12 +75,13 @@ function EditCandidateContent({ params }: { params: Promise<{ id: string }> }) {
           candidate: null,
           errorMessage: err instanceof Error ? err.message : "No se pudo cargar el candidato",
         });
+        setLoadedToken(reloadToken);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadToken]);
 
   /** Guarda los cambios con PUT y refresca el formulario con la respuesta
    *  del servidor (por si normaliza algún valor). */
@@ -112,9 +117,19 @@ function EditCandidateContent({ params }: { params: Promise<{ id: string }> }) {
       {loading && <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>}
 
       {!loading && loaded.outcome === "error" && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-          {loaded.errorMessage}
-        </p>
+        <div
+          role="alert"
+          className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+        >
+          <p>{loaded.errorMessage}</p>
+          <button
+            type="button"
+            onClick={() => setReloadToken((token) => token + 1)}
+            className="w-fit rounded-md px-3 py-1 font-medium ring-1 ring-red-300 ring-inset hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 dark:ring-red-800 dark:hover:bg-red-900"
+          >
+            Reintentar
+          </button>
+        </div>
       )}
 
       {!loading && loaded.outcome === "not-found" && (

@@ -86,6 +86,12 @@ src/
 
 - La UI va en **español**; nunca se muestran valores crudos de la API (se traducen
   con `statusLabels` / `stageLabels`).
+- La UI tampoco muestra errores crudos: `services/api.ts` traduce los fallos de
+  red a un mensaje en español (`safeFetch`), y `services/incidents-api.ts`
+  traduce los errores de validación de la API y corrige las tildes de sus
+  mensajes en texto plano (`KNOWN_MESSAGE_FIXES`, mismo patrón que
+  `lib/auth-api.ts`). Las páginas con carga diferida muestran el error en un
+  `<div role="alert">` con botón **"Reintentar"**.
 - Antes de commit: `npm run lint` y `npm run build` en verde.
 - Next.js del repo trae breaking changes: consulta `node_modules/next/dist/docs/`
   antes de tocar código de Next. El bloque de `AGENTS.md` lo regenera `next dev`.

@@ -2,7 +2,40 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — Gestor de Incidencias Centralizado
+## Ahora — auditoría de manejo de errores en `uis/backoffice`
+
+Rama actual (partiendo de `main`, con el Gestor de Incidencias Centralizado ya
+trabajado en `feature/gestor-incidencias`).
+
+- Objetivo: que la UI nunca muestre errores crudos (textos en inglés, sin
+  tildes, o el `TypeError` nativo del navegador). Toda la app queda en español
+  y con mensajes legibles.
+- **`src/services/api.ts`** (cliente de la API pública de 4Geek Tracker):
+  nuevo helper `safeFetch(url, init?)` que envuelve `fetch` y, si la petición
+  falla por red (sin conexión, CORS, timeout), lanza un `Error` con mensaje en
+  español (`"No se pudo conectar con el servidor. Comprueba tu conexión a
+  internet."`) en vez de dejar escapar el `TypeError "Failed to fetch"` nativo.
+  Las 8 llamadas del archivo migradas de `fetch(...)` a `safeFetch(...)`. Es
+  especialmente relevante aquí porque este cliente llama a una API externa.
+- **`src/services/incidents-api.ts`** (cliente de `services/api`):
+  `translateIssue` ya no muestra el `msg` crudo de Pydantic (en inglés): ahora
+  lo traduce con `FIELD_NAMES` (campo → nombre legible, `file` → "Archivo CSV")
+  y `issue.type` (`missing` → "es obligatorio", resto → "Revisa el campo").
+  Nuevo `KNOWN_MESSAGE_FIXES` + `polishErrorMessage` que corrigen las tildes de
+  los mensajes en texto plano que devuelve la API (`extension` → `extensión`,
+  `vacio` → `vacío`, `valido` → `válido`, `esta` → `está`), replicando el patrón
+  ya existente en `lib/auth-api.ts`. `withPolishedErrors` envuelve
+  `analyzeIncidentsCsv` y `downloadIncidentsResultsCsv` para pulir el mensaje
+  sin dejar de propagarlo.
+- **Páginas del pipeline de candidatos** (`src/app/page.tsx`,
+  `src/app/candidates/[id]/page.tsx`, `src/app/candidates/[id]/edit/page.tsx`):
+  el bloque de error de carga pasa de un `<p>` a un `<div role="alert">` con
+  botón **"Reintentar"**. Para forzar la recarga se añadió `reloadToken`
+  (estado) y, donde el efecto ya comparaba por `id`/clave, un `loadedToken`
+  para no mostrar datos obsoletos mientras llega la respuesta nueva.
+- `npm run lint` y `npm run build` en verde (10 rutas, typecheck OK).
+
+## Anterior — Gestor de Incidencias Centralizado
 
 Rama: `feature/gestor-incidencias` (partiendo de `main`, con AUTH-01 y el
 login/reset de `uis/application`/`uis/backoffice` ya mergeados vía PR #17).

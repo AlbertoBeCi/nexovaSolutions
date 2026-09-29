@@ -111,6 +111,20 @@ function toRecordPayload(data: CandidateInput) {
 
 // ─── Manejo de errores y respuestas ─────────────────────────────────
 
+/** fetch envuelto: si la petición falla por red (sin conexión, CORS,
+ *  timeout — más probable aquí que en services/api.ts propio de Nexova,
+ *  porque este cliente llama a la API pública externa de 4Geek Tracker),
+ *  lanza un Error con mensaje en español en vez de dejar escapar el
+ *  `TypeError` nativo del navegador ("Failed to fetch", en inglés) hasta la
+ *  UI (ver auditoría de manejo de errores). */
+async function safeFetch(url: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch {
+    throw new Error("No se pudo conectar con el servidor. Comprueba tu conexión a internet.");
+  }
+}
+
 /** Extrae un mensaje legible del cuerpo de error de la API (formato de
  *  validación FastAPI, o `error`/`message` genéricos); si no reconoce el
  *  formato, o el cuerpo no es JSON, cae al mensaje por defecto. */
@@ -158,7 +172,7 @@ export async function getCandidates(filters: CandidateFilters = {}): Promise<Can
   }
   params.set("limit", String(DEFAULT_LIST_LIMIT));
 
-  const response = await fetch(`${API_BASE_URL}/records?${params.toString()}`);
+  const response = await safeFetch(`${API_BASE_URL}/records?${params.toString()}`);
   const result = await parseJsonResponse<RecordListResponseDto>(
     response,
     "No se pudo obtener la lista de candidatos"
@@ -169,7 +183,7 @@ export async function getCandidates(filters: CandidateFilters = {}): Promise<Can
 
 /** Obtiene un candidato por id, o `null` si la API responde 404 (no existe). */
 export async function getCandidateById(id: string): Promise<Candidate | null> {
-  const response = await fetch(`${API_BASE_URL}/records/${id}`);
+  const response = await safeFetch(`${API_BASE_URL}/records/${id}`);
 
   if (response.status === 404) {
     return null;
@@ -181,7 +195,7 @@ export async function getCandidateById(id: string): Promise<Candidate | null> {
 
 /** Crea un candidato. La API asigna status/stage por defecto (no aceptados en el payload). */
 export async function createCandidate(data: CandidateInput): Promise<Candidate> {
-  const response = await fetch(`${API_BASE_URL}/records`, {
+  const response = await safeFetch(`${API_BASE_URL}/records`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toRecordPayload(data)),
@@ -193,7 +207,7 @@ export async function createCandidate(data: CandidateInput): Promise<Candidate> 
 
 /** Reemplaza los datos personales/profesionales del candidato (no toca status/stage). */
 export async function updateCandidate(id: string, data: CandidateInput): Promise<Candidate> {
-  const response = await fetch(`${API_BASE_URL}/records/${id}`, {
+  const response = await safeFetch(`${API_BASE_URL}/records/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toRecordPayload(data)),
@@ -208,7 +222,7 @@ export async function updateCandidateStatusStage(
   id: string,
   data: CandidateStatusStageInput
 ): Promise<Candidate> {
-  const response = await fetch(`${API_BASE_URL}/records/${id}`, {
+  const response = await safeFetch(`${API_BASE_URL}/records/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -225,7 +239,7 @@ export async function updateCandidateStatusStage(
 
 /** Lista las notas internas de un candidato. */
 export async function getCandidateNotes(candidateId: string): Promise<CandidateNote[]> {
-  const response = await fetch(`${API_BASE_URL}/records/${candidateId}/notes`);
+  const response = await safeFetch(`${API_BASE_URL}/records/${candidateId}/notes`);
   const result = await parseJsonResponse<NoteListResponseDto>(
     response,
     `No se pudieron obtener las notas del candidato ${candidateId}`
@@ -236,7 +250,7 @@ export async function getCandidateNotes(candidateId: string): Promise<CandidateN
 
 /** Añade una nota interna al candidato. */
 export async function addCandidateNote(candidateId: string, text: string): Promise<CandidateNote> {
-  const response = await fetch(`${API_BASE_URL}/records/${candidateId}/notes`, {
+  const response = await safeFetch(`${API_BASE_URL}/records/${candidateId}/notes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content: text }),
@@ -251,7 +265,7 @@ export async function addCandidateNote(candidateId: string, text: string): Promi
 
 /** Borra una nota interna del candidato. */
 export async function deleteCandidateNote(candidateId: string, noteId: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/records/${candidateId}/notes/${noteId}`, {
+  const response = await safeFetch(`${API_BASE_URL}/records/${candidateId}/notes/${noteId}`, {
     method: "DELETE",
   });
 

@@ -51,10 +51,12 @@ function CandidatesPageContent() {
   const status = urlStatus && isCandidateStatus(urlStatus) ? urlStatus : "";
   const stage = urlStage && isCandidateStage(urlStage) ? urlStage : "";
 
-  // requestKey identifica la combinación de filtros vigente en la URL. Comparándola
-  // con la key guardada en queryResult derivamos `loading` sin un useState aparte:
-  // si aún no coinciden, la respuesta en vuelo pertenece a un filtro anterior.
-  const requestKey = JSON.stringify({ search: urlSearch, status, stage });
+  // requestKey identifica la combinación de filtros vigente en la URL (más
+  // reloadToken, que cambia al pulsar "Reintentar"). Comparándola con la key
+  // guardada en queryResult derivamos `loading` sin un useState aparte: si
+  // aún no coinciden, la respuesta en vuelo pertenece a un filtro anterior.
+  const [reloadToken, setReloadToken] = useState(0);
+  const requestKey = JSON.stringify({ search: urlSearch, status, stage, reloadToken });
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const [queryResult, setQueryResult] = useState<CandidatesQueryResult | null>(null);
@@ -178,9 +180,19 @@ function CandidatesPageContent() {
       {loading && <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>}
 
       {!loading && error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </p>
+        <div
+          role="alert"
+          className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+        >
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={() => setReloadToken((token) => token + 1)}
+            className="w-fit rounded-md px-3 py-1 font-medium ring-1 ring-red-300 ring-inset hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 dark:ring-red-800 dark:hover:bg-red-900"
+          >
+            Reintentar
+          </button>
+        </div>
       )}
 
       {!loading && !error && candidates.length === 0 && (

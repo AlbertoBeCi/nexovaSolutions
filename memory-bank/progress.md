@@ -86,6 +86,17 @@
   `services/incident-manager-api`; `npm run lint`/`build` y el verificador
   de textos de UI en verde; probado en navegador real con Playwright.
 
+- **Auditoría de manejo de errores en `uis/backoffice`** — la UI ya no
+  muestra errores crudos: `services/api.ts` envuelve `fetch` en un `safeFetch`
+  que traduce los fallos de red ("Failed to fetch") a un mensaje en español;
+  `services/incidents-api.ts` traduce los errores de validación de Pydantic
+  (con `FIELD_NAMES` + `issue.type`) y corrige las tildes de los mensajes en
+  texto plano de la API (`KNOWN_MESSAGE_FIXES` + `polishErrorMessage`, mismo
+  patrón que `lib/auth-api.ts`); las tres páginas del pipeline de candidatos
+  (`/`, `candidates/[id]`, `candidates/[id]/edit`) cambian el bloque de error
+  de carga por un `<div role="alert">` con botón **"Reintentar"**
+  (`reloadToken`/`loadedToken`). `npm run lint`/`build` en verde.
+
 ## Falta
 
 - Persistencia real (TinyDB es de un solo proceso) si `services/api` se despliega con varios workers.
