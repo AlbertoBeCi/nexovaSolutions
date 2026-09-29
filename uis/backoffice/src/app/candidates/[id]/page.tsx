@@ -51,6 +51,7 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
   const { id } = use(params);
 
   const [loaded, setLoaded] = useState<LoadedData | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const [savingField, setSavingField] = useState<"status" | "stage" | null>(null);
   const [noteText, setNoteText] = useState("");
   const [addingNote, setAddingNote] = useState(false);
@@ -59,7 +60,11 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
 
   // `loaded === null` es la primera carga; `loaded.id !== id` cubre la
   // navegación entre fichas sin desmontar el componente (misma ruta dinámica).
-  const loading = loaded === null || loaded.id !== id;
+  // `reloadToken` cambia al pulsar "Reintentar" tras un error: forzamos la
+  // recarga limpiando `loaded` en el propio efecto, y comparamos con el token
+  // para no mostrar datos obsoletos mientras llega la respuesta nueva.
+  const [loadedToken, setLoadedToken] = useState<number | null>(null);
+  const loading = loaded === null || loaded.id !== id || loadedToken !== reloadToken;
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +83,7 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
             errorMessage: null,
           });
         }
+        setLoadedToken(reloadToken);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -89,12 +95,13 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
           errorMessage:
             err instanceof Error ? err.message : "No se pudo cargar la información del candidato",
         });
+        setLoadedToken(reloadToken);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadToken]);
 
   // ─── Acciones ───────────────────────────────────────────────────
 
@@ -195,9 +202,19 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
       {loading && <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>}
 
       {!loading && loaded.outcome === "error" && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-          {loaded.errorMessage}
-        </p>
+        <div
+          role="alert"
+          className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+        >
+          <p>{loaded.errorMessage}</p>
+          <button
+            type="button"
+            onClick={() => setReloadToken((token) => token + 1)}
+            className="w-fit rounded-md px-3 py-1 font-medium ring-1 ring-red-300 ring-inset hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 dark:ring-red-800 dark:hover:bg-red-900"
+          >
+            Reintentar
+          </button>
+        </div>
       )}
 
       {!loading && loaded.outcome === "not-found" && (
