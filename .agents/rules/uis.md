@@ -32,5 +32,6 @@ globs: ["uis/**"]
 
 ## Antes de commit
 
-- `npm run lint` y `npm run build` desde la carpeta de la app, en verde.
+- `npm run lint`, `npm run build` y `npm test` (Jest) desde la carpeta de la app, en
+  verde; si cambia un cliente HTTP, actualiza sus pruebas (ver [`testing.md`](./testing.md)).
 - Si tocaste tipos compartidos con `services/`, revisa que ambos lados compilen.

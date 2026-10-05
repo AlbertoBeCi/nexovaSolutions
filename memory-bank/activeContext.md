@@ -20,6 +20,9 @@ serialización HTTP (sin tests de CORS, cabeceras, JSON mal formado).
 - `docs/entrega/TESTING.md`: un único documento con cómo ejecutar, qué prueba
   cada archivo, resultados, cobertura y qué significa pasar/fallar.
 - El verificador `revision-textos-ui` ahora ignora carpetas `__tests__`.
+- Nueva regla permanente `.agents/rules/testing.md` (y enganche en `AGENTS.md`
+  §2/§4): al añadir o modificar un endpoint, cliente HTTP o regla compartida, se
+  actualizan sus pruebas en el mismo commit, como el `memory-bank/`.
 
 ## Anterior — auditoría de manejo de errores en `uis/backoffice`
 

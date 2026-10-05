@@ -86,5 +86,6 @@ frente a `lib/api-client.ts`): necesita su propio fetch de bajo nivel.
 
 ## Antes de commit
 
-- Linter y tests del servicio en verde.
+- Linter y tests del servicio en verde, con las pruebas del endpoint nuevo o
+  modificado actualizadas en el mismo commit (ver [`testing.md`](./testing.md)).
 - Si cambió el contrato de la API, actualiza el frontend y la doc del servicio.

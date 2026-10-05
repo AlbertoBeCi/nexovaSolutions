@@ -28,7 +28,8 @@ Una regla por archivo (kebab-case). Cada una **declara su alcance** —
 `**Alcance:**`. Detalle y plantilla en [`rules/README.md`](./rules/README.md).
 
 Reglas actuales: [`idioma-y-dominio`](./rules/idioma-y-dominio.md) (`always`),
-[`uis`](./rules/uis.md) (`uis/**`), [`services`](./rules/services.md) (`services/**`).
+[`uis`](./rules/uis.md) (`uis/**`), [`services`](./rules/services.md) (`services/**`),
+[`testing`](./rules/testing.md) (`services/**`, `uis/**`, `packages/**`).
 
 ### `skills/`
 
