@@ -66,7 +66,7 @@ at all.
 uv run pytest
 ```
 
-Full test guide (what each file checks, how to read a pass/fail, coverage): [`TESTING.md`](./TESTING.md).
+Full test guide (what each file checks, how to read a pass/fail, coverage): [`TESTING.md`](../../entregables/TESTING.md).
 
 - `tests/test_api.py`: every endpoint's happy path and error cases (missing
   fields, invalid enum values, malformed body, filters, all valid and
