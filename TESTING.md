@@ -81,8 +81,7 @@ ni necesitan ninguna API levantada.
 ## 📝 Plan de pruebas y por qué
 
 Antes de escribir código se listaron, por endpoint, los casos de los tres niveles
-exigidos. La IA ayudó a generar el boilerplate y a sugerir casos límite; **las
-decisiones de qué probar y por qué son nuestras**.
+exigidos. La IA ayudó a generar el boilerplate y a sugerir casos límite.
 
 ### 🔐 Endpoints de autenticación (AUTH-088)
 
