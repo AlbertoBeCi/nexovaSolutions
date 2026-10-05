@@ -12,7 +12,7 @@ comportamiento no está terminado hasta que sus pruebas están actualizadas**, i
 que el `memory-bank/`.
 
 Guía de la batería (qué prueba cada archivo, resultados, cobertura):
-[`docs/entrega/TESTING.md`](../../docs/entrega/TESTING.md).
+[`TESTING.md`](../../TESTING.md).
 
 ## Qué obliga a tocar las pruebas
 
@@ -48,7 +48,7 @@ Guía de la batería (qué prueba cada archivo, resultados, cobertura):
   no cabeceras, CORS ni el formato exacto del JSON.
 - 📌 **Comportamiento discutible:** si fijas lo que el código hace hoy y quizá deba
   cambiar, márcalo con `# Comportamiento actual: …` y añádelo a la tabla
-  «Comportamientos fijados» de `docs/entrega/TESTING.md`.
+  «Comportamientos fijados» de `TESTING.md`.
 - 🛡️ **Aislamiento:** nunca tocar datos reales (`data/`), enviar emails ni llamar a APIs
   externas. Estado global (`store`, `rate_limit`) se reinicia en fixtures `autouse`.
 - 🚫 **Prohibido** dejar una prueba en `skip`/`xfail`, borrarla o debilitar un
@@ -57,13 +57,14 @@ Guía de la batería (qué prueba cada archivo, resultados, cobertura):
 
 ## Antes de commit
 
-1. ▶️ Ejecuta las pruebas del área tocada **y de sus consumidores**, todas en verde:
+1. ▶️ Ejecuta las pruebas del área tocada **y de sus consumidores**, todas en verde
+   (`uv run pytest` desde la raíz lanza las 3 suites Python):
    - `services/api` → `uv run pytest`
    - `services/incident-manager-api` → `uv run pytest`
    - `uis/application` / `uis/backoffice` → `npm test` (con `npx jest --coverage` si quieres ver cobertura)
    - `packages/shared` → sus pruebas (`packages/shared/tests/`)
 2. 📝 Si cambió el número de pruebas, un comportamiento fijado o la cobertura,
-   actualiza [`docs/entrega/TESTING.md`](../../docs/entrega/TESTING.md) (resumen,
+   actualiza [`TESTING.md`](../../TESTING.md) (resumen,
    tabla del archivo afectado y «Comportamientos fijados»).
 3. 🧠 Si cambió el estado de las pruebas, refléjalo en `memory-bank/progress.md`
    y `memory-bank/activeContext.md`.

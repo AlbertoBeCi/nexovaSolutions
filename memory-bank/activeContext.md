@@ -7,7 +7,7 @@ _Actualizar al cambiar de foco._
 Rama `feature/pruebas-api` (desde `main`). Pruebas de **lógica**, no de
 serialización HTTP (sin tests de CORS, cabeceras, JSON mal formado).
 
-- `services/api`: 374 tests (`uv run pytest`); `services/incident-manager-api`:
+- `services/api`: 369 tests (`uv run pytest`); `services/incident-manager-api`:
   217. `pytest-cov` añadido como dependencia de dev (informativo, sin umbral).
   Fixtures nuevas en `services/api/tests/conftest.py`: reinicio de
   `store._last_result`, `anon_client`/`user_client`/`admin_client`.
@@ -15,9 +15,9 @@ serialización HTTP (sin tests de CORS, cabeceras, JSON mal formado).
   clientes HTTP con `fetch` mockeado (`jest.environment.cjs` expone
   `Response`/`Headers` de Node a jsdom). Sin tests de componentes.
 - Los tests fijan el comportamiento actual (comentario `# Comportamiento
-  actual:`); no se tocó código de producción. Hallazgo anotado: `GET
-  /api/incidents/results/export` es público.
-- `docs/entrega/TESTING.md`: un único documento con cómo ejecutar, qué prueba
+  actual:`); no se tocó código de producción. Bug detectado y corregido: `GET
+  /api/incidents/results/export` era público; ahora exige login (commit `b881b79`).
+- `TESTING.md` (raíz del repo): un único documento con cómo ejecutar, qué prueba
   cada archivo, resultados, cobertura y qué significa pasar/fallar.
 - El verificador `revision-textos-ui` ahora ignora carpetas `__tests__`.
 - Nueva regla permanente `.agents/rules/testing.md` (y enganche en `AGENTS.md`

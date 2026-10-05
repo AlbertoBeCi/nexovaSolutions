@@ -1,6 +1,6 @@
 # 🧪 TESTING — Batería de pruebas de Nexova Solutions
 
-> 📅 **Ejecución:** 2026-10-05 20:26 · 🌿 **Rama:** `feature/pruebas-api`
+> 📅 **Ejecución:** 2026-10-05 · 🌿 **Rama:** `feature/pruebas-api`
 > 🐍 Python 3.14.8 (`uv` 0.12.22) · 🟢 Node v24.18.1 · 🛠️ `pytest` + 🃏 Jest
 
 🎯 Las pruebas verifican la **lógica** (reglas, permisos, validaciones y errores).
@@ -11,11 +11,13 @@
 1. [🏆 Resumen](#-resumen)
 2. [🚀 Cómo ejecutarlas](#-cómo-ejecutarlas)
 3. [🚦 Cómo leer el resultado](#-cómo-leer-el-resultado)
-4. [🔍 Qué se prueba, por área](#-qué-se-prueba-por-área)
-5. [💥 Ejemplo real de un fallo](#-ejemplo-real-de-un-fallo)
-6. [📌 Comportamientos fijados](#-comportamientos-fijados)
-7. [📈 Cobertura](#-cobertura)
-8. [➕ Añadir una prueba](#-añadir-una-prueba)
+4. [📝 Plan de pruebas y por qué](#-plan-de-pruebas-y-por-qué)
+5. [🔍 Qué se prueba, por área](#-qué-se-prueba-por-área)
+6. [🤖 Flujo asistido por IA y bugs detectados](#-flujo-asistido-por-ia-y-bugs-detectados)
+7. [💥 Ejemplo real de un fallo](#-ejemplo-real-de-un-fallo)
+8. [📌 Comportamientos fijados](#-comportamientos-fijados)
+9. [📈 Cobertura](#-cobertura)
+10. [➕ Añadir una prueba](#-añadir-una-prueba)
 
 ---
 
@@ -23,11 +25,11 @@
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest` | 374 | ✅ 374 · ❌ 0 | 60,8 s | 96 % |
+| 🐍 `services/api` | `uv run pytest` | 369 | ✅ 369 · ❌ 0 | 61,8 s | 96 % |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
 | 🟦 `uis/backoffice` | `npx jest --coverage` | 114 | ✅ 114 · ❌ 0 | 1,0 s | 99,5 % |
-| 🏁 **Total** | | **848** | ✅ **848** · ❌ **0** | | |
+| 🏁 **Total** | | **843** | ✅ **843** · ❌ **0** | | |
 
 | ✅ Otras comprobaciones | 🟦 `uis/application` | 🟦 `uis/backoffice` |
 | --- | :---: | :---: |
@@ -40,13 +42,16 @@
 ## 🚀 Cómo ejecutarlas
 
 ```bash
-# 🐍 Backend (Python)
+# 🏠 Todo el backend Python desde la raíz del repo (3 suites, cada una en su entorno)
+uv run pytest                                  # ⏱️ ~1,5 min
+
+# 🐍 Una suite concreta (Python)
 cd services/api && uv sync && uv run pytest
 cd services/incident-manager-api && uv sync && uv run pytest
 
-# 🟦 Frontends (TypeScript)
-cd uis/application && npm install && npm test
-cd uis/backoffice && npm install && npm test
+# 🟦 Frontends (TypeScript) — Jest con cobertura
+cd uis/application && npm install && npx jest --coverage
+cd uis/backoffice && npm install && npx jest --coverage
 ```
 
 | 🎛️ Quiero… | ⌨️ Comando |
@@ -54,6 +59,8 @@ cd uis/backoffice && npm install && npm test
 | 📄 Un solo archivo | `uv run pytest tests/test_api_status.py` · `npx jest incidents-api` |
 | 🔎 Filtrar por nombre | `uv run pytest -k "login"` |
 | 📈 Ver cobertura | `uv run pytest --cov --cov-report=term-missing` · `npx jest --coverage` |
+
+ℹ️ El `pyproject.toml` de la raíz solo orquesta: `tests/test_suites.py` lanza `uv run --directory <área> pytest` para `services/api`, `services/incident-manager-api` y `packages/shared`. Los servicios no pueden compartir un único proceso porque definen módulos con el mismo nombre (`main`, `models`, `config`).
 
 🛡️ **Seguras de ejecutar:** cada prueba usa bases temporales (TinyDB / SQLite),
 no envía emails y en Jest `fetch` es un doble de prueba. No tocan datos reales
@@ -65,9 +72,47 @@ ni necesitan ninguna API levantada.
 
 | 🚥 Situación | 👀 Qué ves | 💡 Qué significa | 🛠️ Qué hacer |
 | --- | --- | --- | --- |
-| ✅ **Todo pasa** | `374 passed` (pytest) · `Tests: 143 passed` (Jest) | Las reglas de negocio siguen cumpliéndose. | 🎉 Nada: se puede commitear. |
+| ✅ **Todo pasa** | `369 passed` (pytest) · `Tests: 143 passed` (Jest) | Las reglas de negocio siguen cumpliéndose. | 🎉 Nada: se puede commitear. |
 | ❌ **Una prueba falla** | `FAILED archivo::prueba` y líneas `E` (pytest) · `✕ prueba` con `Expected` / `Received` (Jest) | Una regla dejó de cumplirse, o cambió a propósito. | 🔧 Corregir el código; si el cambio es intencionado, actualizar la prueba. |
 | ⚠️ **No arranca** | `ERROR` (pytest) · `Test suite failed to run` (Jest) | Import, fixture o tipo roto antes de ejecutar. | 🔎 Leer el traceback: suele ser una dependencia o una firma cambiada. |
+
+---
+
+## 📝 Plan de pruebas y por qué
+
+Antes de escribir código se listaron, por endpoint, los casos de los tres niveles
+exigidos. La IA ayudó a generar el boilerplate y a sugerir casos límite; **las
+decisiones de qué probar y por qué son nuestras**.
+
+### 🔐 Endpoints de autenticación (AUTH-088)
+
+| 🌐 Endpoint | 🟢 Camino feliz | 🟡 Caso límite | 🔴 Modo de fallo | 📄 Dónde |
+| --- | --- | --- | --- | --- |
+| `POST /users` (registro) | Crea usuario con rol `user`, activo, solo se guarda el hash | Contraseña de 7 (rechaza) y 8 caracteres (acepta); email con distinto *casing*; perfil con nombre de 1 carácter | Email duplicado → 409 y no se crea nada; email inválido; campos de sistema (`role`, `is_active`) → 422 | `test_accounts_rules.py` |
+| `POST /auth/login` | Credenciales correctas → token usable en `/auth/me` | Email con mayúsculas distintas | Contraseña mala, usuario inexistente y usuario inactivo dan **el mismo mensaje** (no revela cuál falló) | `test_accounts_rules.py` |
+| `GET /auth/me` | Devuelve el usuario del token | — | Cabeceras mal formadas, token manipulado, **token expirado**, de otro tipo, con huella de contraseña obsoleta, usuario borrado o desactivado | `test_accounts_rules.py` · `test_security_logic.py` |
+| `POST /auth/forgot-password` | Genera token de reset | Email inexistente responde **igual** que uno existente (anti-enumeración) | Más de 5 intentos → 429 | `test_password_reset.py` |
+| `POST /auth/reset-password` | Cambia la contraseña con el token | Contraseña nueva en el límite de la política | Token basura, **token de acceso usado como reset**, token ya usado, misma contraseña, contraseña débil (cada regla) | `test_password_reset.py` · `test_security_logic.py` |
+| `POST /auth/change-password` | Cambia la contraseña y devuelve un token nuevo | Contraseña nueva igual a la actual | Contraseña actual incorrecta → 401; sin sesión; contraseña débil; el token viejo deja de valer | `test_password_reset.py` |
+| 🧩 **Funciones de seguridad** (sin HTTP) | Hash con sal verificable; JWT con `sub`, `type` y huella | `alg: none`, firma alterada, expiración en el pasado | Contraseña errónea, secreto distinto, token sin `sub` | `test_security_logic.py` |
+
+### 🧭 Resto del backend (extra API-042) y frontend (extra FE-019)
+
+| 🧩 Área | 🟢 Feliz | 🟡 Límite | 🔴 Fallo |
+| --- | --- | --- | --- |
+| 🏭 Proveedores | Alta/lectura/cambio/borrado | Tarifa `0,01`, país↔moneda, fechas bisiestas | Datos inválidos → 422, id inexistente → 404, sin sesión → 401 |
+| 📊 Analizador CSV | Resumen correcto | Descripción de 5 caracteres, puntuación 1 y 5 | Archivo vacío, no UTF-8, columnas que faltan |
+| 🚨 Gestor de incidencias | Alta y ciclo de vida | Estados finales, enums exactos, filtros combinados | Transiciones inválidas, filtros vacíos, id inexistente |
+| 🟦 Clientes TypeScript | Mapeo DTO → modelo, token adjuntado | Filtros vacíos omitidos, `localStorage` bloqueado | Red caída, 401 con sesión, errores en español sin texto crudo |
+
+### 🎯 Por qué estos casos (y no otros)
+
+| 💭 Criterio | 📝 Decisión |
+| --- | --- |
+| 🧠 Lógica, no framework | Se prueba lo que el endpoint **decide** (reglas, permisos, mensajes), no cómo responde. Se eliminaron las pruebas que solo comprobaban que FastAPI convierte un id `abc` a entero o exige un campo de formulario. |
+| 🔐 Seguridad primero | Más casos en auth: es donde un fallo silencioso (como el del enunciado: expiración de tokens) cuesta más. |
+| 🧱 Límites del dominio | Cada regla se prueba justo en su borde (7/8 caracteres, 5 caracteres, puntuación 1–5, estados finales). |
+| 📌 Fijar lo discutible | Lo que el código hace hoy y quizá deba cambiar se documenta con `# Comportamiento actual:` en vez de esconderse. |
 
 ---
 
@@ -76,14 +121,14 @@ ni necesitan ninguna API levantada.
 Cada tabla indica **qué se comprueba**, **qué significa que pase** y **qué
 significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 
-### 🐍 `services/api` — 374 pruebas
+### 🐍 `services/api` — 369 pruebas
 
 | 📄 Archivo | 🔢 | 🧪 Qué comprueba | ✅ Si pasa | ❌ Si falla | 🚦 |
 | --- | ---: | --- | --- | --- | :---: |
 | 🏭 `test_suppliers.py` | 27 | Proveedores: casos base y seed. | El directorio funciona. | Se rompió un flujo básico. | ✅ |
-| 🏭 `test_suppliers_rules.py` | 97 | Reglas país↔moneda, límites de tarifa y fechas, filtros, borrado, protección. | El directorio respeta sus reglas. | Se aceptan datos inválidos (p. ej. España con USD) o se rechazan válidos. | ✅ |
-| 📊 `test_incidents_analyze.py` | 59 | 7 reglas de invalidez del analizador CSV y sus límites, agregados, errores de archivo y exportación. | El resumen es correcto y nunca expone filas ni emails. | Un ticket inválido cuenta como válido y los porcentajes salen mal. | ✅ |
-| 👤 `test_accounts_rules.py` | 97 | Registro, login, permisos propio/admin, perfiles, rutas protegidas vs. públicas. | Cada usuario solo accede a lo suyo. | Alguien leería/borraría datos ajenos o una ruta quedaría abierta. | ✅ |
+| 🏭 `test_suppliers_rules.py` | 95 | Reglas país↔moneda, límites de tarifa y fechas, filtros, borrado, protección. | El directorio respeta sus reglas. | Se aceptan datos inválidos (p. ej. España con USD) o se rechazan válidos. | ✅ |
+| 📊 `test_incidents_analyze.py` | 58 | 7 reglas de invalidez del analizador CSV y sus límites, agregados, errores de archivo y exportación (**protegida con login**). | El resumen es correcto y nunca expone filas ni emails. | Un ticket inválido cuenta como válido y los porcentajes salen mal. | ✅ |
+| 👤 `test_accounts_rules.py` | 95 | Registro, login, permisos propio/admin, perfiles, rutas protegidas vs. públicas. | Cada usuario solo accede a lo suyo. | Alguien leería/borraría datos ajenos o una ruta quedaría abierta. | ✅ |
 | 🔐 `test_security_logic.py` | 36 | Política de contraseñas, hash, JWT (expiración, firma, tipo, huella), `get_current_user`. | Tokens falsos o caducados se rechazan. | Se aceptaría un token falso o una contraseña débil. | ✅ |
 | 🔑 `test_password_reset.py` | 25 | Olvidé / restablecer / cambiar contraseña; token de un solo uso. | El reset es seguro y no revela qué emails existen. | Un token se podría reutilizar o se filtrarían emails. | ✅ |
 | 🔓 `test_auth.py` | 13 | Registro y login base. | Los flujos principales funcionan. | Se rompió un flujo básico. | ✅ |
@@ -130,6 +175,35 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 
 ---
 
+## 🤖 Flujo asistido por IA y bugs detectados
+
+| 🔁 Paso | 📝 Qué se hizo |
+| --- | --- |
+| 1️⃣ **Plan primero** | Se analizaron todos los endpoints con la IA y se redactó el plan (camino feliz / límite / fallo) **antes** de escribir ningún test. |
+| 2️⃣ **IA sugiere casos límite** | Propuso casos que se habrían pasado por alto: `alg: none`, token de reset usado como token de acceso, huella de contraseña obsoleta, email con distinto *casing*, `role: null` en la actualización, estados finales del incidente. |
+| 3️⃣ **IA genera, se revisa** | El boilerplate lo generó la IA; cada prueba se ejecutó y se contrastó con el comportamiento real. Cuando la IA se equivocó, la ejecución lo destapó (ver tabla). |
+| 4️⃣ **Si una prueba revela un bug** | Se escribe la prueba, se comprueba que falla, se corrige el código y se documenta aquí. |
+
+### 🐞 Bug detectado por la batería y corregido
+
+| 🔎 | 📝 |
+| --- | --- |
+| 🐛 **Bug** | `GET /api/incidents/results/export` era **público**: aunque `POST /analyze` exige login, cualquiera podía descargar el último análisis. |
+| 🧪 **Prueba que lo reveló** | `test_export_requires_login` → antes del arreglo: `assert 200 == 401`. |
+| 🔧 **Corrección** | `dependencies=[Depends(get_current_user)]` en la ruta (`services/api/routes/incidents.py`). El frontend ya enviaba el token en la descarga, así que no se rompe. |
+| ✅ **Estado** | Prueba en verde; la ruta pasó a la matriz de rutas protegidas (`test_protected_routes_reject_anonymous_requests`). Commit `b881b79`. |
+
+### 🪞 Errores de la propia IA que la batería destapó
+
+| 💬 Suposición inicial | 🔬 Realidad (descubierta al ejecutar) |
+| --- | --- |
+| Los timestamps salen con sufijo `+00:00`. | Salen con `Z`. |
+| Un login con contraseña vacía devuelve 401. | Devuelve 422 (campo requerido del formulario); esa prueba se eliminó por ser del framework. |
+| La política de contraseñas acepta `Ñ` como mayúscula. | Solo reconoce `A-Z` ASCII (fijado como comportamiento actual). |
+| `role: null` en la actualización se rechaza. | Se interpreta como «no cambiar» (200). |
+
+---
+
 ## 💥 Ejemplo real de un fallo
 
 Para comprobar que la batería detecta errores, se rompió **a propósito** una
@@ -155,7 +229,6 @@ fallará y habrá que actualizarla: es lo esperado.
 
 | 🧩 Servicio | 🔎 Comportamiento actual | 🧪 Prueba |
 | --- | --- | --- |
-| 🐍 `api` | 🌐 `GET /api/incidents/results/export` es **público** (`analyze` exige login). | `test_export_is_public_today` |
 | 🐍 `api` | 🔑 El registro solo exige 8 caracteres (la política fuerte solo aplica a reset/cambio). | `test_registration_only_enforces_min_length` |
 | 🐍 `api` | 🔠 `Ñ` no cuenta como mayúscula en la política de contraseñas. | `test_only_ascii_uppercase_letters_count_as_uppercase` |
 | 🐍 `api` | ✉️ El email distingue mayúsculas (`Ana@x.com` ≠ `ana@x.com`). | `test_registration_email_uniqueness_is_case_sensitive` |
@@ -172,6 +245,28 @@ fallará y habrá que actualizarla: es lo esperado.
 ## 📈 Cobertura
 
 > ℹ️ Informativa: no hay umbral que haga fallar el build.
+
+### 🔐 Cobertura del módulo de autenticación (objetivo ≥ 70 %)
+
+> Verificada con `uv run pytest --cov` en `services/api`.
+
+| 📄 Módulo | 📈 Cobertura | 🎯 Objetivo | 🚦 |
+| --- | ---: | :---: | :---: |
+| `routes/auth.py` | 100 % | ≥ 70 % | ✅ |
+| `security.py` (hash, JWT, dependencias) | 100 % | ≥ 70 % | ✅ |
+| `routes/users.py` | 100 % | ≥ 70 % | ✅ |
+| `routes/profiles.py` | 100 % | ≥ 70 % | ✅ |
+| `rate_limit.py` | 100 % | ≥ 70 % | ✅ |
+
+### 🧭 Resto de módulos probados (objetivo ≥ 60 %)
+
+| 📄 Módulo | 📈 Cobertura | 🚦 |
+| --- | ---: | :---: |
+| `services/api/routes/suppliers.py` | 100 % | ✅ |
+| `services/api/routes/incidents.py` | 100 % | ✅ |
+| `services/incident-manager-api/routes/incidents.py` | 100 % | ✅ |
+
+### 📊 Cobertura total por área
 
 | 🧩 Área | 📈 Cobertura | 📊 Barra | 🕳️ Sin cubrir |
 | --- | ---: | --- | --- |

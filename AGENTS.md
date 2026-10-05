@@ -138,7 +138,7 @@ No hagas `git commit` hasta haber completado estos pasos:
    - Si el flujo del proyecto lo usa, añade el prompt al registro `docs/prompts.md`.
    - Si cambió el dominio, revisa que siga alineado con `CONTEXT.md`.
    - Si cambió el foco, el estado o una decisión, actualiza `memory-bank/`.
-   - Si cambió el número de pruebas, un comportamiento fijado o la cobertura, actualiza [`docs/entrega/TESTING.md`](./docs/entrega/TESTING.md).
+   - Si cambió el número de pruebas, un comportamiento fijado o la cobertura, actualiza [`TESTING.md`](./TESTING.md).
    - Si añadiste una convención nueva de un área, documéntala en `.agents/rules/`.
 
 5. **No filtres secretos.** `.env*.local` y `.claude/` están en `.gitignore`;

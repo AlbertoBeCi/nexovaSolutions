@@ -68,7 +68,7 @@ limpio sin `.env`.
 uv run pytest
 ```
 
-Guía completa de pruebas (qué verifica cada archivo, cómo leer un resultado correcto/fallido, cobertura): [`TESTING.md`](../../docs/entrega/TESTING.md).
+Guía completa de pruebas (qué verifica cada archivo, cómo leer un resultado correcto/fallido, cobertura): [`TESTING.md`](../../TESTING.md).
 
 - `tests/test_api.py`: caso feliz y de error de cada endpoint (campo
   faltante, valor de enum inválido, cuerpo mal formado, filtros, todas las

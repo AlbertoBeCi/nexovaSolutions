@@ -188,7 +188,9 @@ verdad de esa validacion para `scripts/` y `services/*`.
 
 ## Pruebas
 
-- Backend: `pytest` (+ `pytest-cov`, informativo) en `services/api` (374) y
+- `uv run pytest` desde la **raíz** del repo ejecuta las 3 suites Python (`tests/test_suites.py`,
+  cada una en su entorno: los servicios comparten nombres de módulo).
+- Backend: `pytest` (+ `pytest-cov`, informativo) en `services/api` (369) y
   `services/incident-manager-api` (217); `uv run pytest`.
 - Frontends: Jest + `next/jest` en `uis/application` (143) y `uis/backoffice`
   (114); `npm test` / `npx jest --coverage`. `jest.environment.cjs` expone
@@ -197,5 +199,5 @@ verdad de esa validacion para `scripts/` y `services/*`.
 - **Las pruebas evolucionan con el código**: endpoint nuevo o modificado →
   pruebas actualizadas en el mismo commit. Regla en
   [`.agents/rules/testing.md`](../.agents/rules/testing.md); guía y resultados en
-  [`docs/entrega/TESTING.md`](../docs/entrega/TESTING.md).
+  [`TESTING.md`](../TESTING.md).
 
