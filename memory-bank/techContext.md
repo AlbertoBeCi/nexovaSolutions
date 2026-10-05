@@ -185,3 +185,19 @@ verdad de esa validacion para `scripts/` y `services/*`.
 - Warning de Next al construir: detecta varios `package-lock.json` y toma la raíz
   del repo como workspace root. No rompe el build; se puede fijar con
   `turbopack.root` en cada `next.config.ts` si molesta.
+
+## Pruebas
+
+- `uv run pytest` desde la **raíz** del repo ejecuta las 3 suites Python (`tests/test_suites.py`,
+  cada una en su entorno: los servicios comparten nombres de módulo).
+- Backend: `pytest` (+ `pytest-cov`, informativo) en `services/api` (369) y
+  `services/incident-manager-api` (217); `uv run pytest`.
+- Frontends: Jest + `next/jest` en `uis/application` (143) y `uis/backoffice`
+  (114); `npm test` / `npx jest --coverage`. `jest.environment.cjs` expone
+  `Response`/`Headers` de Node a jsdom.
+- Se prueba la **lógica**, no la serialización HTTP.
+- **Las pruebas evolucionan con el código**: endpoint nuevo o modificado →
+  pruebas actualizadas en el mismo commit. Regla en
+  [`.agents/rules/testing.md`](../.agents/rules/testing.md); guía y resultados en
+  [`TESTING.md`](../TESTING.md).
+

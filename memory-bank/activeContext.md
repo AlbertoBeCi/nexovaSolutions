@@ -2,7 +2,29 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — auditoría de manejo de errores en `uis/backoffice`
+## Ahora — baterías de pruebas de backend (pytest) y clientes TS (Jest)
+
+Rama `feature/pruebas-api` (desde `main`). Pruebas de **lógica**, no de
+serialización HTTP (sin tests de CORS, cabeceras, JSON mal formado).
+
+- `services/api`: 369 tests (`uv run pytest`); `services/incident-manager-api`:
+  217. `pytest-cov` añadido como dependencia de dev (informativo, sin umbral).
+  Fixtures nuevas en `services/api/tests/conftest.py`: reinicio de
+  `store._last_result`, `anon_client`/`user_client`/`admin_client`.
+- Jest nuevo en `uis/application` (143) y `uis/backoffice` (114), sobre los
+  clientes HTTP con `fetch` mockeado (`jest.environment.cjs` expone
+  `Response`/`Headers` de Node a jsdom). Sin tests de componentes.
+- Los tests fijan el comportamiento actual (comentario `# Comportamiento
+  actual:`); no se tocó código de producción. Bug detectado y corregido: `GET
+  /api/incidents/results/export` era público; ahora exige login (commit `b881b79`).
+- `TESTING.md` (raíz del repo): un único documento con cómo ejecutar, qué prueba
+  cada archivo, resultados, cobertura y qué significa pasar/fallar.
+- El verificador `revision-textos-ui` ahora ignora carpetas `__tests__`.
+- Nueva regla permanente `.agents/rules/testing.md` (y enganche en `AGENTS.md`
+  §2/§4): al añadir o modificar un endpoint, cliente HTTP o regla compartida, se
+  actualizan sus pruebas en el mismo commit, como el `memory-bank/`.
+
+## Anterior — auditoría de manejo de errores en `uis/backoffice`
 
 Rama actual (partiendo de `main`, con el Gestor de Incidencias Centralizado ya
 trabajado en `feature/gestor-incidencias`).

@@ -4,9 +4,12 @@ from __future__ import annotations
 import pytest
 
 import rate_limit
-from database import open_db, utc_now_iso
+import store
+from database import SUPPLIERS_TABLE, get_suppliers_table, open_db, utc_now_iso
+from fastapi.testclient import TestClient
+from main import app
 from security import create_access_token, hash_password
-from users_db import PROFILES_TABLE, USERS_TABLE
+from users_db import PROFILES_TABLE, USERS_TABLE, get_profiles_table, get_users_table
 
 
 @pytest.fixture(autouse=True)
@@ -16,6 +19,15 @@ def _reset_rate_limits():
     rate_limit._attempts.clear()
     yield
     rate_limit._attempts.clear()
+
+
+@pytest.fixture(autouse=True)
+def _reset_store():
+    """El ultimo analisis de incidencias es estado global del proceso
+    (store._last_result): cada test empieza sin analisis previo."""
+    store._last_result = None
+    yield
+    store._last_result = None
 
 
 @pytest.fixture(autouse=True)
@@ -85,3 +97,34 @@ def auth_headers(users_table, user_credentials):
 def admin_headers(users_table, admin_credentials):
     _, hashed = insert_user(users_table, **admin_credentials, role="admin")
     return auth_header_for(admin_credentials["email"], hashed)
+
+
+@pytest.fixture
+def suppliers_table(tmp_path):
+    db = open_db(tmp_path / "suppliers.json")
+    yield db.table(SUPPLIERS_TABLE)
+    db.close()
+
+
+@pytest.fixture
+def anon_client(suppliers_table, users_table, profiles_table):
+    """TestClient sin credenciales, con las 3 tablas TinyDB aisladas."""
+    app.dependency_overrides[get_suppliers_table] = lambda: suppliers_table
+    app.dependency_overrides[get_users_table] = lambda: users_table
+    app.dependency_overrides[get_profiles_table] = lambda: profiles_table
+    yield TestClient(app)
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def user_client(anon_client, auth_headers):
+    """TestClient autenticado como usuario normal."""
+    anon_client.headers.update(auth_headers)
+    return anon_client
+
+
+@pytest.fixture
+def admin_client(anon_client, admin_headers):
+    """TestClient autenticado como administrador."""
+    anon_client.headers.update(admin_headers)
+    return anon_client

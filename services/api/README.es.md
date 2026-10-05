@@ -120,6 +120,8 @@ y completa valores reales para desarrollo.
 uv run pytest
 ```
 
+Guía completa de pruebas (qué verifica cada archivo, cómo leer un resultado correcto/fallido, cobertura): [`TESTING.md`](../../TESTING.md).
+
 `tests/test_suppliers.py` cubre todos los endpoints de `/suppliers` y la
 idempotencia del seeder; `tests/test_auth.py`, `tests/test_users.py` y
 `tests/test_profiles.py` cubren registro, login, permisos de `/users` y
@@ -151,9 +153,10 @@ guardado en memoria como "último análisis".
 ### `GET /api/incidents/results/export`
 
 Descarga el resultado del último análisis ejecutado en este proceso, como CSV
-(una fila por métrica). Pública.
+(una fila por métrica). Requiere login (`Authorization: Bearer <token>`).
 
 - `200`: archivo `results.csv` descargable (`Content-Disposition: attachment`).
+- `401`: token ausente o inválido.
 - `404`: todavía no se ha ejecutado ningún análisis en este proceso.
 
 ## Endpoints — usuarios / auth / perfiles

@@ -24,7 +24,7 @@ const LABELS_FILES = [`types${sep}candidate.ts`, `types${sep}incident.ts`];
 
 function walk(dir, acc = []) {
   for (const entry of readdirSync(dir)) {
-    if (entry === "node_modules" || entry === ".next" || entry === "dist") continue;
+    if (entry === "node_modules" || entry === ".next" || entry === "dist" || entry === "__tests__") continue;
     const full = join(dir, entry);
     const s = statSync(full);
     if (s.isDirectory()) walk(full, acc);
