@@ -17,7 +17,7 @@ serialización HTTP (sin tests de CORS, cabeceras, JSON mal formado).
 - Los tests fijan el comportamiento actual (comentario `# Comportamiento
   actual:`); no se tocó código de producción. Hallazgo anotado: `GET
   /api/incidents/results/export` es público.
-- `entregables/TESTING.md`: un único documento con cómo ejecutar, qué prueba
+- `docs/entrega/TESTING.md`: un único documento con cómo ejecutar, qué prueba
   cada archivo, resultados, cobertura y qué significa pasar/fallar.
 - El verificador `revision-textos-ui` ahora ignora carpetas `__tests__`.
 

@@ -92,6 +92,6 @@ src/
   mensajes en texto plano (`KNOWN_MESSAGE_FIXES`, mismo patrón que
   `lib/auth-api.ts`). Las páginas con carga diferida muestran el error en un
   `<div role="alert">` con botón **"Reintentar"**.
-- Antes de commit: `npm run lint`, `npm run build` y `npm test` (Jest) en verde. Guía de pruebas: [`TESTING.md`](../../entregables/TESTING.md).
+- Antes de commit: `npm run lint`, `npm run build` y `npm test` (Jest) en verde. Guía de pruebas: [`TESTING.md`](../../docs/entrega/TESTING.md).
 - Next.js del repo trae breaking changes: consulta `node_modules/next/dist/docs/`
   antes de tocar código de Next. El bloque de `AGENTS.md` lo regenera `next dev`.

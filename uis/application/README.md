@@ -189,6 +189,6 @@ types/
 - La UI va en **español**; nunca se muestran valores crudos de la API (`Spain`,
   `payments`, `active`…): se traducen con los diccionarios de
   `types/supplier.ts` / `types/incident.ts`.
-- Antes de commit: `npm run lint`, `npm run build` y `npm test` (Jest) en verde. Guía de pruebas: [`TESTING.md`](../../entregables/TESTING.md).
+- Antes de commit: `npm run lint`, `npm run build` y `npm test` (Jest) en verde. Guía de pruebas: [`TESTING.md`](../../docs/entrega/TESTING.md).
 - Next.js del repo trae breaking changes: consulta `node_modules/next/dist/docs/`
   antes de tocar código de Next. El bloque de `AGENTS.md` lo regenera `next dev`.
