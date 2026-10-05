@@ -120,6 +120,8 @@ y completa valores reales para desarrollo.
 uv run pytest
 ```
 
+Guía completa de pruebas (qué verifica cada archivo, cómo leer un resultado correcto/fallido, cobertura): [`TESTING.md`](./TESTING.md).
+
 `tests/test_suppliers.py` cubre todos los endpoints de `/suppliers` y la
 idempotencia del seeder; `tests/test_auth.py`, `tests/test_users.py` y
 `tests/test_profiles.py` cubren registro, login, permisos de `/users` y

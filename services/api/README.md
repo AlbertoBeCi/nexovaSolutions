@@ -119,6 +119,8 @@ fill in real values for development.
 uv run pytest
 ```
 
+Full test guide (what each file checks, how to read a pass/fail, coverage): [`TESTING.md`](./TESTING.md).
+
 `tests/test_suppliers.py` covers every `/suppliers` endpoint and the seeder's
 idempotency; `tests/test_auth.py`, `tests/test_users.py` and
 `tests/test_profiles.py` cover registration, login, `/users` permissions and
