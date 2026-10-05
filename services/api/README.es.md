@@ -153,9 +153,10 @@ guardado en memoria como "último análisis".
 ### `GET /api/incidents/results/export`
 
 Descarga el resultado del último análisis ejecutado en este proceso, como CSV
-(una fila por métrica). Pública.
+(una fila por métrica). Requiere login (`Authorization: Bearer <token>`).
 
 - `200`: archivo `results.csv` descargable (`Content-Disposition: attachment`).
+- `401`: token ausente o inválido.
 - `404`: todavía no se ha ejecutado ningún análisis en este proceso.
 
 ## Endpoints — usuarios / auth / perfiles

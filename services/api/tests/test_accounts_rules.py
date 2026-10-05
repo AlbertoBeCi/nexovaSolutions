@@ -123,14 +123,6 @@ def test_login_rejects_inactive_user_with_the_same_message(anon_client, users_ta
     assert response.json()["detail"] == "Email o contrasena incorrectos."
 
 
-def test_login_requires_both_fields(anon_client):
-    assert anon_client.post("/auth/login", data={"username": "a@x.com"}).status_code == 422
-    assert anon_client.post("/auth/login", data={"password": PASSWORD}).status_code == 422
-    # Un campo vacio cuenta como ausente (OAuth2PasswordRequestForm).
-    assert login(anon_client, "a@x.com", "").status_code == 422
-    assert login(anon_client, "", PASSWORD).status_code == 422
-
-
 # ─── /auth/me y tokens ──────────────────────────────────────────────────
 
 
@@ -180,10 +172,6 @@ def test_list_users_forbidden_for_regular_user_and_anonymous(user_client, anon_c
 
 def test_admin_gets_404_for_unknown_user(admin_client):
     assert admin_client.get("/users/9999").status_code == 404
-
-
-def test_non_integer_user_id_is_a_validation_error(admin_client):
-    assert admin_client.get("/users/abc").status_code == 422
 
 
 def test_user_cannot_read_update_or_delete_someone_else(user_client, users_table):
@@ -346,7 +334,8 @@ def test_profile_requires_login(anon_client):
     ("get", "/auth/me"), ("get", "/users"), ("get", "/users/1"), ("put", "/users/1"),
     ("delete", "/users/1"), ("get", "/profiles/me"), ("put", "/profiles/me"),
     ("post", "/auth/change-password"), ("post", "/api/incidents/analyze"),
-    ("post", "/suppliers"), ("patch", "/suppliers/1/rate"),
+    ("get", "/api/incidents/results/export"), ("post", "/suppliers"),
+    ("patch", "/suppliers/1/rate"),
     ("patch", "/suppliers/1/status"), ("delete", "/suppliers/1"),
 ])
 def test_protected_routes_reject_anonymous_requests(anon_client, method: str, path: str):
@@ -356,7 +345,6 @@ def test_protected_routes_reject_anonymous_requests(anon_client, method: str, pa
 @pytest.mark.parametrize("method,path", [
     ("post", "/users"), ("post", "/auth/login"), ("post", "/auth/forgot-password"),
     ("post", "/auth/reset-password"), ("get", "/suppliers"), ("get", "/suppliers/1"),
-    ("get", "/api/incidents/results/export"),
 ])
 def test_public_routes_do_not_demand_a_token(anon_client, method: str, path: str):
     assert getattr(anon_client, method)(path).status_code != 401

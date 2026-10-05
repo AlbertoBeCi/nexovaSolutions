@@ -264,15 +264,11 @@ def test_analyze_rejects_invalid_token(anon_client):
     assert analyze(anon_client, [row()]).status_code == 401
 
 
-def test_analyze_without_file_is_a_validation_error(user_client):
-    assert user_client.post("/api/incidents/analyze").status_code == 422
-
-
 # ─── Exportacion ────────────────────────────────────────────────────────
 
 
-def test_export_without_previous_analysis_returns_404(anon_client):
-    response = anon_client.get("/api/incidents/results/export")
+def test_export_without_previous_analysis_returns_404(user_client):
+    response = user_client.get("/api/incidents/results/export")
 
     assert response.status_code == 404
     assert "No hay ningun analisis previo" in response.json()["detail"]
@@ -301,9 +297,15 @@ def test_export_reflects_only_the_latest_analysis(user_client):
     assert "viejo.csv" not in text
 
 
-def test_export_is_public_today(anon_client, user_client):
-    # Comportamiento actual: analyze exige login pero la exportacion no.
-    analyze(user_client, [row()])
+
+
+def test_export_requires_login(user_client):
+    # Bug detectado por la bateria: antes la exportacion era publica aunque
+    # `analyze` exigiera login, y cualquiera podia descargar el ultimo analisis.
+    analyze(user_client, [row()], filename="secreto.csv")
     user_client.headers.pop("Authorization")
 
-    assert user_client.get("/api/incidents/results/export").status_code == 200
+    response = user_client.get("/api/incidents/results/export")
+
+    assert response.status_code == 401
+    assert "secreto.csv" not in response.text

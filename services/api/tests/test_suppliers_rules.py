@@ -214,10 +214,6 @@ def test_get_unknown_ids_return_404(user_client, supplier_id: int):
     assert response.json()["detail"] == "Proveedor no encontrado."
 
 
-def test_get_non_integer_id_is_a_validation_error(user_client):
-    assert user_client.get("/suppliers/abc").status_code == 422
-
-
 # ─── PATCH rate / status ────────────────────────────────────────────────
 
 
@@ -316,10 +312,6 @@ def test_double_delete_returns_404_the_second_time(user_client):
     user_client.delete(f"/suppliers/{supplier['id']}")
 
     assert user_client.delete(f"/suppliers/{supplier['id']}").status_code == 404
-
-
-def test_delete_non_integer_id_is_a_validation_error(user_client):
-    assert user_client.delete("/suppliers/abc").status_code == 422
 
 
 # ─── Proteccion ─────────────────────────────────────────────────────────

@@ -152,9 +152,10 @@ memory as the "last analysis".
 ### `GET /api/incidents/results/export`
 
 Downloads the result of the last analysis run in this process, as a CSV (one
-row per metric). Public.
+row per metric). Requires login (`Authorization: Bearer <token>`).
 
 - `200`: downloadable `results.csv` file (`Content-Disposition: attachment`).
+- `401`: missing or invalid token.
 - `404`: no analysis has been run yet in this process.
 
 ## Endpoints — users / auth / profiles
