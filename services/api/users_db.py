@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 from threading import Lock
 from typing import Annotated
+from uuid import UUID, uuid4
 
 from fastapi import Depends
 from tinydb import TinyDB
@@ -46,6 +47,26 @@ def get_users_table() -> Table:
 def get_profiles_table() -> Table:
     """Dependencia FastAPI: tabla de perfiles. Los tests la sustituyen."""
     return get_users_db().table(PROFILES_TABLE)
+
+
+def new_user_uuid() -> str:
+    """Create the stable UUID stored alongside TinyDB's integer document ID."""
+    return str(uuid4())
+
+
+def ensure_user_uuid(table: Table, user_id: int) -> str | None:
+    """Backfill a real UUID for legacy TinyDB users without changing their ID."""
+    with users_db_lock:
+        user = table.get(doc_id=user_id)
+        if user is None:
+            return None
+        existing = user.get("uuid")
+        try:
+            return str(UUID(existing))
+        except (ValueError, TypeError, AttributeError):
+            generated = new_user_uuid()
+            table.update({"uuid": generated}, doc_ids=[user_id])
+            return generated
 
 
 # Alias de tipo compartidos: routes/users.py, routes/profiles.py, routes/auth.py

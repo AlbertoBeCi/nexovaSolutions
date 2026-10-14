@@ -1,7 +1,7 @@
 [project]
 name = "nexova-api"
 version = "1.1.0"
-description = "Backend FastAPI de Nexova: analisis de incidencias y directorio de proveedores."
+description = "Backend FastAPI de Nexova: incidencias, proveedores, autenticacion e inventario."
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.115",
@@ -14,11 +14,14 @@ dependencies = [
     "python-jose[cryptography]>=3.5.0",
     "python-dotenv>=1.2.3",
     "resend>=2.48.0",
+    "sqlmodel>=0.0.48",
+    "psycopg2-binary>=2.9.13",
 ]
 
 [project.scripts]
 seed = "seed:main"
 seed-users = "seed_users:main"
+seed-inventory = "seed_inventory:main"
 
 [dependency-groups]
 dev = [
@@ -47,6 +50,10 @@ py-modules = [
     "seed_users",
     "rate_limit",
     "mailer",
+    "inventory_models",
+    "inventory_schemas",
+    "inventory_database",
+    "seed_inventory",
 ]
 packages = ["routes"]
 

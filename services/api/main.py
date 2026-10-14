@@ -15,12 +15,14 @@ from __future__ import annotations
 
 import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from routes import auth, incidents, profiles, suppliers, users
+from inventory_database import init_inventory_db
+from routes import auth, incidents, inventory, profiles, suppliers, users
 
 # Sin este basicConfig, logger.info (p. ej. el token de reset que loguea
 # routes/auth.py a falta de un proveedor de email) no se ve en la consola de
@@ -36,6 +38,14 @@ DEFAULT_CORS_ORIGINS = (
     "http://localhost:3001,http://127.0.0.1:3001"
 )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Inventory is optional in a clean checkout: existing TinyDB routes stay
+    # available without a Supabase URL. When configured, create the ORM tables.
+    init_inventory_db()
+    yield
+
+
 app = FastAPI(
     title="Nexova API",
     description=(
@@ -43,9 +53,11 @@ app = FastAPI(
         "soporte (detecta registros invalidos y calcula metricas; nunca expone "
         "customer_email). **suppliers**: directorio de proveedores con sus "
         "tarifas mensuales por contrato (Spain en EUR, USA en USD). **users** / "
-        "**auth** / **profiles**: registro, login (JWT) y perfil de usuarios."
+        "**auth** / **profiles**: registro, login (JWT) y perfil de usuarios. "
+        "**inventory**: activos y órdenes sobre PostgreSQL/Supabase."
     ),
     version="1.2.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -60,6 +72,7 @@ app.add_middleware(
 )
 
 app.include_router(incidents.router)
+app.include_router(inventory.router)
 app.include_router(suppliers.router)
 app.include_router(users.router)
 app.include_router(auth.router)

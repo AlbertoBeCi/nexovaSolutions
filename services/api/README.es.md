@@ -11,6 +11,8 @@ Backend FastAPI único de Nexova, con un router por dominio:
 - **users** / **auth** / **profiles**: registro de usuarios, login con JWT y
   perfiles de usuario, persistidos en su propio fichero TinyDB. Ver
   "Autenticación" abajo.
+- **inventory** (/inventory): activos y órdenes persistidos en PostgreSQL de
+  Supabase mediante SQLModel. TinyDB y la autenticación existentes no cambian.
 
 ### Autenticación
 
@@ -67,7 +69,8 @@ Backend FastAPI único de Nexova, con un router por dominio:
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recomendado). Dependencias declaradas en
   `pyproject.toml` (FastAPI, Uvicorn, python-multipart, pandas, TinyDB,
-  email-validator, libpass, python-jose, python-dotenv, resend);
+  email-validator, libpass, python-jose, python-dotenv, resend, SQLModel y
+  psycopg2-binary);
   `requirements.txt` se mantiene igual para quien use pip.
 
 ## Instalación y arranque (desarrollo)
@@ -114,6 +117,14 @@ en "Authorize" e ingresa `Bearer <token>`.
 Copia `.env.example` a `.env` (ignorado por git, ver `services/api/.gitignore`)
 y completa valores reales para desarrollo.
 
+Las variables específicas del inventario son SUPABASE_DATABASE_URL (URL de
+PostgreSQL, opcional para arrancar el resto de la API),
+INVENTORY_SEED_USER_EMAIL (cuenta TinyDB ya existente para órdenes semilla; si
+se omite, se usa ADMIN_EMAIL) y, para una base remota, INVENTORY_SEED_REMOTE_ALLOWED=true
+junto con --allow-remote. En producción el seed está bloqueado por defecto; una
+ejecución expresamente autorizada requiere además INVENTORY_SEED_PRODUCTION_ALLOWED=true
+y --allow-production.
+
 ### Tests
 
 ```bash
@@ -133,6 +144,42 @@ los access tokens emitidos antes de un cambio de contraseña dejan de
 servir). Todos corren contra una TinyDB temporal por test
 (`tests/conftest.py` tiene las fixtures compartidas de usuario/token, más
 una fixture autouse que resetea el rate limiter en memoria entre tests).
+
+tests/test_inventory.py cubre validación, autenticación, cálculo del stock,
+claves foráneas, idempotencia del seed y consultas sin N+1. La prueba de
+concurrencia solo se ejecuta con INVENTORY_TEST_DATABASE_URL apuntando a una
+base PostgreSQL dedicada y INVENTORY_TEST_DATABASE_ALLOW_RESET=true.
+
+## Endpoints — inventario
+
+Todos requieren Authorization: Bearer <token>. Los activos y las órdenes
+viven en PostgreSQL; los usuarios siguen viviendo en TinyDB.
+Cada orden almacena el UUID estable del usuario TinyDB autenticado. Los
+usuarios antiguos reciben su UUID en el primer acceso, sin cambiar su ID entero.
+
+| Método y ruta | Respuesta |
+| --- | --- |
+| GET /inventory/products?office= | Lista activos con current_stock calculado. |
+| POST /inventory/products | 201; SKU único. No acepta current_stock. |
+| GET /inventory/products/{id} | Activo y stock; 404 si no existe. |
+| POST /inventory/orders/inbound | 201; registra entrada con cantidad positiva y usuario autenticado. |
+| POST /inventory/orders/outbound | 201; valida asignación/consumo y stock. 400 con mensaje exacto si falta stock. |
+| GET /inventory/orders?office= | Lista entradas y salidas junto al activo asociado. |
+
+Valores válidos: categorías hardware, peripherals, office_supplies,
+training_materials; oficinas Valencia, Miami; tipos de salida allocation,
+consumption. assigned_to se requiere para una asignación y debe ser null para
+un consumo. El stock es la suma de entradas menos salidas, calculada mediante
+agregaciones agrupadas; nunca se almacena como columna. Las escrituras de
+órdenes bloquean el activo y se confirman en una transacción.
+
+### Seed de inventario
+
+Después de crear tablas y tener una cuenta TinyDB existente, ejecuta
+uv run seed-inventory. El seed es idempotente. Las bases remotas requieren
+INVENTORY_SEED_REMOTE_ALLOWED=true y --allow-remote. En producción permanece
+bloqueado salvo autorización explícita con INVENTORY_SEED_PRODUCTION_ALLOWED=true
+y --allow-production.
 
 ## Endpoints — incidencias
 

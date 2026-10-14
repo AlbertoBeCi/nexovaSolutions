@@ -15,9 +15,9 @@ import logging
 import sys
 
 from config import ADMIN_EMAIL, ADMIN_PASSWORD
-from security import get_user_by_email, hash_password
 from database import utc_now_iso
-from users_db import get_users_table, users_db_lock
+from security import get_user_by_email, hash_password
+from users_db import get_users_table, new_user_uuid, users_db_lock
 
 logger = logging.getLogger("seed_users")
 
@@ -40,6 +40,7 @@ def seed_admin(table, email: str | None, password: str | None) -> bool:
 
         table.insert(
             {
+                "uuid": new_user_uuid(),
                 "email": email,
                 "hashed_password": hash_password(password),
                 "is_active": True,

@@ -2,6 +2,18 @@
 
 ## Funciona
 
+- **Hito 5 — Backend de inventario ORM** (`services/api/`): SQLModel sobre
+  Supabase PostgreSQL para activos y órdenes, con TinyDB/JWT existente para
+  autenticación y UUID estable por usuario. Seis endpoints `/inventory`, stock
+  derivado de entradas menos salidas, checks/FK, transacciones y bloqueo para
+  salidas, agregaciones sin N+1, seed idempotente y guía `aprendiendoORM.md`.
+  Supabase de producción cargado por petición expresa con los 6 activos, 4
+  entradas y 3 salidas definidos en el plan; verificación de esquema y stock
+  completada. GET de productos, detalle, órdenes y filtros por oficina verificados
+  con la API local contra Supabase en solo lectura; UUID contrastados con TinyDB.
+  Suite API: 108 passed, 1 skipped; queda pendiente correr la prueba
+  de concurrencia en una instancia PostgreSQL aislada (no producción).
+
 - **Hito 1** — Web pública migrada a Next/React en `uis/website/`: landing (`/`) +
   registro de talento en 3 pasos (`/talento`) con validaciones (mensajes literales
   de `CONTEXT.md`), tema claro/oscuro, Schema.org. La versión HTML/CSS/JS estática
