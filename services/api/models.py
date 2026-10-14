@@ -16,7 +16,6 @@ from typing import Annotated, Dict, List, Literal, Optional
 
 from pydantic import AfterValidator, BaseModel, EmailStr, Field, model_validator
 
-
 # ─── Proveedores ──────────────────────────────────────────────────────
 
 
@@ -295,6 +294,7 @@ class UserInDB(BaseModel):
     """Representacion interna completa de un usuario. Nunca es response_model."""
 
     id: int
+    uuid: str
     email: EmailStr
     hashed_password: str
     is_active: bool

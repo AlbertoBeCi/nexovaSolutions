@@ -30,7 +30,7 @@ from config import (
     SECRET_KEY,
 )
 from models import RoleEnum, UserInDB
-from users_db import UsersTable
+from users_db import UsersTable, ensure_user_uuid
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -101,6 +101,8 @@ def get_current_user(
     if payload.get("pwd_fp") != password_fingerprint(doc["hashed_password"]):
         raise CREDENTIALS_ERROR
 
+    ensure_user_uuid(table, doc.doc_id)
+    doc = table.get(doc_id=doc.doc_id)
     return UserInDB(id=doc.doc_id, **doc)
 
 

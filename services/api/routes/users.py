@@ -23,7 +23,7 @@ from security import (
     get_user_by_email,
     hash_password,
 )
-from users_db import ProfilesTable, UsersTable, users_db_lock
+from users_db import ProfilesTable, UsersTable, new_user_uuid, users_db_lock
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -63,6 +63,7 @@ def create_user(
             raise HTTPException(status_code=409, detail="Ya existe un usuario con ese email.")
 
         user_record = {
+            "uuid": new_user_uuid(),
             "email": payload.email,
             "hashed_password": hash_password(payload.password),
             "is_active": True,

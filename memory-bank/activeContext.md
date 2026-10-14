@@ -2,38 +2,24 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — auditoría de manejo de errores en `uis/backoffice`
+## Ahora — Hito 5: backend de inventario ORM
 
-Rama actual (partiendo de `main`, con el Gestor de Incidencias Centralizado ya
-trabajado en `feature/gestor-incidencias`).
-
-- Objetivo: que la UI nunca muestre errores crudos (textos en inglés, sin
-  tildes, o el `TypeError` nativo del navegador). Toda la app queda en español
-  y con mensajes legibles.
-- **`src/services/api.ts`** (cliente de la API pública de 4Geek Tracker):
-  nuevo helper `safeFetch(url, init?)` que envuelve `fetch` y, si la petición
-  falla por red (sin conexión, CORS, timeout), lanza un `Error` con mensaje en
-  español (`"No se pudo conectar con el servidor. Comprueba tu conexión a
-  internet."`) en vez de dejar escapar el `TypeError "Failed to fetch"` nativo.
-  Las 8 llamadas del archivo migradas de `fetch(...)` a `safeFetch(...)`. Es
-  especialmente relevante aquí porque este cliente llama a una API externa.
-- **`src/services/incidents-api.ts`** (cliente de `services/api`):
-  `translateIssue` ya no muestra el `msg` crudo de Pydantic (en inglés): ahora
-  lo traduce con `FIELD_NAMES` (campo → nombre legible, `file` → "Archivo CSV")
-  y `issue.type` (`missing` → "es obligatorio", resto → "Revisa el campo").
-  Nuevo `KNOWN_MESSAGE_FIXES` + `polishErrorMessage` que corrigen las tildes de
-  los mensajes en texto plano que devuelve la API (`extension` → `extensión`,
-  `vacio` → `vacío`, `valido` → `válido`, `esta` → `está`), replicando el patrón
-  ya existente en `lib/auth-api.ts`. `withPolishedErrors` envuelve
-  `analyzeIncidentsCsv` y `downloadIncidentsResultsCsv` para pulir el mensaje
-  sin dejar de propagarlo.
-- **Páginas del pipeline de candidatos** (`src/app/page.tsx`,
-  `src/app/candidates/[id]/page.tsx`, `src/app/candidates/[id]/edit/page.tsx`):
-  el bloque de error de carga pasa de un `<p>` a un `<div role="alert">` con
-  botón **"Reintentar"**. Para forzar la recarga se añadió `reloadToken`
-  (estado) y, donde el efecto ya comparaba por `id`/clave, un `loadedToken`
-  para no mostrar datos obsoletos mientras llega la respuesta nueva.
-- `npm run lint` y `npm run build` en verde (10 rutas, typecheck OK).
+- Hito implementado en `services/api/`: TinyDB conserva autenticación; SQLModel y
+  Supabase PostgreSQL almacenan `Asset`, `AssetEntry` y `AssetExit`. Hay seis rutas
+  protegidas bajo `/inventory`; el stock se calcula con agregaciones y los
+  movimientos se escriben en transacciones con bloqueo de activo.
+- Supabase real fue configurado y poblado por autorización expresa: 6 activos,
+  4 entradas y 3 salidas del plan. Verificado en modo lectura: existencias
+  NXV-IT-001=13, NXV-PER-001=27 y NXV-PER-002=11; no hay tabla `users` ni columna
+  física `current_stock`; las dos FK existen y los siete UUID son válidos.
+- Auditoría de los checks del ejercicio: GET de productos, detalle y órdenes
+  comprobados con la API local contra Supabase mediante sesiones forzadas a
+  solo lectura. Filtros de ambas oficinas correctos; siete UUID coinciden con
+  TinyDB; SKU único, dos FK y 13 CHECK verificados. Las seis rutas rechazan
+  peticiones sin JWT. La cuenta de auditoría existe solo en memoria.
+- `uv run pytest -p no:cacheprovider -q`: 108 passed, 1 skipped. La prueba omitida
+  es la de concurrencia PostgreSQL; requiere una base local/de pruebas aislada.
+  No se ejecutan pruebas destructivas contra Supabase de producción.
 
 ## Anterior — Gestor de Incidencias Centralizado
 

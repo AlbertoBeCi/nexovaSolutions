@@ -43,6 +43,10 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 # dejar una contrasena reseteable en el sistema de logs.
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
 
+# Inventario en PostgreSQL/Supabase. La variable es opcional para conservar el
+# arranque y las rutas existentes en checkouts que aun no conectan Supabase.
+SUPABASE_DATABASE_URL = os.environ.get("SUPABASE_DATABASE_URL")
+
 # Envio de emails (mailer.py). Sin RESEND_API_KEY, forgot-password sigue
 # funcionando en modo desarrollo (loguea el token por consola en vez de
 # enviarlo).

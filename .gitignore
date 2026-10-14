@@ -8,6 +8,7 @@ next-env.d.ts
 *.tsbuildinfo
 .env*.local
 APRENDIENDO.md
+/aprendiendoORM.md
 scripts/results.csv
 __pycache__/
 *.pyc
