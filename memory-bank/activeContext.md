@@ -2,7 +2,28 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — Hito 5: inventario de operaciones en backoffice
+## Ahora — entorno local con Docker Compose
+
+- Rama `feature/contenedorizacion-monorepo`. Compose desde la raíz ejecuta una
+  API FastAPI (`services/api`), PostgreSQL local y un contenedor UI con Next.js
+  para website (3000) y backoffice (3001). `uis/application` y
+  `services/incident-manager-api` quedan fuera del conjunto local inicial.
+- El backoffice llama a `/_nexova-api` en el mismo origen; rewrites de Next
+  reenvían a `http://api:8000`. La API accede a PostgreSQL por `postgres:5432`.
+- Dockerfiles y `.dockerignore` viven en los contextos `uis/` y `services/`.
+  El API usa un contexto adicional desde la raíz para importar el shim y el
+  paquete compartido. Variables cargadas por `.env.example` y sobreescritas por
+  `.env`; la red Compose tiene nombre explícito `nexova-local`.
+- Reconstrucción y validación completadas: los tres servicios están saludables;
+  website 3000, backoffice 3001, API 8000 y proxy responden. Se probó una edición
+  temporal de fuente en ambos frontends sin reconstruir y se restauraron los
+  archivos originales; WatchFiles detectó el cambio temporal de API y reinició
+  Uvicorn. El administrador local requiere `docker compose exec api uv run seed-users`.
+- El Dockerfile de la API incluye y monta también `shared/incidents_analysis.py`
+  y `packages/shared/nexova_shared`, dependencia real requerida por el router
+  de análisis para arrancar.
+
+## Contexto previo — Hito 5: inventario de operaciones en backoffice
 
 
 - Hito implementado en `services/api/`: TinyDB conserva autenticación; SQLModel y

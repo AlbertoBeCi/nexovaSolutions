@@ -2,6 +2,15 @@
 
 ## Funciona
 
+- **Entorno local Docker Compose alineado con checklist y validado**: Dockerfiles
+  y `.dockerignore` en `uis/` y `services/`; website/backoffice en 3000/3001;
+  API con `--reload` en 8000; red `nexova-local`; variables desde
+  `.env.example` y `.env` opcional. Se reconstruyeron las imágenes y los tres
+  servicios quedaron saludables. Sitios y proxy responden HTTP 200; se probó
+  HMR real en ambas interfaces y autoreload de API. API instala versiones
+  fijadas exportadas de `uv.lock`; su contexto toma `shared/` y `packages/shared/`
+  del root. PostgreSQL es servicio auxiliar para inventario.
+
 - **Hito 5 — Backend de inventario ORM** (`services/api/`): SQLModel sobre
   Supabase PostgreSQL para activos y órdenes, con TinyDB/JWT existente para
   autenticación y UUID estable por usuario. Seis endpoints `/inventory`, stock

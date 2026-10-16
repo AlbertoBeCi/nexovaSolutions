@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:18.6
+    env_file:
+      - path: .env.example
+        required: true
+      - path: .env
+        required: false
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - nexova-local
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  api:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      additional_contexts:
+        monorepo: .
+    env_file:
+      - path: .env.example
+        required: true
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/api:/workspace/services/api
+      - ./services/api/.env.example:/workspace/services/api/.env:ro
+      - ./shared:/workspace/shared
+      - ./packages/shared/nexova_shared:/workspace/packages/shared/nexova_shared
+      - api_data:/data
+    networks:
+      - nexova-local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json', timeout=3)
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  ui:
+    build:
+      context: ./uis
+      dockerfile: Dockerfile
+    env_file:
+      - path: .env.example
+        required: true
+      - path: .env
+        required: false
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    volumes:
+      - ./uis/website/src:/workspace/uis/website/src
+      - ./uis/backoffice/src:/workspace/uis/backoffice/src
+      - ./uis/backoffice/public:/workspace/uis/backoffice/public
+      - website_next:/workspace/uis/website/.next
+      - backoffice_next:/workspace/uis/backoffice/.next
+    networks:
+      - nexova-local
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  api_data:
+  postgres_data:
+  website_next:
+  backoffice_next:
+
+networks:
+  nexova-local:
+    name: nexova-local
+    driver: bridge

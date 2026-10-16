@@ -3,6 +3,26 @@
 Monorepo con áreas independientes, cada una con su propio `package.json` y
 `node_modules`. Ejecuta los comandos desde la carpeta de cada área.
 
+## Docker Compose local
+
+- `docker-compose.yml` en la raíz define `ui`, `api` y `postgres`. El conjunto
+  cubre website, backoffice, `services/api` e inventario local; no incluye
+  `uis/application` ni `services/incident-manager-api`.
+- `uis/Dockerfile` usa Node 24.18.1 Alpine; `uis/start.sh` arranca website y
+  backoffice en un contenedor, en 3000 y 3001. Cada app instala su propio
+  `package-lock.json` con `npm ci`.
+- `services/Dockerfile` usa Python 3.14.8 y uv 0.12.22. `requirements.txt` se
+  exporta con versiones fijadas desde `uv.lock`; Uvicorn corre con reload en
+  8000. PostgreSQL 18.6 no publica su puerto al host.
+- Compose carga variables desde `.env.example` y permite que un `.env` local las
+  sobreescriba. La red compartida tiene nombre explícito `nexova-local`.
+- `INTERNAL_API_URL=http://api:8000` es solo servidor; el navegador usa la
+  reescritura del backoffice `/_nexova-api`. No usar DNS Compose desde el
+  navegador.
+- El volumen `/data` conserva TinyDB; los volúmenes nombrados conservan
+  PostgreSQL y las cachés `.next`. `.env.example` de raíz contiene valores
+  locales no secretos; copiarlo a `.env` es opcional.
+
 ## Áreas
 
 | Área | Ruta | Stack | Comandos |
