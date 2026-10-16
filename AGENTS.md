@@ -232,3 +232,15 @@ tú en esta sesión, renombrar/mover carpetas de nivel superior, tocar
 `docker-compose.yml` o `infra/`.
 
 Si crees que uno de estos cambios es necesario, **propónlo y espera respuesta**.
+
+---
+
+## 8. Backup obligatorio antes de pruebas destructivas de base de datos
+
+Antes de realizar cualquier prueba destructiva sobre una base de datos,
+**actualiza su backup para incluir el estado actual**. Si no existe un backup,
+**créalo antes de ejecutar la prueba**.
+
+Comprueba que el backup se ha completado correctamente y puede restaurarse.
+Si no se puede crear o actualizar, no ejecutes la prueba destructiva.
+Los backups con datos reales o secretos no se incluyen en Git.

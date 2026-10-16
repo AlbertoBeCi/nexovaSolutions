@@ -10,6 +10,8 @@ Nexova's single FastAPI backend, with one router per domain:
   `uis/application` (`/suppliers` page).
 - **users** / **auth** / **profiles**: user registration, JWT login and user
   profiles, persisted in their own TinyDB file. See "Authentication" below.
+- **inventory** (/inventory): assets and orders persisted in Supabase
+  PostgreSQL through SQLModel. Existing TinyDB authentication stays in place.
 
 ### Authentication
 
@@ -57,16 +59,23 @@ Nexova's single FastAPI backend, with one router per domain:
   own test sender (`onboarding@resend.dev`, the `RESEND_FROM_EMAIL`
   default), delivery only reaches the email the Resend account was created
   with, until a real domain is verified there.
-- `uis/application` now has a minimal login (`/login`), `/forgot-password`,
-  `/reset-password` and `/account/change-password` (see that app's README).
-  `uis/website` and `uis/backoffice` still don't consume this auth system.
+- `uis/application` and `uis/backoffice` have login (`/login`), registration
+  and account pages; both preserve an internal `next` destination after login.
+  `uis/application` also has `/forgot-password`, `/reset-password` and
+  `/account/change-password` (see that app's README). The backoffice consumes
+  the protected inventory endpoints described below.
+
+### Inventory API
+
+All `/inventory` routes require an active authenticated user. Products are+listed with `GET /inventory/products` and fetched individually with+`GET /inventory/products/{asset_id}`. Register movements with+`POST /inventory/orders/inbound` (`asset_id`, `quantity`, `supplier`, `office`)+or `POST /inventory/orders/outbound` (`asset_id`, `quantity`, `exit_type`,+`assigned_to`, `office`). `GET /inventory/orders` returns both movement types,+including the current product summary, `user_uuid`, and `creator_name` (profile+name, falling back to email; `null` if the account is unavailable). Stock is+derived from entries and exits; outbound creation validates it transactionally.
 
 ## Requirements
 
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (recommended). Dependencies are declared in
   `pyproject.toml` (FastAPI, Uvicorn, python-multipart, pandas, TinyDB,
-  email-validator, libpass, python-jose, python-dotenv, resend);
+  email-validator, libpass, python-jose, python-dotenv, resend, SQLModel and
+  psycopg2-binary);
   `requirements.txt` is kept in sync for pip users.
 
 ## Install and run (development)
@@ -113,6 +122,14 @@ Swagger: `POST /auth/login`, copy `access_token`, click "Authorize" and enter
 Copy `.env.example` to `.env` (git-ignored, see `services/api/.gitignore`) and
 fill in real values for development.
 
+Inventory-specific environment variables are SUPABASE_DATABASE_URL
+(PostgreSQL URL, optional for starting the rest of the API),
+INVENTORY_SEED_USER_EMAIL (existing TinyDB account for seed orders; defaults
+to ADMIN_EMAIL), and INVENTORY_SEED_REMOTE_ALLOWED=true with --allow-remote
+for a remote database. Production seeding stays blocked by default; an
+explicitly authorized run also requires INVENTORY_SEED_PRODUCTION_ALLOWED=true
+and --allow-production.
+
 ### Tests
 
 ```bash
@@ -132,6 +149,42 @@ issued access tokens becoming invalid after a password change). All of them
 run against a temporary TinyDB per test (`tests/conftest.py` has the shared
 user/token fixtures, plus an autouse fixture that resets the in-memory rate
 limiter between tests).
+
+tests/test_inventory.py covers validation, authentication, stock calculation,
+foreign keys, seed idempotency and queries without N+1. Its concurrency test
+runs only when INVENTORY_TEST_DATABASE_URL points to a dedicated PostgreSQL
+test database and INVENTORY_TEST_DATABASE_ALLOW_RESET=true.
+
+## Endpoints — inventory
+
+Every route requires Authorization: Bearer <token>. Assets and orders live
+in PostgreSQL; users remain in TinyDB.
+Each order stores the authenticated TinyDB user's stable UUID. Legacy users
+receive a UUID at first access without changing their integer ID.
+
+| Method and route | Response |
+| --- | --- |
+| GET /inventory/products?office= | Lists assets with calculated current_stock. |
+| POST /inventory/products | 201; unique SKU. Does not accept current_stock. |
+| GET /inventory/products/{id} | Asset and stock; 404 when missing. |
+| POST /inventory/orders/inbound | 201; records positive quantity and authenticated user. |
+| POST /inventory/orders/outbound | 201; validates allocation/consumption and stock. 400 with the exact message when stock is insufficient. |
+| GET /inventory/orders?office= | Lists inbound and outbound orders with the related asset. |
+
+Allowed values: categories hardware, peripherals, office_supplies,
+training_materials; offices Valencia, Miami; exit types allocation,
+consumption. assigned_to is required for allocation and must be null for
+consumption. Stock is calculated from grouped inbound and outbound sums; it is
+never stored as a column. Order writes lock the asset and commit in one
+transaction.
+
+### Inventory seed
+
+After creating the tables and creating a TinyDB account, run uv run
+seed-inventory. The seed is idempotent. Remote databases require
+INVENTORY_SEED_REMOTE_ALLOWED=true and --allow-remote. Production seeding stays
+blocked unless explicitly authorized with INVENTORY_SEED_PRODUCTION_ALLOWED=true
+and --allow-production.
 
 ## Endpoints — incidents
 

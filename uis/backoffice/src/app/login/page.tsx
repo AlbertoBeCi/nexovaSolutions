@@ -14,6 +14,7 @@ import { useState, type FormEvent } from "react";
 
 import { ERROR_CLASS, FIELD_CLASS, LABEL_CLASS, PRIMARY_BUTTON_CLASS } from "../_components/form-styles";
 import { login } from "../../lib/auth-api";
+import { getSafeReturnTo } from "../../lib/auth-navigation";
 
 const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL ?? "http://localhost:3001";
 
@@ -30,7 +31,8 @@ export default function LoginPage() {
     setErrorMessage(null);
     try {
       await login({ email: email.trim(), password });
-      router.replace("/");
+      const requestedReturnTo = new URLSearchParams(window.location.search).get("next");
+      router.replace(getSafeReturnTo(requestedReturnTo) ?? "/");
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "No se pudo iniciar sesión.");
     } finally {
