@@ -36,7 +36,26 @@ Igual mecanismo que `uis/application` (mismo backend, mismo contrato):
 en `localStorage` (`lib/auth-storage.ts`), adjuntado automáticamente por
 `lib/api-client.ts::apiRequest` en cada llamada — incluida
 `services/incidents-api.ts`, ya que `POST /api/incidents/analyze` requiere
-login. `/incidencias` está envuelta en `<RequireAuth>`.
+login. `/incidencias` y `/inventario` están protegidas con `<RequireAuth>`.
+Si falta o caduca la sesión, `next` conserva el destino interno para volver a
+la vista solicitada tras iniciar sesión.
+
+## Inventario
+
+La sección protegida usa estas rutas:
+
+- `/backoffice/inventory/products`
+- `/backoffice/inventory/orders/inbound`
+- `/backoffice/inventory/orders/outbound`
+- `/backoffice/inventory/orders`
+
+Las rutas antiguas `/inventario...` redirigen a sus equivalentes y conservan
+los parámetros de búsqueda. La sección consume las rutas protegidas de
+`services/api` para listar activos, registrar entradas y salidas y consultar
+el historial. El stock de una salida se consulta de nuevo antes de enviar; el
+backend valida la operación ante movimientos concurrentes. El historial
+muestra el creador con `creator_name` (nombre del perfil o email de respaldo)
+junto a `user_uuid`.
 
 **No hay `/forgot-password`/`/reset-password` en esta app**: el email de
 reset de `services/api` siempre apunta a un único `FRONTEND_URL`, hoy
@@ -64,21 +83,28 @@ src/
 │  │  ├─ [id]/page.tsx        # ficha + notas + cambio rápido de estado/etapa
 │  │  ├─ [id]/edit/page.tsx   # edición
 │  │  └─ new/page.tsx         # alta
-│  └─ incidencias/
+│  ├─ incidencias/
 │     ├─ page.tsx             # envuelta en <RequireAuth>; sube un CSV, muestra el resumen y exporta
 │     └─ _components/
 │        ├─ csv-uploader.tsx      # drag & drop + selector de archivo
 │        └─ analysis-summary.tsx  # métricas, desgloses y alertas de inválidos
+│  └─ inventario/
+│     ├─ page.tsx                  # productos, stock y filtro de oficina
+│     ├─ entradas/nueva/page.tsx   # registro de entregas recibidas
+│     ├─ salidas/nueva/page.tsx    # consumo/asignación con stock actual
+│     └─ historial/page.tsx        # movimientos con producto y creador
 ├─ lib/
 │  ├─ api-client.ts           # fetch genérico: adjunta el token, 401 -> /login
 │  ├─ auth-api.ts             # cliente de /auth, /users, /profiles/me
 │  └─ auth-storage.ts         # token en localStorage + subscribeToken (useSyncExternalStore)
 ├─ services/
 │  ├─ api.ts                  # cliente de la API de 4Geek Tracker
-│  └─ incidents-api.ts        # cliente de services/api (análisis de incidencias), vía lib/api-client.ts
+│  ├─ incidents-api.ts        # cliente de services/api (análisis de incidencias), vía lib/api-client.ts
+│  └─ inventory-api.ts        # cliente de inventario, DTOs y errores en español
 └─ types/
    ├─ candidate.ts            # tipos + diccionarios de etiquetas ES
    ├─ incidents.ts            # categorías/estados/reglas de invalidez de incidencias
+   ├─ inventory.ts            # modelos y etiquetas traducidas de inventario
    └─ auth.ts                 # User, UserProfile, LoginCredentials, RegisterInput
 ```
 

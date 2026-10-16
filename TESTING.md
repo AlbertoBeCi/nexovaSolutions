@@ -1,6 +1,6 @@
 # 🧪 TESTING — Batería de pruebas de Nexova Solutions
 
-> 📅 **Ejecución:** 2026-10-05 · 🌿 **Rama:** `feature/pruebas-api`
+> 📅 **Ejecución:** 2026-10-16 · 🌿 **Rama:** `feature/backoffice-inventory-management`
 > 🐍 Python 3.14.8 (`uv` 0.12.22) · 🟢 Node v24.18.1 · 🛠️ `pytest` + 🃏 Jest
 
 🎯 Las pruebas verifican la **lógica** (reglas, permisos, validaciones y errores).
@@ -25,16 +25,16 @@
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest` | 369 | ✅ 369 · ❌ 0 | 61,8 s | 96 % |
+| 🐍 `services/api` | `uv run pytest` | 395 | ✅ 395 · ❌ 0 · ⏭ 1 | 86,4 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
-| 🟦 `uis/backoffice` | `npx jest --coverage` | 114 | ✅ 114 · ❌ 0 | 1,0 s | 99,5 % |
-| 🏁 **Total** | | **843** | ✅ **843** · ❌ **0** | | |
+| 🟦 `uis/backoffice` | `npx jest --coverage` | 140 | ✅ 140 · ❌ 0 | 1,3 s | — |
+| 🏁 **Total** | | **895** | ✅ **895** · ❌ **0** · ⏭ 1 | | |
 
 | ✅ Otras comprobaciones | 🟦 `uis/application` | 🟦 `uis/backoffice` |
 | --- | :---: | :---: |
 | `npm run lint` | ✅ | ✅ |
-| `npm run build` | ✅ | ✅ |
+| `npm run build` | — | ✅ |
 | 🔤 Verificador `revision-textos-ui` | ✅ PASS | ✅ PASS |
 
 ---

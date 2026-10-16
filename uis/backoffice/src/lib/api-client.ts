@@ -15,6 +15,7 @@
  */
 
 import { clearToken, getToken } from "./auth-storage";
+import { getLoginHref } from "./auth-navigation";
 
 export const API_URL = process.env.NEXT_PUBLIC_INCIDENTS_API_URL ?? "http://localhost:8000";
 
@@ -26,6 +27,47 @@ export interface ValidationIssue {
 
 export type TranslateIssue = (issue: ValidationIssue) => string;
 
+export class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number | null,
+    public readonly apiDetail: string | null = null
+  ) {
+    super(message);
+    this.name = "ApiRequestError";
+  }
+}
+
+interface ExtractedApiError {
+  message: string;
+  detail: string | null;
+}
+
+async function extractApiError(
+  response: Response,
+  fallbackMessage: string,
+  translateIssue: TranslateIssue
+): Promise<ExtractedApiError> {
+  try {
+    const body = await response.json();
+
+    if (Array.isArray(body?.detail)) {
+      const issues = body.detail as ValidationIssue[];
+      const messages = [...new Set(issues.map(translateIssue))];
+      if (messages.length > 0) return { message: messages.join(" "), detail: null };
+    }
+
+    if (typeof body?.detail === "string") {
+      const detail = body.detail.replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 500);
+      const isMarkupOrJson = /^\s*</.test(detail) || /^\s*[\[{]/.test(detail);
+      if (detail && !isMarkupOrJson) return { message: detail, detail };
+    }
+  } catch {
+    // Respuesta vacía o no JSON: conservar el fallback legible.
+  }
+  return { message: fallbackMessage, detail: null };
+}
+
 /** Extrae un mensaje legible del cuerpo de error de la API; si no reconoce
  *  el formato, o el cuerpo no es JSON, cae al mensaje por defecto. */
 export async function extractErrorMessage(
@@ -33,19 +75,7 @@ export async function extractErrorMessage(
   fallbackMessage: string,
   translateIssue: TranslateIssue
 ): Promise<string> {
-  try {
-    const body = await response.json();
-
-    if (Array.isArray(body?.detail)) {
-      const messages = [...new Set((body.detail as ValidationIssue[]).map(translateIssue))];
-      if (messages.length > 0) return messages.join(" ");
-    }
-
-    if (typeof body?.detail === "string") return body.detail;
-  } catch {
-    // el cuerpo de la respuesta no es JSON o está vacío, se usa el mensaje por defecto
-  }
-  return fallbackMessage;
+  return (await extractApiError(response, fallbackMessage, translateIssue)).message;
 }
 
 /** fetch contra la API que adjunta el token guardado (si hay), convierte
@@ -65,7 +95,10 @@ export async function apiRequest(
   try {
     response = await fetch(`${API_URL}${path}`, { ...init, headers });
   } catch {
-    throw new Error("No se pudo conectar con el servidor. Comprueba que la API está en marcha.");
+    throw new ApiRequestError(
+      "No se pudo conectar con el servidor. Comprueba que la API está en marcha.",
+      null
+    );
   }
 
   if (response.status === 401 && token) {
@@ -73,12 +106,18 @@ export async function apiRequest(
     // Navegacion dura a proposito: apiRequest corre fuera de un componente
     // o evento de React (no hay useRouter aca), y un reload completo deja
     // el estado del cliente limpio tras invalidar la sesion.
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-    if (typeof window !== "undefined") window.location.href = "/login";
+    if (typeof window !== "undefined") {
+      window.location.href = getLoginHref(`${window.location.pathname}${window.location.search}`);
+    }
   }
 
   if (!response.ok) {
-    throw new Error(await extractErrorMessage(response, fallbackMessage, translateIssue));
+    const apiError = await extractApiError(response, fallbackMessage, translateIssue);
+    throw new ApiRequestError(
+      apiError.message,
+      response.status,
+      apiError.detail
+    );
   }
   return response;
 }

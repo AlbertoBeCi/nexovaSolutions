@@ -18,7 +18,7 @@ from inventory_database import get_engine, get_inventory_session
 from inventory_models import Asset, AssetEntry, AssetExit
 from main import app
 from seed_inventory import seed_inventory
-from users_db import get_users_table
+from users_db import get_profiles_table, get_users_table
 
 VALID_ASSET = {
     "name": "Portátil de prueba",
@@ -47,7 +47,7 @@ def inventory_engine(tmp_path):
 
 
 @pytest.fixture
-def client(inventory_engine, users_table, auth_headers, monkeypatch):
+def client(inventory_engine, users_table, profiles_table, auth_headers, monkeypatch):
     monkeypatch.delenv("SUPABASE_DATABASE_URL", raising=False)
 
     def get_test_session():
@@ -56,6 +56,7 @@ def client(inventory_engine, users_table, auth_headers, monkeypatch):
 
     app.dependency_overrides[get_inventory_session] = get_test_session
     app.dependency_overrides[get_users_table] = lambda: users_table
+    app.dependency_overrides[get_profiles_table] = lambda: profiles_table
     test_client = TestClient(app)
     test_client.headers.update(auth_headers)
     yield test_client
@@ -166,6 +167,65 @@ def test_inbound_records_authenticated_user_and_increases_stock(client, users_ta
     assert str(UUID(user_uuid)) == user_uuid
     assert users_table.get(doc_id=1)["uuid"] == user_uuid
     assert client.get(f"/inventory/products/{asset['id']}").json()["current_stock"] == 10
+
+
+def test_order_history_includes_creator_profile_name(client, profiles_table):
+    asset = create_asset(client)
+    created = client.post(
+        "/inventory/orders/inbound",
+        json={
+            "asset_id": asset["id"],
+            "quantity": 2,
+            "supplier": "Proveedor de prueba",
+            "office": "Valencia",
+        },
+    )
+    assert created.status_code == 201
+    profiles_table.insert({"user_id": 1, "name": "Ana García", "phone": None, "address": None})
+
+    history = client.get("/inventory/orders")
+
+    assert history.status_code == 200
+    assert history.json()[0]["creator_name"] == "Ana García"
+    assert history.json()[0]["user_uuid"] == created.json()["user_uuid"]
+
+
+def test_order_history_uses_creator_email_when_profile_is_missing(client):
+    asset = create_asset(client)
+    created = client.post(
+        "/inventory/orders/inbound",
+        json={
+            "asset_id": asset["id"],
+            "quantity": 2,
+            "supplier": "Proveedor de prueba",
+            "office": "Valencia",
+        },
+    )
+    assert created.status_code == 201
+
+    history = client.get("/inventory/orders")
+
+    assert history.json()[0]["creator_name"] == "user@nexova.com"
+
+
+def test_order_history_returns_null_creator_name_when_creator_uuid_is_unavailable(client, users_table):
+    asset = create_asset(client)
+    created = client.post(
+        "/inventory/orders/inbound",
+        json={
+            "asset_id": asset["id"],
+            "quantity": 2,
+            "supplier": "Proveedor de prueba",
+            "office": "Valencia",
+        },
+    )
+    assert created.status_code == 201
+    users_table.update({"uuid": str(uuid4())}, doc_ids=[1])
+
+    history = client.get("/inventory/orders")
+
+    assert history.json()[0]["creator_name"] is None
+    assert history.json()[0]["user_uuid"] == created.json()["user_uuid"]
 
 
 def test_orders_reject_missing_assets(client):

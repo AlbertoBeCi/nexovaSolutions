@@ -11,8 +11,15 @@
   entradas y 3 salidas definidos en el plan; verificación de esquema y stock
   completada. GET de productos, detalle, órdenes y filtros por oficina verificados
   con la API local contra Supabase en solo lectura; UUID contrastados con TinyDB.
-  Suite API: 108 passed, 1 skipped; queda pendiente correr la prueba
+  Suite API: 395 passed, 1 skipped; queda pendiente correr la prueba
   de concurrencia en una instancia PostgreSQL aislada (no producción).
+
+- **Backoffice de inventario** (`uis/backoffice/`): `/backoffice/inventory/products` con catálogo y rutas `/backoffice/inventory/orders/...` protegidas; `/inventario...` se conserva como alias con redirección.
+  señales de stock (0, 1–5 y más de 5), formularios protegidos de entrada y
+  salida, consulta del stock actual antes de una salida e historial con producto
+  y creador. Login conserva destinos internos mediante `next`. El historial de
+  API expone `creator_name` sin migración de datos. Jest 140/140, API 395 passed
+  y 1 skip; lint, build y verificador de textos PASS.
 
 - **Hito 1** — Web pública migrada a Next/React en `uis/website/`: landing (`/`) +
   registro de talento en 3 pasos (`/talento`) con validaciones (mensajes literales

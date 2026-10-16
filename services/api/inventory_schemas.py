@@ -102,6 +102,7 @@ class OrderListItem(StrictSchema):
     office: Office
     created_at: datetime
     user_uuid: str
+    creator_name: str | None = None
     supplier: str | None = None
     exit_type: ExitType | None = None
     assigned_to: str | None = None

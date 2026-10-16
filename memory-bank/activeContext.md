@@ -18,9 +18,16 @@ _Actualizar al cambiar de foco._
   solo lectura. Filtros de ambas oficinas correctos; siete UUID coinciden con
   TinyDB; SKU único, dos FK y 13 CHECK verificados. Las seis rutas rechazan
   peticiones sin JWT. La cuenta de auditoría existe solo en memoria.
-- `uv run pytest -p no:cacheprovider -q`: 108 passed, 1 skipped. La prueba omitida
+- `uv run pytest -p no:cacheprovider -q`: 395 passed, 1 skipped. La prueba omitida
   es la de concurrencia PostgreSQL; requiere una base local/de pruebas aislada.
   No se ejecutan pruebas destructivas contra Supabase de producción.
+
+- La sección de inventario del backoffice ya está implementada en esta rama:
+  productos y señal de stock bajo, formularios de entradas/salidas con consulta
+  actualizada previa al envío, historial con creador y filtros, rutas protegidas
+  y retorno `next` después del login. `GET /inventory/orders` incluye ahora
+  `creator_name` (nombre de perfil, email alternativo o `null`). Jest: 140 passed;
+  API: 395 passed, 1 skipped. Lint, build y verificador de textos en verde.
 
 ## Contexto previo — baterías de pruebas
 

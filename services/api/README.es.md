@@ -60,9 +60,15 @@ Backend FastAPI único de Nexova, con un router por dominio:
   Con el remitente de pruebas de Resend (`onboarding@resend.dev`, el
   default de `RESEND_FROM_EMAIL`), la entrega solo llega al email con el
   que se creo la cuenta de Resend, hasta verificar un dominio propio ahi.
-- `uis/application` ya tiene un login minimo (`/login`), `/forgot-password`,
-  `/reset-password` y `/account/change-password` (ver el README de esa app).
-  `uis/website` y `uis/backoffice` todavia no consumen este sistema de auth.
+- `uis/application` y `uis/backoffice` ya tienen login (`/login`), registro y
+  páginas de cuenta; ambas conservan un destino interno `next` después del login.
+  `uis/application` también tiene `/forgot-password`, `/reset-password` y
+  `/account/change-password` (ver el README de esa app). El backoffice consume
+  las rutas protegidas de inventario descritas abajo.
+
+### API de inventario
+
+Todas las rutas `/inventory` exigen un usuario autenticado activo. Los activos+se listan con `GET /inventory/products` y se consultan individualmente con+`GET /inventory/products/{asset_id}`. Los movimientos se registran con+`POST /inventory/orders/inbound` (`asset_id`, `quantity`, `supplier`, `office`)+o `POST /inventory/orders/outbound` (`asset_id`, `quantity`, `exit_type`,+`assigned_to`, `office`). `GET /inventory/orders` devuelve ambos tipos de+movimiento, el resumen actual del producto, `user_uuid` y `creator_name` (nombre+del perfil, con email como alternativa; `null` si la cuenta ya no está).+El stock se deriva de entradas y salidas; la creación de salidas lo valida en+una transacción.
 
 ## Requisitos
 

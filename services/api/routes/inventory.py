@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
+from tinydb.table import Table
 
 from inventory_database import get_inventory_session
 from inventory_models import Asset, AssetEntry, AssetExit
@@ -23,6 +24,7 @@ from inventory_schemas import (
 )
 from models import UserInDB
 from security import get_current_user
+from users_db import ProfilesTable, UsersTable, users_db_lock
 
 router = APIRouter(
     prefix="/inventory",
@@ -120,6 +122,27 @@ def _exit_response(exit_order: AssetExit) -> AssetExitResponse:
         created_at=exit_order.created_at,
         user_uuid=exit_order.user_uuid,
     )
+
+
+def _creator_names(users: Table, profiles: Table) -> dict[str, str]:
+    """Resolve order UUIDs from TinyDB in one locked read, without N+1 lookups."""
+    with users_db_lock:
+        profiles_by_user_id = {
+            profile.get("user_id"): profile
+            for profile in profiles.all()
+        }
+        names: dict[str, str] = {}
+        for user in users.all():
+            user_uuid = user.get("uuid")
+            if not user_uuid:
+                continue
+            profile = profiles_by_user_id.get(user.doc_id)
+            profile_name = str(profile.get("name") or "").strip() if profile else ""
+            email = str(user.get("email") or "").strip()
+            display_name = profile_name or email
+            if display_name:
+                names[str(user_uuid)] = display_name
+        return names
 
 
 @router.get(
@@ -227,8 +250,11 @@ def create_outbound_order(
 )
 def list_orders(
     session: InventorySession,
+    users: UsersTable,
+    profiles: ProfilesTable,
     office: Annotated[Office | None, Query()] = None,
 ) -> list[OrderListItem]:
+    creator_names = _creator_names(users, profiles)
     inbound_query = select(AssetEntry, Asset).join(Asset, Asset.id == AssetEntry.asset_id)
     outbound_query = select(AssetExit, Asset).join(Asset, Asset.id == AssetExit.asset_id)
     if office is not None:
@@ -247,6 +273,7 @@ def list_orders(
                 office=entry.office,
                 created_at=entry.created_at,
                 user_uuid=entry.user_uuid,
+                creator_name=creator_names.get(entry.user_uuid),
                 supplier=entry.supplier,
             )
         )
@@ -261,6 +288,7 @@ def list_orders(
                 office=exit_order.office,
                 created_at=exit_order.created_at,
                 user_uuid=exit_order.user_uuid,
+                creator_name=creator_names.get(exit_order.user_uuid),
                 exit_type=exit_order.exit_type,
                 assigned_to=exit_order.assigned_to,
             )
