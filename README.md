@@ -41,6 +41,12 @@ Each app has its own `package.json` and `node_modules` — run commands from its
 | API — incident manager (persisted incidents) | [`services/incident-manager-api/`](./services/incident-manager-api/) | `uv sync` · `uv run --project services/incident-manager-api python scripts/seed_incidents.py` · `uv run serve` (→ http://localhost:8001) |
 | Domain model + logic (Milestone 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
 
+### Local development with Docker Compose
+
+From the repository root, run `docker compose up`. It starts the public website at http://localhost:3000, the backoffice at http://localhost:3001, the API at http://localhost:8000, and a local PostgreSQL database for inventory. `.env.example` provides local values; create or edit a root `.env` only if you need to override them. Rebuild images after dependency or Dockerfile changes with `docker compose up --build`.
+
+The API starts with an empty local user store. Create the development administrator once with `docker compose exec api uv run seed-users`; its email and password come from the root `.env` values or the Compose defaults. `docker compose down` stops the services and keeps their named data volumes.
+
 ---
 
 ## How to think about this monorepo
@@ -70,7 +76,7 @@ Each app has its own `package.json` and `node_modules` — run commands from its
 | 3 — Talent pipeline | Internal app: candidate list with filters, detail view, create/edit, notes; consumes the 4Geek Tracker API | 🚧 In [`uis/backoffice/`](./uis/backoffice/) |
 | 4+ — Backend, Telemetry, RAG, Agents, Workflows, Real-time | — | ⏳ Not started |
 
-`data/`, `agents/`, `mcps/`, `workflows/`, `infra/`, `internal/` are still empty scaffolding.
+`data/`, `agents/`, `mcps/`, `workflows/`, and `internal/` remain scaffolding. `infra/` contains infrastructure documentation; Dockerfiles live alongside their applications in `uis/` and `services/`.
 
 ---
 
@@ -85,7 +91,7 @@ Read the linked `README.md` inside each folder before you start coding there.
 | [`CONTEXT.md`](./CONTEXT.md) | Single source of truth for the Nexova domain                              | Read it before building anything; only the developer changes it       |
 | [`AGENTS.md`](./AGENTS.md)   | How any AI agent operates in this repo                                    | Session-start reading, pre-commit flow, no-touch list                 |
 | `README.md` / `README.es.md` | This guide                                                                | Orientation — you are here                                            |
-| `docker-compose.yml`         | Local dev orchestration (not present yet)                                 | Add at repo root once `services/` and databases exist                 |
+| [`docker-compose.yml`](./docker-compose.yml) | Local development orchestration | Starts the two Next.js apps, FastAPI, and local PostgreSQL |
 
 ### `uis/` — user interfaces
 
@@ -240,7 +246,8 @@ Project state to remember between sessions?→ memory-bank/
 Code imported by 2+ folders?               → packages/
 A schema / template / asset, not a lib?    → shared/
 Architecture or team-wide docs?            → docs/
-Docker / deploy / cloud config?            → infra/
+Dockerfile for an app/service?             → its folder (`uis/` or `services/`)
+General infrastructure guide?              → infra/
 A one-off script?                          → scripts/
 A CLI tool with its own package?           → internal/
 ```
@@ -272,7 +279,11 @@ nexovaSolutions/
 ├── agents/                    # AI agents (+ _template/ starter) (empty)
 ├── skills/  mcps/  workflows/ # Template scaffolding (empty)
 ├── docs/                      # context/, company-choice.md, prompts.md
-├── infra/  scripts/  internal/  shared/ # (empty)
+├── uis/Dockerfile              # Node Alpine image + website/backoffice supervisor
+├── services/Dockerfile         # Python image for services/api
+├── uis/.dockerignore           # interface build-context exclusions
+├── services/.dockerignore      # backend build-context exclusions
+├── scripts/  internal/  shared/ # Scripts, internal CLIs, shared resources
 ```
 
 ---

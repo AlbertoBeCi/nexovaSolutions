@@ -1,5 +1,27 @@
 # System patterns
 
+## Desarrollo local en contenedores
+
+- El Compose de raíz agrupa website y backoffice en un único contenedor de
+  interfaces con un proceso Next por app; la API y PostgreSQL permanecen en
+  contenedores separados.
+- Los Dockerfiles y `.dockerignore` viven en los contextos `uis/` y `services/`.
+  La API recibe un contexto adicional de la raíz para copiar `shared/` y
+  `packages/shared/`, dependencias reales de sus imports.
+- Compose declara la red `nexova-local` y carga variables desde `.env.example`,
+  sobreescritas opcionalmente por el `.env` local.
+- Los nombres DNS `api` y `postgres` solo se usan en la red Compose. El
+  navegador accede a la API del backoffice mediante el proxy de rewrites de
+  Next en `/_nexova-api`, evitando exponer el hostname interno al bundle.
+- Los montajes de desarrollo cubren directorios de código, no la raíz completa
+  de las apps Next: no ocultan `node_modules` ni montan `.env.local`. La API
+  enmascara su `.env` con el ejemplo seguro y desactiva `load_dotenv`; Compose
+  inyecta la configuración de forma explícita.
+- La API usa dotenv desactivado en el contenedor; la configuración entra por
+  `env_file`, no se carga un `.env` dentro de la imagen. Persistencia local en
+  volúmenes nombrados para PostgreSQL, TinyDB y cachés `.next`. Los seeds siguen
+  siendo una operación explícita.
+
 ## Organización
 
 - Monorepo por responsabilidad (`uis/`, `services/`, `data/`, `agents/`,

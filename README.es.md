@@ -41,6 +41,12 @@ Cada app tiene su propio `package.json` y `node_modules` — ejecuta los comando
 | API — gestor de incidencias (persistente) | [`services/incident-manager-api/`](./services/incident-manager-api/) | `uv sync` · `uv run --project services/incident-manager-api python scripts/seed_incidents.py` · `uv run serve` (→ http://localhost:8001) |
 | Modelo de dominio + lógica (Hito 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
 
+### Desarrollo local con Docker Compose
+
+Desde la raíz del repositorio, ejecuta `docker compose up`. Arranca la web pública en http://localhost:3000, el backoffice en http://localhost:3001, la API en http://localhost:8000 y PostgreSQL local para inventario. `.env.example` aporta valores locales; si necesitas personalizarlos, crea o edita `.env` en la raíz. Reconstruye las imágenes tras cambiar dependencias o Dockerfiles con `docker compose up --build`.
+
+La API comienza con el directorio local de usuarios vacío. Crea una vez el administrador de desarrollo con `docker compose exec api uv run seed-users`; el email y la contraseña salen de `.env` en la raíz o de los valores predeterminados de Compose. `docker compose down` detiene los servicios y conserva los volúmenes de datos.
+
 ---
 
 ## Cómo entender este monorepo
@@ -70,7 +76,7 @@ Cada app tiene su propio `package.json` y `node_modules` — ejecuta los comando
 | 3 — Pipeline de talento | App interna: listado con filtros, ficha, alta/edición, notas; consume la API de 4Geek Tracker | 🚧 En [`uis/backoffice/`](./uis/backoffice/) |
 | 4+ — Backend, Telemetría, RAG, Agentes, Workflows, Tiempo real | — | ⏳ Sin empezar |
 
-`data/`, `agents/`, `mcps/`, `workflows/`, `infra/`, `internal/` siguen siendo estructura vacía.
+`data/`, `agents/`, `mcps/`, `workflows/` e `internal/` siguen siendo estructura de plantilla. `infra/` contiene documentación de infraestructura; los Dockerfiles se mantienen junto a las aplicaciones en `uis/` y `services/`.
 
 ---
 
@@ -85,7 +91,7 @@ Lee el `README.md` enlazado dentro de cada carpeta antes de empezar a programar 
 | [`CONTEXT.md`](./CONTEXT.md) | Fuente única de verdad del dominio de Nexova           | Léelo antes de construir nada; solo lo cambia el desarrollador |
 | [`AGENTS.md`](./AGENTS.md)   | Cómo opera cualquier agente de IA en este repo         | Lectura al inicio de sesión, flujo de commit, lista de "no tocar" |
 | `README.md` / `README.es.md` | Esta guía                                             | Orientación — estás aquí                                   |
-| `docker-compose.yml`         | Orquestación local (aún no existe)                     | Añadir en la raíz cuando haya `services/` y bases de datos |
+| [`docker-compose.yml`](./docker-compose.yml) | Orquestación del entorno local | Arranca las dos apps Next.js, FastAPI y PostgreSQL local |
 
 ### `uis/` — interfaces de usuario
 
@@ -236,7 +242,8 @@ nuevo — ver el `README.md` de esa carpeta para la justificación.
 ¿Código importado por 2+ carpetas?           → packages/
 ¿Es esquema / plantilla / asset, no librería?→ shared/
 ¿Es arquitectura o docs de todo el equipo?   → docs/
-¿Es Docker / deploy / config cloud?          → infra/
+¿Dockerfile de una app/servicio?             → su carpeta (`uis/` o `services/`)
+¿Guía general de infraestructura?           → infra/
 ¿Es un script puntual?                       → scripts/
 ¿Es una CLI con su propio paquete?           → internal/
 ```
@@ -268,7 +275,11 @@ nexovaSolutions/
 ├── agents/                    # Agentes de IA (+ plantilla _template/) (vacío)
 ├── skills/  mcps/  workflows/ # Estructura de plantilla (vacía)
 ├── docs/                      # context/, company-choice.md, prompts.md
-├── infra/  scripts/  internal/  shared/ # (vacío)
+├── uis/Dockerfile              # imagen Node Alpine + supervisor website/backoffice
+├── services/Dockerfile         # imagen Python para services/api
+├── uis/.dockerignore           # exclusiones del contexto de interfaces
+├── services/.dockerignore      # exclusiones del contexto de backend
+├── scripts/  internal/  shared/ # Scripts, CLIs internas y recursos compartidos
 ```
 
 ---
