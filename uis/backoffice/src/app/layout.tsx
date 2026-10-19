@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AppShell } from "./_components/app-shell";
 
+const trackerOrigin = new URL(
+  process.env.NEXT_PUBLIC_API_URL ?? "https://playground.4geeks.com/tracker/api/v1"
+).origin;
+
 export const metadata: Metadata = {
   title: {
     default: "Nexova · Backoffice",
@@ -16,6 +20,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className="h-full antialiased"
     >
+      <head>
+        <link rel="preconnect" href={trackerOrigin} crossOrigin="anonymous" />
+      </head>
       <body className="min-h-full">
         <AppShell>{children}</AppShell>
       </body>
