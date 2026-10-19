@@ -45,10 +45,21 @@ try {
   const rows = [];
   for (const entry of cases.filter(entry => count !== 'shots' && (!selected.length || selected.includes(entry.name)))) {
     for (let run = 1; run <= Number(count); run++) {
-      const result = await lighthouse(entry.url, {
-        port: chrome.port, output: ['html', 'json'], logLevel: 'error', locale: 'es',
-        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+      // Un perfil nuevo por pasada también vacía la caché interna de favicons,
+      // que no se limpia con el reinicio de almacenamiento de Lighthouse.
+      const sampleChrome = await launch({
+        chromePath: process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+        chromeFlags: ['--headless=new', '--disable-extensions', '--no-first-run', '--disable-background-networking'],
       });
+      let result;
+      try {
+        result = await lighthouse(entry.url, {
+          port: sampleChrome.port, output: ['html', 'json'], logLevel: 'error', locale: 'es',
+          onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+        });
+      } finally {
+        try { await sampleChrome.kill(); } catch (error) { console.warn(`Chrome cleanup: ${error.message}`); }
+      }
       const { lhr, artifacts } = result;
       if (lhr.runtimeError) throw new Error(JSON.stringify(lhr.runtimeError));
       const prefix = join(output, `${entry.name}-${run}`);
