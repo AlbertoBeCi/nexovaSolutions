@@ -1,0 +1,829 @@
+[
+  {
+    "name": "website-home",
+    "url": "http://localhost:3000/",
+    "run": 1,
+    "fetchTime": "2026-10-19T20:40:59.854Z",
+    "lighthouseVersion": "13.5.0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "config": {
+      "output": [
+        "html",
+        "json"
+      ],
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 1000,
+      "pauseAfterLoadMs": 1000,
+      "networkQuietThresholdMs": 1000,
+      "cpuQuietThresholdMs": 1000,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "simulate",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": false,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "es",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": null,
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance",
+        "accessibility",
+        "best-practices",
+        "seo"
+      ],
+      "skipAudits": null
+    },
+    "warnings": [],
+    "scores": {
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 96,
+      "seo": 100
+    },
+    "metrics": {
+      "first-contentful-paint": 755.5101999999999,
+      "largest-contentful-paint": 2342.5102,
+      "total-blocking-time": 18.5,
+      "cumulative-layout-shift": 0,
+      "speed-index": 755.5101999999999,
+      "server-response-time": 2
+    },
+    "failures": [
+      {
+        "id": "largest-contentful-paint",
+        "score": 0.92,
+        "title": "Renderizado del mayor elemento con contenido",
+        "value": "2,3 s"
+      },
+      {
+        "id": "max-potential-fid",
+        "score": 0.98,
+        "title": "Latencia potencial máxima de la primera interacción",
+        "value": "90 ms"
+      },
+      {
+        "id": "errors-in-console",
+        "score": 0,
+        "title": "Se han registrado errores del navegador en la consola",
+        "details": {
+          "type": "table",
+          "headings": [
+            {
+              "key": "sourceLocation",
+              "valueType": "source-location",
+              "label": "Fuente"
+            },
+            {
+              "key": "description",
+              "valueType": "code",
+              "label": "Descripción"
+            }
+          ],
+          "items": [
+            {
+              "source": "network",
+              "description": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+              "sourceLocation": {
+                "type": "source-location",
+                "url": "http://localhost:3000/favicon.ico",
+                "urlProvider": "network",
+                "line": 0,
+                "column": 0
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "interactive",
+        "score": 0.98,
+        "title": "Tiempo necesario para interactuar",
+        "value": "2,4 s"
+      },
+      {
+        "id": "unused-javascript",
+        "score": 0,
+        "title": "Reduce el contenido JavaScript que no se use",
+        "value": "Ahorro estimado de 26 KiB",
+        "details": {
+          "type": "opportunity",
+          "headings": [
+            {
+              "key": "url",
+              "valueType": "url",
+              "subItemsHeading": {
+                "key": "source",
+                "valueType": "code"
+              },
+              "label": "URL"
+            },
+            {
+              "key": "totalBytes",
+              "valueType": "bytes",
+              "subItemsHeading": {
+                "key": "sourceBytes"
+              },
+              "label": "Tamaño de la transferencia"
+            },
+            {
+              "key": "wastedBytes",
+              "valueType": "bytes",
+              "subItemsHeading": {
+                "key": "sourceWastedBytes"
+              },
+              "label": "Ahorro estimado"
+            }
+          ],
+          "items": [
+            {
+              "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+              "totalBytes": 71688,
+              "wastedBytes": 27026,
+              "wastedPercent": 37.699209272286126
+            }
+          ],
+          "overallSavingsMs": 300,
+          "overallSavingsBytes": 27026,
+          "sortedBy": [
+            "wastedBytes"
+          ],
+          "debugData": {
+            "type": "debugdata",
+            "metricSavings": {
+              "FCP": 0,
+              "LCP": 300
+            }
+          }
+        }
+      },
+      {
+        "id": "forced-reflow-insight",
+        "score": 0,
+        "title": "Redistribución forzada",
+        "details": {
+          "type": "list",
+          "items": [
+            {
+              "type": "table",
+              "headings": [
+                {
+                  "key": "source",
+                  "valueType": "source-location",
+                  "label": "Fuente"
+                },
+                {
+                  "key": "reflowTime",
+                  "valueType": "ms",
+                  "granularity": 1,
+                  "label": "Tiempo total de redistribución"
+                }
+              ],
+              "items": [
+                {
+                  "source": {
+                    "type": "text",
+                    "value": "[sin asignación]"
+                  },
+                  "reflowTime": 41.147
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "legacy-javascript-insight",
+        "score": 0,
+        "title": "JavaScript antiguo",
+        "value": "Ahorro estimado de 14 KiB",
+        "details": {
+          "type": "table",
+          "headings": [
+            {
+              "key": "url",
+              "valueType": "url",
+              "subItemsHeading": {
+                "key": "location",
+                "valueType": "source-location"
+              },
+              "label": "URL"
+            },
+            {
+              "key": null,
+              "valueType": "code",
+              "subItemsHeading": {
+                "key": "signal"
+              },
+              "label": ""
+            },
+            {
+              "key": "wastedBytes",
+              "valueType": "bytes",
+              "label": "Bytes desperdiciados"
+            }
+          ],
+          "items": [
+            {
+              "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+              "wastedBytes": 13893,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "signal": "Array.prototype.at",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 1116
+                    }
+                  },
+                  {
+                    "signal": "Array.prototype.flat",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 504
+                    }
+                  },
+                  {
+                    "signal": "Array.prototype.flatMap",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 617
+                    }
+                  },
+                  {
+                    "signal": "Object.fromEntries",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 993
+                    }
+                  },
+                  {
+                    "signal": "Object.hasOwn",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 1251
+                    }
+                  },
+                  {
+                    "signal": "String.prototype.trimEnd",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 246
+                    }
+                  },
+                  {
+                    "signal": "String.prototype.trimStart",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 161
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "debugData": {
+            "type": "debugdata",
+            "wastedBytes": 13893
+          }
+        }
+      },
+      {
+        "id": "network-dependency-tree-insight",
+        "score": 0,
+        "title": "Árbol de dependencia de red",
+        "details": {
+          "type": "list",
+          "items": [
+            {
+              "type": "list-section",
+              "value": {
+                "type": "network-tree",
+                "chains": {
+                  "800034A4FB6D0EA8833EE7FD23F4FF3F": {
+                    "url": "http://localhost:3000/",
+                    "navStartToEndTime": 10,
+                    "transferSize": 7658,
+                    "isLongest": true,
+                    "children": {
+                      "22328.4": {
+                        "url": "http://localhost:3000/_next/static/chunks/375sl32albvv0.css",
+                        "navStartToEndTime": 20,
+                        "transferSize": 6957,
+                        "isLongest": true,
+                        "children": {}
+                      }
+                    }
+                  }
+                },
+                "longestChain": {
+                  "duration": 20
+                }
+              }
+            },
+            {
+              "type": "list-section",
+              "title": "Orígenes preconectados",
+              "description": "Las sugerencias para [establecer conexión previamente](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) ayudan al navegador a establecer una conexión antes de que se cargue la página, lo que ahorra tiempo al hacer la primera solicitud a ese origen. A continuación se indican los orígenes con los que la página ha establecido conexión previamente.",
+              "value": {
+                "type": "text",
+                "value": "No hay orígenes con los que se haya establecido conexión previamente"
+              }
+            },
+            {
+              "type": "list-section",
+              "title": "Candidatos para establecer conexión previamente",
+              "description": "Añade sugerencias para [establecer conexión previamente](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) con tus orígenes más importantes, pero intenta usar 4 como máximo.",
+              "value": {
+                "type": "text",
+                "value": "No hay más orígenes que sean buenos candidatos para establecer conexión previamente"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "render-blocking-insight",
+        "score": 0,
+        "title": "Solicitudes que bloquean el renderizado",
+        "value": "Ahorro estimado de 60 ms",
+        "details": {
+          "type": "table",
+          "headings": [
+            {
+              "key": "url",
+              "valueType": "url",
+              "label": "URL"
+            },
+            {
+              "key": "totalBytes",
+              "valueType": "bytes",
+              "label": "Tamaño de la transferencia"
+            },
+            {
+              "key": "wastedMs",
+              "valueType": "timespanMs",
+              "label": "Duración"
+            }
+          ],
+          "items": [
+            {
+              "url": "http://localhost:3000/_next/static/chunks/375sl32albvv0.css",
+              "totalBytes": 6957,
+              "wastedMs": 153
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "website-talento",
+    "url": "http://localhost:3000/talento",
+    "run": 1,
+    "fetchTime": "2026-10-19T20:41:06.939Z",
+    "lighthouseVersion": "13.5.0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "config": {
+      "output": [
+        "html",
+        "json"
+      ],
+      "maxWaitForFcp": 30000,
+      "maxWaitForLoad": 45000,
+      "pauseAfterFcpMs": 1000,
+      "pauseAfterLoadMs": 1000,
+      "networkQuietThresholdMs": 1000,
+      "cpuQuietThresholdMs": 1000,
+      "formFactor": "mobile",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      },
+      "throttlingMethod": "simulate",
+      "screenEmulation": {
+        "mobile": true,
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "disabled": false
+      },
+      "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+      "auditMode": false,
+      "gatherMode": false,
+      "clearStorageTypes": [
+        "file_systems",
+        "shader_cache",
+        "service_workers",
+        "cache_storage"
+      ],
+      "disableStorageReset": false,
+      "debugNavigation": false,
+      "channel": "node",
+      "usePassiveGathering": false,
+      "disableFullPageScreenshot": false,
+      "skipAboutBlank": false,
+      "blankPage": "about:blank",
+      "ignoreStatusCode": false,
+      "locale": "es",
+      "blockedUrlPatterns": null,
+      "additionalTraceCategories": null,
+      "extraHeaders": null,
+      "precomputedLanternData": null,
+      "onlyAudits": null,
+      "onlyCategories": [
+        "performance",
+        "accessibility",
+        "best-practices",
+        "seo"
+      ],
+      "skipAudits": null
+    },
+    "warnings": [],
+    "scores": {
+      "performance": 97,
+      "accessibility": 100,
+      "best-practices": 96,
+      "seo": 100
+    },
+    "metrics": {
+      "first-contentful-paint": 756.7777000000001,
+      "largest-contentful-paint": 2509.7777,
+      "total-blocking-time": 53,
+      "cumulative-layout-shift": 0,
+      "speed-index": 756.7777000000001,
+      "server-response-time": 5
+    },
+    "failures": [
+      {
+        "id": "largest-contentful-paint",
+        "score": 0.89,
+        "title": "Renderizado del mayor elemento con contenido",
+        "value": "2,5 s"
+      },
+      {
+        "id": "max-potential-fid",
+        "score": 0.96,
+        "title": "Latencia potencial máxima de la primera interacción",
+        "value": "100 ms"
+      },
+      {
+        "id": "errors-in-console",
+        "score": 0,
+        "title": "Se han registrado errores del navegador en la consola",
+        "details": {
+          "type": "table",
+          "headings": [
+            {
+              "key": "sourceLocation",
+              "valueType": "source-location",
+              "label": "Fuente"
+            },
+            {
+              "key": "description",
+              "valueType": "code",
+              "label": "Descripción"
+            }
+          ],
+          "items": [
+            {
+              "source": "network",
+              "description": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+              "sourceLocation": {
+                "type": "source-location",
+                "url": "http://localhost:3000/favicon.ico",
+                "urlProvider": "network",
+                "line": 0,
+                "column": 0
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "interactive",
+        "score": 0.98,
+        "title": "Tiempo necesario para interactuar",
+        "value": "2,5 s"
+      },
+      {
+        "id": "unused-javascript",
+        "score": 0,
+        "title": "Reduce el contenido JavaScript que no se use",
+        "value": "Ahorro estimado de 26 KiB",
+        "details": {
+          "type": "opportunity",
+          "headings": [
+            {
+              "key": "url",
+              "valueType": "url",
+              "subItemsHeading": {
+                "key": "source",
+                "valueType": "code"
+              },
+              "label": "URL"
+            },
+            {
+              "key": "totalBytes",
+              "valueType": "bytes",
+              "subItemsHeading": {
+                "key": "sourceBytes"
+              },
+              "label": "Tamaño de la transferencia"
+            },
+            {
+              "key": "wastedBytes",
+              "valueType": "bytes",
+              "subItemsHeading": {
+                "key": "sourceWastedBytes"
+              },
+              "label": "Ahorro estimado"
+            }
+          ],
+          "items": [
+            {
+              "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+              "totalBytes": 71688,
+              "wastedBytes": 26791,
+              "wastedPercent": 37.37148492729843
+            }
+          ],
+          "overallSavingsMs": 300,
+          "overallSavingsBytes": 26791,
+          "sortedBy": [
+            "wastedBytes"
+          ],
+          "debugData": {
+            "type": "debugdata",
+            "metricSavings": {
+              "FCP": 0,
+              "LCP": 300
+            }
+          }
+        }
+      },
+      {
+        "id": "legacy-javascript-insight",
+        "score": 0,
+        "title": "JavaScript antiguo",
+        "value": "Ahorro estimado de 14 KiB",
+        "details": {
+          "type": "table",
+          "headings": [
+            {
+              "key": "url",
+              "valueType": "url",
+              "subItemsHeading": {
+                "key": "location",
+                "valueType": "source-location"
+              },
+              "label": "URL"
+            },
+            {
+              "key": null,
+              "valueType": "code",
+              "subItemsHeading": {
+                "key": "signal"
+              },
+              "label": ""
+            },
+            {
+              "key": "wastedBytes",
+              "valueType": "bytes",
+              "label": "Bytes desperdiciados"
+            }
+          ],
+          "items": [
+            {
+              "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+              "wastedBytes": 13893,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "signal": "Array.prototype.at",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 1116
+                    }
+                  },
+                  {
+                    "signal": "Array.prototype.flat",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 504
+                    }
+                  },
+                  {
+                    "signal": "Array.prototype.flatMap",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 617
+                    }
+                  },
+                  {
+                    "signal": "Object.fromEntries",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 993
+                    }
+                  },
+                  {
+                    "signal": "Object.hasOwn",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 1251
+                    }
+                  },
+                  {
+                    "signal": "String.prototype.trimEnd",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 246
+                    }
+                  },
+                  {
+                    "signal": "String.prototype.trimStart",
+                    "location": {
+                      "type": "source-location",
+                      "url": "http://localhost:3000/_next/static/chunks/02fh7_m5mrih8.js",
+                      "urlProvider": "network",
+                      "line": 0,
+                      "column": 161
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "debugData": {
+            "type": "debugdata",
+            "wastedBytes": 13893
+          }
+        }
+      },
+      {
+        "id": "network-dependency-tree-insight",
+        "score": 0,
+        "title": "Árbol de dependencia de red",
+        "details": {
+          "type": "list",
+          "items": [
+            {
+              "type": "list-section",
+              "value": {
+                "type": "network-tree",
+                "chains": {
+                  "D478892AAFAE47A0F0B5E540232D6908": {
+                    "url": "http://localhost:3000/talento",
+                    "navStartToEndTime": 24,
+                    "transferSize": 7481,
+                    "isLongest": true,
+                    "children": {
+                      "30912.4": {
+                        "url": "http://localhost:3000/_next/static/chunks/375sl32albvv0.css",
+                        "navStartToEndTime": 33,
+                        "transferSize": 6957,
+                        "isLongest": true,
+                        "children": {}
+                      }
+                    }
+                  }
+                },
+                "longestChain": {
+                  "duration": 33
+                }
+              }
+            },
+            {
+              "type": "list-section",
+              "title": "Orígenes preconectados",
+              "description": "Las sugerencias para [establecer conexión previamente](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) ayudan al navegador a establecer una conexión antes de que se cargue la página, lo que ahorra tiempo al hacer la primera solicitud a ese origen. A continuación se indican los orígenes con los que la página ha establecido conexión previamente.",
+              "value": {
+                "type": "text",
+                "value": "No hay orígenes con los que se haya establecido conexión previamente"
+              }
+            },
+            {
+              "type": "list-section",
+              "title": "Candidatos para establecer conexión previamente",
+              "description": "Añade sugerencias para [establecer conexión previamente](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) con tus orígenes más importantes, pero intenta usar 4 como máximo.",
+              "value": {
+                "type": "text",
+                "value": "No hay más orígenes que sean buenos candidatos para establecer conexión previamente"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "render-blocking-insight",
+        "score": 0,
+        "title": "Solicitudes que bloquean el renderizado",
+        "value": "Ahorro estimado de 80 ms",
+        "details": {
+          "type": "table",
+          "headings": [
+            {
+              "key": "url",
+              "valueType": "url",
+              "label": "URL"
+            },
+            {
+              "key": "totalBytes",
+              "valueType": "bytes",
+              "label": "Tamaño de la transferencia"
+            },
+            {
+              "key": "wastedMs",
+              "valueType": "timespanMs",
+              "label": "Duración"
+            }
+          ],
+          "items": [
+            {
+              "url": "http://localhost:3000/_next/static/chunks/375sl32albvv0.css",
+              "totalBytes": 6957,
+              "wastedMs": 153
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

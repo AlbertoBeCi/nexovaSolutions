@@ -48,3 +48,16 @@ node scripts/audit-frontends.mjs before/production 3
 ```
 
 Ejecuta desde la raíz. Argumentos: fase dentro de `audit/`, número de pasadas (o `shots` para volver a capturar informes existentes) y nombres opcionales de casos. Guarda la URL fija del candidato en `audit/cases.json`, restablece el almacenamiento entre navegaciones Lighthouse y conserva informes, condiciones, trazas y capturas. Mantén versiones y configuración iguales antes/después; estas mediciones de laboratorio no representan un p75 de usuarios reales.
+
+## `audit-regression.mjs` — comprobaciones de navegador sin escrituras reales
+
+Usa las herramientas temporales Playwright/web-vitals y los servidores de
+producción anteriores. Ejecuta `node scripts/audit-regression.mjs final` desde la
+raíz. Acepta el ámbito opcional `website` o `backoffice` después de la fase.
+La fase admite letras, números y guiones; guarda `audit/checks/<fase>.json`.
+
+Comprueba navegación, temas, formulario público, filtros accesibles, CRUD con
+respuestas simuladas, errores de API, contraste, fuentes y reutilización de
+precargas. Bloquea las mutaciones reales. Observa INP con CPU ×4 sin simulación de
+red; son observaciones locales, no p75 de campo. La comprobación aislada de la
+ficha fija es de solo lectura y mantiene la caché para verificar las precargas.

@@ -1,0 +1,46 @@
+[
+    {
+        "name":  "website-home",
+        "samplesBefore":  3,
+        "samplesAfter":  3,
+        "performanceBefore":  98,
+        "performanceAfter":  98,
+        "lcpMsBefore":  2333.308,
+        "lcpMsAfter":  2325.6555,
+        "clsAfter":  0,
+        "thresholdsPassed":  true
+    },
+    {
+        "name":  "website-talento",
+        "samplesBefore":  3,
+        "samplesAfter":  3,
+        "performanceBefore":  98,
+        "performanceAfter":  98,
+        "lcpMsBefore":  2482.7439000000004,
+        "lcpMsAfter":  2474.3777,
+        "clsAfter":  0,
+        "thresholdsPassed":  true
+    },
+    {
+        "name":  "backoffice-home",
+        "samplesBefore":  3,
+        "samplesAfter":  3,
+        "performanceBefore":  97,
+        "performanceAfter":  99,
+        "lcpMsBefore":  2630.96145,
+        "lcpMsAfter":  2041.7181999999998,
+        "clsAfter":  0,
+        "thresholdsPassed":  true
+    },
+    {
+        "name":  "backoffice-detail",
+        "samplesBefore":  3,
+        "samplesAfter":  3,
+        "performanceBefore":  89,
+        "performanceAfter":  98,
+        "lcpMsBefore":  3744.2545,
+        "lcpMsAfter":  2475.3048,
+        "clsAfter":  0.00007924115178456462,
+        "thresholdsPassed":  true
+    }
+]

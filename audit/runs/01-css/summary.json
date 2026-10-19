@@ -1,0 +1,48 @@
+[
+  {
+    "name": "website-home",
+    "url": "http://localhost:3000/",
+    "samples": 3,
+    "scores": {
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "performanceRange": [
+      97,
+      98
+    ],
+    "metrics": {
+      "first-contentful-paint": 829.52315,
+      "largest-contentful-paint": 2488.7253,
+      "total-blocking-time": 20,
+      "cumulative-layout-shift": 0,
+      "speed-index": 829.52315,
+      "server-response-time": 4
+    }
+  },
+  {
+    "name": "website-talento",
+    "url": "http://localhost:3000/talento",
+    "samples": 3,
+    "scores": {
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "performanceRange": [
+      97,
+      98
+    ],
+    "metrics": {
+      "first-contentful-paint": 882.26495,
+      "largest-contentful-paint": 2485.3385000000003,
+      "total-blocking-time": 26,
+      "cumulative-layout-shift": 0,
+      "speed-index": 882.26495,
+      "server-response-time": 3
+    }
+  }
+]

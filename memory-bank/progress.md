@@ -2,6 +2,13 @@
 
 ## Funciona
 
+- **Auditoría de frontends (19/10/2026)** — producción antes/después en cuatro
+  rutas: Performance final 98/98/99/98; mejora de prácticas públicas y accesibilidad
+  del pipeline. Dos componentes reutilizables integrados, ocho pruebas Jest y
+  regresión de navegador sin mutar datos reales. Informes, capturas, trazas,
+  experimentos descartados y guía breve en `AUDIT.md`, `REPORT.md` y `audit/`.
+  Pendiente push autorizado; medición de campo y revisión de dependencias aparte.
+
 - **Hito 1** — Web pública migrada a Next/React en `uis/website/`: landing (`/`) +
   registro de talento en 3 pasos (`/talento`) con validaciones (mensajes literales
   de `CONTEXT.md`), tema claro/oscuro, Schema.org. La versión HTML/CSS/JS estática

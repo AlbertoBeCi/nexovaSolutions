@@ -1,0 +1,25 @@
+[
+  {
+    "name": "backoffice-detail",
+    "url": "http://localhost:3001/candidates/53f2bbdc-4ea0-4b34-b076-4f8e7c2736ac",
+    "samples": 3,
+    "scores": {
+      "performance": 91,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "performanceRange": [
+      91,
+      91
+    ],
+    "metrics": {
+      "first-contentful-paint": 755.0009,
+      "largest-contentful-paint": 3499.21625,
+      "total-blocking-time": 29,
+      "cumulative-layout-shift": 0.00007924115178456462,
+      "speed-index": 755.0009,
+      "server-response-time": 5
+    }
+  }
+]

@@ -2,7 +2,27 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — Gestor de Incidencias Centralizado
+## Ahora — Auditoría de rendimiento de ambos frontends
+
+Rama: `feature/auditoria-de-rendimiento`. Trabajo local completado el 19/10/2026;
+pendiente de publicar únicamente cuando el usuario autorice push.
+
+- Línea base y final: producción, tres perfiles limpios por URL, Lighthouse 13.5.0,
+  Chrome 155. Portada y talento, pipeline y ficha del mismo candidato.
+- Performance: 98/98/97/89 → 98/98/99/98. Prácticas públicas 96 → 100;
+  accesibilidad del pipeline 94 → 100. Medianas LCP finales bajo 2,5 s.
+- Cambios dirigidos: etiquetas/contraste, fuentes no utilizadas, SVG ligeros y
+  precargas de los GET de la ficha. Se mantienen arquitectura y flujo cliente.
+- `SiteNavigation` y `CandidateSelect` extraídos e integrados; 8 pruebas Jest,
+  lint/build, revisión de textos y regresión con escrituras simuladas correctos.
+- CSS inline probado y retirado por no mejorar. No atribuir las diferencias con
+  las capturas originales 73/72 al código: tenían avisos de extensiones/IndexedDB.
+- Entrega en `AUDIT.md`, `REPORT.md`, `audit/SOLUCIONES.md`, `audit/before/isolated/`,
+  `audit/runs/`, `audit/after/` y `audit/checks/`. Scripts reproducibles en `scripts/`.
+- Se dejan website:3000, backoffice:3001 y API:8000 funcionando. No hay datos de
+  campo CrUX/RUM; INP local no representa p75. La red externa requiere seguimiento.
+
+## Anterior — Gestor de Incidencias Centralizado
 
 Rama: `feature/gestor-incidencias` (partiendo de `main`, con AUTH-01 y el
 login/reset de `uis/application`/`uis/backoffice` ya mergeados vía PR #17).

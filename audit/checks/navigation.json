@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-19T20:40:13.867Z",
+  "scope": "website",
+  "checks": [
+    {
+      "name": "website: menú móvil navega y se cierra",
+      "pass": true
+    },
+    {
+      "name": "website: alternancia de temas",
+      "pass": true
+    },
+    {
+      "name": "website: INP local, sesión móvil con CPU x4; no representa p75 de campo",
+      "pass": true,
+      "samples": [
+        {
+          "value": 32,
+          "rating": "good"
+        }
+      ]
+    },
+    {
+      "name": "website: navegación de escritorio",
+      "pass": true
+    },
+    {
+      "name": "website: validación, tres pasos, envío simulado y reinicio sin errores de hidratación",
+      "pass": true
+    }
+  ]
+}

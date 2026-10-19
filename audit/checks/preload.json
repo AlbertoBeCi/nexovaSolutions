@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-19T20:48:33.748Z",
+  "scope": "backoffice",
+  "checks": [
+    {
+      "name": "backoffice: tipografía y color en tema light",
+      "pass": true,
+      "color": "lab(35.1166 1.7821 -6.1173)",
+      "bodyFont": "Arial, Helvetica, sans-serif"
+    },
+    {
+      "name": "backoffice: tipografía y color en tema dark",
+      "pass": true,
+      "color": "lab(65.6464 1.53494 -5.42429)",
+      "bodyFont": "Arial, Helvetica, sans-serif"
+    },
+    {
+      "name": "backoffice: etiquetas, filtros y búsqueda sincronizan URL",
+      "pass": true
+    },
+    {
+      "name": "backoffice: INP local, CPU x4; no representa p75 de campo",
+      "pass": true,
+      "samples": []
+    },
+    {
+      "name": "backoffice: solicitudes de fuentes",
+      "pass": true,
+      "fonts": []
+    },
+    {
+      "name": "backoffice: ficha, notas y selectores cargan",
+      "pass": true
+    },
+    {
+      "name": "backoffice: alta conserva sus selectores etiquetados",
+      "pass": true
+    },
+    {
+      "name": "backoffice: protección de incidencias y ausencia de errores de hidratación",
+      "pass": true
+    },
+    {
+      "name": "backoffice: precargas reutilizadas, una solicitud por recurso",
+      "pass": true,
+      "apiRequests": [
+        "https://playground.4geeks.com/tracker/api/v1/records/53f2bbdc-4ea0-4b34-b076-4f8e7c2736ac",
+        "https://playground.4geeks.com/tracker/api/v1/records/53f2bbdc-4ea0-4b34-b076-4f8e7c2736ac/notes"
+      ]
+    }
+  ]
+}

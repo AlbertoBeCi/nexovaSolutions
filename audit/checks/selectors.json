@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-19T20:40:37.228Z",
+  "scope": "backoffice",
+  "checks": [
+    {
+      "name": "backoffice: etiquetas, filtros y búsqueda sincronizan URL",
+      "pass": true
+    },
+    {
+      "name": "backoffice: ficha, notas y selectores cargan",
+      "pass": true
+    },
+    {
+      "name": "backoffice: alta conserva sus selectores etiquetados",
+      "pass": true
+    },
+    {
+      "name": "backoffice: protección de incidencias y ausencia de errores de hidratación",
+      "pass": true
+    }
+  ]
+}
