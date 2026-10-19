@@ -48,3 +48,7 @@ src/
 - Antes de commit: `npm run lint` y `npm run build` en verde.
 - Next.js del repo trae breaking changes: consulta `node_modules/next/dist/docs/`
   antes de tocar código de Next. El bloque de `AGENTS.md` lo regenera `next dev`.
+# Navegación reutilizable
+
+`src/app/_components/site-navigation.tsx` centraliza los enlaces del menú móvil y
+de escritorio. `SiteHeader` conserva el estado de apertura y el cierre al navegar.

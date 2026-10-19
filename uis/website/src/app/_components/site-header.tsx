@@ -9,13 +9,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
-
-const NAV_ITEMS = [
-  { href: "/#inicio", label: "Inicio" },
-  { href: "/#servicios", label: "Servicios" },
-  { href: "/#talento", label: "Por qué Nexova" },
-  { href: "/#contacto", label: "Contacto" },
-];
+import { SiteNavigation } from "./site-navigation";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -72,15 +66,7 @@ export function SiteHeader() {
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="px-2 py-1 text-sm font-medium text-ink-muted transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              {item.label}
-            </Link>
-          ))}
+          <SiteNavigation variant="desktop" />
         </div>
 
         <div className="flex items-center gap-2 justify-self-end md:justify-self-auto">
@@ -97,16 +83,7 @@ export function SiteHeader() {
       {open && (
         <div id="menu-movil" className="border-t border-line bg-bg md:hidden">
           <div className="flex flex-col gap-1 px-4 py-4 sm:px-6">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="px-3 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:bg-accent-soft hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                {item.label}
-              </Link>
-            ))}
+            <SiteNavigation variant="mobile" onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}
