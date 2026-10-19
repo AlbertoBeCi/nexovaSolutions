@@ -10,6 +10,7 @@
 import { Suspense, use, useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 import Link from "next/link";
+import { CandidateSelect, STATUS_OPTIONS, STAGE_OPTIONS } from "../_components/candidate-select";
 import {
   addCandidateNote,
   deleteCandidateNote,
@@ -22,12 +23,7 @@ import {
   CandidateNote,
   CandidateStage,
   CandidateStatus,
-  stageLabels,
-  statusLabels,
 } from "../../../types/candidate";
-
-const statusOptions = Object.entries(statusLabels) as [CandidateStatus, string][];
-const stageOptions = Object.entries(stageLabels) as [CandidateStage, string][];
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
@@ -299,43 +295,23 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
             )}
 
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="candidate-status" className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                  Estado {savingField === "status" && "(guardando...)"}
-                </label>
-                <select
-                  id="candidate-status"
-                  value={loaded.candidate.status}
-                  onChange={handleStatusChange}
-                  disabled={savingField !== null}
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                >
-                  {statusOptions.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CandidateSelect
+                label={<>Estado {savingField === "status" && "(guardando...)"}</>}
+                options={STATUS_OPTIONS}
+                id="candidate-status"
+                value={loaded.candidate.status}
+                onChange={handleStatusChange}
+                disabled={savingField !== null}
+              />
 
-              <div>
-                <label htmlFor="candidate-stage" className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                  Etapa {savingField === "stage" && "(guardando...)"}
-                </label>
-                <select
-                  id="candidate-stage"
-                  value={loaded.candidate.stage}
-                  onChange={handleStageChange}
-                  disabled={savingField !== null}
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                >
-                  {stageOptions.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CandidateSelect
+                label={<>Etapa {savingField === "stage" && "(guardando...)"}</>}
+                options={STAGE_OPTIONS}
+                id="candidate-stage"
+                value={loaded.candidate.stage}
+                onChange={handleStageChange}
+                disabled={savingField !== null}
+              />
             </div>
           </section>
 

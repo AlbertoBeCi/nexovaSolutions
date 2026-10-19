@@ -63,7 +63,8 @@ src/
 │  ├─ candidates/
 │  │  ├─ [id]/page.tsx        # ficha + notas + cambio rápido de estado/etapa
 │  │  ├─ [id]/edit/page.tsx   # edición
-│  │  └─ new/page.tsx         # alta
+│  │  ├─ new/page.tsx         # alta
+│  │  └─ _components/candidate-select.tsx # selector accesible compartido por filtros, alta y ficha
 │  └─ incidencias/
 │     ├─ page.tsx             # envuelta en <RequireAuth>; sube un CSV, muestra el resumen y exporta
 │     └─ _components/
@@ -86,6 +87,12 @@ src/
 
 - La UI va en **español**; nunca se muestran valores crudos de la API (se traducen
   con `statusLabels` / `stageLabels`).
-- Antes de commit: `npm run lint` y `npm run build` en verde.
+- Antes de commit: `npm run lint`, `npm run build` y `npm test -- --runInBand` en verde.
 - Next.js del repo trae breaking changes: consulta `node_modules/next/dist/docs/`
   antes de tocar código de Next. El bloque de `AGENTS.md` lo regenera `next dev`.
+
+## Pruebas del selector
+
+Jest con `next/jest` y Testing Library verifica cinco casos de `CandidateSelect`:
+nombre accesible, etiquetas españolas, selección controlada, atributos nativos y
+etiqueta durante el guardado. No utiliza la API ni modifica candidatos reales.
