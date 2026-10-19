@@ -48,7 +48,7 @@ de duplicar el flujo. Ver `services/api/README.md`.
 ```
 src/
 ├─ app/
-│  ├─ layout.tsx              # root layout: fuentes + <AppShell>
+│  ├─ layout.tsx              # root layout: metadatos + <AppShell>; Arial del sistema
 │  ├─ page.tsx                # entrada: pipeline de candidatos con filtros
 │  ├─ _components/
 │  │  ├─ app-shell.tsx        # sidebar (escritorio) + topbar (móvil)
