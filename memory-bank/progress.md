@@ -2,6 +2,16 @@
 
 ## Funciona
 
+- **Auditoría de frontends (19/10/2026)** — producción antes/después en cuatro
+  rutas: Performance final 98/98/99/98; mejora de prácticas públicas y accesibilidad
+  del pipeline. Dos componentes reutilizables integrados, ocho pruebas Jest y
+  regresión de navegador sin mutar datos reales. Informes, capturas, trazas,
+  experimentos descartados y guía breve en `AUDIT.md`, `REPORT.md` y `audit/`.
+  Publicada el 20/10 con autorización; integración de main y recuperación del README
+  español para el PR realizadas. Integración: 148 pruebas en 11 suites, lint/build
+  en ambos frontends y revisión de textos correctos. Medición de campo y revisión
+  de dependencias aparte.
+
 - **Entorno local Docker Compose alineado con checklist y validado**: Dockerfiles
   y `.dockerignore` en `uis/` y `services/`; website/backoffice en 3000/3001;
   API con `--reload` en 8000; red `nexova-local`; variables desde

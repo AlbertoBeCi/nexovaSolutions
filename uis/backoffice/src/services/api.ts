@@ -11,6 +11,12 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://playground.4geeks.com/tracker/api/v1";
 const DEFAULT_LIST_LIMIT = 100;
 
+/** Mismas URLs para precarga y lectura: evita descubrir los datos tras hidratar. */
+export function getCandidateResourceUrls(id: string) {
+  const candidate = `${API_BASE_URL}/records/${id}`;
+  return { candidate, notes: `${candidate}/notes` };
+}
+
 export interface CandidateFilters {
   search?: string;
   status?: CandidateStatus;
@@ -183,7 +189,7 @@ export async function getCandidates(filters: CandidateFilters = {}): Promise<Can
 
 /** Obtiene un candidato por id, o `null` si la API responde 404 (no existe). */
 export async function getCandidateById(id: string): Promise<Candidate | null> {
-  const response = await safeFetch(`${API_BASE_URL}/records/${id}`);
+  const response = await safeFetch(getCandidateResourceUrls(id).candidate);
 
   if (response.status === 404) {
     return null;
@@ -239,7 +245,7 @@ export async function updateCandidateStatusStage(
 
 /** Lista las notas internas de un candidato. */
 export async function getCandidateNotes(candidateId: string): Promise<CandidateNote[]> {
-  const response = await safeFetch(`${API_BASE_URL}/records/${candidateId}/notes`);
+  const response = await safeFetch(getCandidateResourceUrls(candidateId).notes);
   const result = await parseJsonResponse<NoteListResponseDto>(
     response,
     `No se pudieron obtener las notas del candidato ${candidateId}`

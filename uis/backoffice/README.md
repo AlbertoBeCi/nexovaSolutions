@@ -67,7 +67,7 @@ de duplicar el flujo. Ver `services/api/README.md`.
 ```
 src/
 ├─ app/
-│  ├─ layout.tsx              # root layout: fuentes + <AppShell>
+│  ├─ layout.tsx              # root layout: metadatos + <AppShell>; Arial del sistema
 │  ├─ page.tsx                # entrada: pipeline de candidatos con filtros
 │  ├─ _components/
 │  │  ├─ app-shell.tsx        # sidebar (escritorio) + topbar (móvil)
@@ -82,7 +82,8 @@ src/
 │  ├─ candidates/
 │  │  ├─ [id]/page.tsx        # ficha + notas + cambio rápido de estado/etapa
 │  │  ├─ [id]/edit/page.tsx   # edición
-│  │  └─ new/page.tsx         # alta
+│  │  ├─ new/page.tsx         # alta
+│  │  └─ _components/candidate-select.tsx # selector accesible compartido por filtros, alta y ficha
 │  ├─ incidencias/
 │     ├─ page.tsx             # envuelta en <RequireAuth>; sube un CSV, muestra el resumen y exporta
 │     └─ _components/
@@ -121,3 +122,12 @@ src/
 - Antes de commit: `npm run lint`, `npm run build` y `npm test` (Jest) en verde. Guía de pruebas: [`TESTING.md`](../../TESTING.md).
 - Next.js del repo trae breaking changes: consulta `node_modules/next/dist/docs/`
   antes de tocar código de Next. El bloque de `AGENTS.md` lo regenera `next dev`.
+
+## Pruebas del selector
+
+Jest con `next/jest` y Testing Library verifica cinco casos de `CandidateSelect`:
+nombre accesible, etiquetas españolas, selección controlada, atributos nativos y
+etiqueta durante el guardado. No utiliza la API ni modifica candidatos reales.
+
+La ficha precarga sus dos respuestas JSON desde el HTML. Las tres pruebas del
+cliente HTTP comprueban que la lectura posterior utiliza exactamente esas URLs.

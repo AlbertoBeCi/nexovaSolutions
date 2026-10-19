@@ -1,0 +1,94 @@
+[
+  {
+    "name": "website-home",
+    "url": "http://localhost:3000/",
+    "samples": 3,
+    "scores": {
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "performanceRange": [
+      98,
+      98
+    ],
+    "metrics": {
+      "first-contentful-paint": 753.9159,
+      "largest-contentful-paint": 2325.6555,
+      "total-blocking-time": 11,
+      "cumulative-layout-shift": 0,
+      "speed-index": 753.9159,
+      "server-response-time": 2
+    }
+  },
+  {
+    "name": "website-talento",
+    "url": "http://localhost:3000/talento",
+    "samples": 3,
+    "scores": {
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "performanceRange": [
+      98,
+      98
+    ],
+    "metrics": {
+      "first-contentful-paint": 754.1623999999999,
+      "largest-contentful-paint": 2474.3777,
+      "total-blocking-time": 21,
+      "cumulative-layout-shift": 0,
+      "speed-index": 754.1623999999999,
+      "server-response-time": 2
+    }
+  },
+  {
+    "name": "backoffice-home",
+    "url": "http://localhost:3001/",
+    "samples": 3,
+    "scores": {
+      "performance": 99,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "performanceRange": [
+      99,
+      99
+    ],
+    "metrics": {
+      "first-contentful-paint": 754.3932,
+      "largest-contentful-paint": 2041.7181999999998,
+      "total-blocking-time": 14,
+      "cumulative-layout-shift": 0,
+      "speed-index": 754.3932,
+      "server-response-time": 1
+    }
+  },
+  {
+    "name": "backoffice-detail",
+    "url": "http://localhost:3001/candidates/53f2bbdc-4ea0-4b34-b076-4f8e7c2736ac",
+    "samples": 3,
+    "scores": {
+      "performance": 98,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "performanceRange": [
+      98,
+      98
+    ],
+    "metrics": {
+      "first-contentful-paint": 753.6347000000001,
+      "largest-contentful-paint": 2475.3048,
+      "total-blocking-time": 11,
+      "cumulative-layout-shift": 0.00007924115178456462,
+      "speed-index": 753.6347000000001,
+      "server-response-time": 5
+    }
+  }
+]

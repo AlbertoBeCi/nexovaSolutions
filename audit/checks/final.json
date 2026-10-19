@@ -1,0 +1,193 @@
+{
+  "date": "2026-10-19T20:55:35.459Z",
+  "scope": "all",
+  "completed": true,
+  "conditions": {
+    "browser": "Chrome 155",
+    "cpuSlowdown": 4,
+    "network": "local sin simulación de red",
+    "realUserData": false
+  },
+  "checks": [
+    {
+      "name": "website: menú móvil navega y se cierra",
+      "pass": true
+    },
+    {
+      "name": "website: alternancia de temas",
+      "pass": true
+    },
+    {
+      "name": "website: INP local, sesión móvil con CPU x4; no representa p75 de campo",
+      "pass": true,
+      "samples": [
+        {
+          "value": 32,
+          "rating": "good"
+        },
+        {
+          "value": 40,
+          "rating": "good"
+        }
+      ]
+    },
+    {
+      "name": "website: navegación de escritorio",
+      "pass": true
+    },
+    {
+      "name": "website: validación, tres pasos, envío simulado y reinicio sin errores de hidratación",
+      "pass": true
+    },
+    {
+      "name": "backoffice: tipografía y color en tema light",
+      "pass": true,
+      "color": "lab(35.1166 1.7821 -6.1173)",
+      "contrast": 7.719945827625962,
+      "bodyFont": "Arial, Helvetica, sans-serif"
+    },
+    {
+      "name": "backoffice: tipografía y color en tema dark",
+      "pass": true,
+      "color": "lab(65.6464 1.53494 -5.42429)",
+      "contrast": 7.54814206444775,
+      "bodyFont": "Arial, Helvetica, sans-serif"
+    },
+    {
+      "name": "backoffice: etiquetas, filtros y búsqueda sincronizan URL",
+      "pass": true
+    },
+    {
+      "name": "backoffice: solicitudes de fuentes eliminadas",
+      "pass": true,
+      "fonts": []
+    },
+    {
+      "name": "backoffice: ficha, notas y selectores cargan",
+      "pass": true
+    },
+    {
+      "name": "backoffice: alta conserva sus selectores etiquetados",
+      "pass": true
+    },
+    {
+      "name": "backoffice: alta y ajuste de estado/etapa con respuestas simuladas",
+      "pass": true
+    },
+    {
+      "name": "backoffice: cambios de estado/etapa, alta y borrado de notas simulados",
+      "pass": true
+    },
+    {
+      "name": "backoffice: edición simulada conserva el formulario",
+      "pass": true
+    },
+    {
+      "name": "backoffice: error de API visible",
+      "pass": true,
+      "mutations": [
+        {
+          "method": "POST",
+          "path": "/tracker/api/v1/records",
+          "body": {
+            "full_name": "Persona Auditoría",
+            "email": "auditoria@example.com",
+            "phone": "+34 612 345 678",
+            "position": "Consultoría",
+            "linkedin_url": null,
+            "cv_url": null,
+            "experience_years": 5
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tracker/api/v1/records/audit-browser-only",
+          "body": {
+            "status": "in_progress",
+            "stage": "review"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tracker/api/v1/records/audit-browser-only",
+          "body": {
+            "status": "selected"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/tracker/api/v1/records/audit-browser-only",
+          "body": {
+            "stage": "personal_interview"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/tracker/api/v1/records/audit-browser-only/notes",
+          "body": {
+            "content": "Nota de prueba sin persistencia real"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/tracker/api/v1/records/audit-browser-only/notes/audit-note",
+          "body": null
+        },
+        {
+          "method": "PUT",
+          "path": "/tracker/api/v1/records/audit-browser-only",
+          "body": {
+            "full_name": "Persona Editada",
+            "email": "auditoria@example.com",
+            "phone": "+34 612 345 678",
+            "position": "Consultoría",
+            "linkedin_url": null,
+            "cv_url": null,
+            "experience_years": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "backoffice: protección de incidencias y ausencia de errores de hidratación",
+      "pass": true
+    },
+    {
+      "name": "backoffice: INP local durante el recorrido, CPU x4; no representa p75 de campo",
+      "pass": true,
+      "samples": [
+        {
+          "url": "http://localhost:3001/candidates/new",
+          "value": 24,
+          "rating": "good"
+        },
+        {
+          "url": "http://localhost:3001/candidates/audit-browser-only",
+          "value": 16,
+          "rating": "good"
+        }
+      ],
+      "available": true
+    },
+    {
+      "name": "backoffice: precargas reutilizadas, una solicitud por recurso",
+      "pass": true,
+      "apiRequests": [
+        "https://playground.4geeks.com/tracker/api/v1/records/53f2bbdc-4ea0-4b34-b076-4f8e7c2736ac",
+        "https://playground.4geeks.com/tracker/api/v1/records/53f2bbdc-4ea0-4b34-b076-4f8e7c2736ac/notes"
+      ]
+    },
+    {
+      "name": "backoffice: SVG solicitado sin descargar el favicon ICO de plantilla",
+      "pass": true
+    },
+    {
+      "name": "backoffice: ficha sin desbordamiento horizontal a 412px",
+      "pass": true
+    },
+    {
+      "name": "backoffice: ficha sin desbordamiento horizontal a 1280px",
+      "pass": true
+    }
+  ]
+}

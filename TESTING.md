@@ -3,8 +3,15 @@
 > 📅 **Ejecución:** 2026-10-16 · 🌿 **Rama:** `feature/backoffice-inventory-management`
 > 🐍 Python 3.14.8 (`uv` 0.12.22) · 🟢 Node v24.18.1 · 🛠️ `pytest` + 🃏 Jest
 
+> 🔄 Integración del 20/10/2026: backoffice **148 pruebas en 11 suites**, todas
+> correctas (14,85 s), tras unir las 140 de `main` con las ocho de auditoría.
+> Lint/build de ambos frontends y revisión de textos correctos. Los resultados
+> Python, application y coberturas que siguen conservan su fecha histórica;
+> no se han vuelto a ejecutar en esta integración del PR.
+
 🎯 Las pruebas verifican la **lógica** (reglas, permisos, validaciones y errores).
-🚫 No prueban la serialización HTTP (CORS, cabeceras, JSON mal formado) ni los componentes React.
+🚫 No prueban la serialización HTTP (CORS, cabeceras, JSON mal formado). La auditoría
+añade cinco pruebas del selector React accesible y tres de las URLs de precarga.
 
 ## 📌 Índice
 
@@ -28,8 +35,8 @@
 | 🐍 `services/api` | `uv run pytest` | 395 | ✅ 395 · ❌ 0 · ⏭ 1 | 86,4 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
-| 🟦 `uis/backoffice` | `npx jest --coverage` | 140 | ✅ 140 · ❌ 0 | 1,3 s | — |
-| 🏁 **Total** | | **895** | ✅ **895** · ❌ **0** · ⏭ 1 | | |
+| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 148 | ✅ 148 · ❌ 0 | 14,85 s | — |
+| 🏁 **Total documentado** | | **903** | ✅ **903** · ❌ **0** · ⏭ 1 | | |
 
 | ✅ Otras comprobaciones | 🟦 `uis/application` | 🟦 `uis/backoffice` |
 | --- | :---: | :---: |
@@ -162,7 +169,7 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 | 🚨 `incidents-api.test.ts` | Mapeo, filtros, errores por tipo, transiciones con etiquetas en español y **nunca el texto del backend**. | Los errores usan textos propios de la UI. | Se filtraría texto crudo o un código como `in_progress`. | ✅ |
 | 🔀 `incident-types.test.ts` | Transiciones de la UI = las del backend; etiquetas en español; *type guards*. | UI y backend coinciden en el flujo de estados. | Se ofrecerían transiciones que el backend rechaza. | ✅ |
 
-### 🟦 `uis/backoffice` — 114 pruebas (Jest)
+### 🟦 `uis/backoffice` — 148 pruebas (Jest)
 
 | 📄 Archivo | 🧪 Qué comprueba | ✅ Si pasa | ❌ Si falla | 🚦 |
 | --- | --- | --- | --- | :---: |
@@ -171,6 +178,10 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 | 🌐 `src/lib/__tests__/api-client.test.ts` | Token, errores y política de 401. | La sesión caducada se limpia. | Error crudo o sesión cerrada sin motivo. | ✅ |
 | 👤 `src/lib/__tests__/auth-api.test.ts` | Login, registro, sesión, perfil y cambio de contraseña. | Flujos de cuenta correctos. | Mensajes mal escritos o token mal guardado. | ✅ |
 | 💾 `src/lib/__tests__/auth-storage.test.ts` | Guardar/leer/borrar token y `localStorage` bloqueado. | No rompe en modo privado. | Excepciones con almacenamiento bloqueado. | ✅ |
+| 📦 `src/services/__tests__/inventory-api.test.ts` | Productos, stock, órdenes y traducción de errores de inventario. | Datos y errores coherentes en inventario. | Campos o mensajes incorrectos. | ✅ |
+| 🧭 `src/lib/__tests__/auth-navigation.test.ts` y `src/app/inventario/_lib/__tests__/` | Retorno seguro tras login, redirecciones antiguas y aviso de stock. | Navegación interna y aviso conservados. | Retorno inseguro o aviso incorrecto. | ✅ |
+| 🏷️ `src/app/candidates/_components/candidate-select.test.tsx` | Cinco casos: nombre accesible, diccionarios, eventos controlados, atributos y guardado. | Selector reutilizable accesible en filtros, alta y ficha. | Se pierden etiquetas o comportamiento nativo. | ✅ |
+| ⏳ `src/services/api.test.tsx` | Tres casos: precarga y lectura comparten las URLs de candidato y notas. | Respuestas reutilizables sin alterar `safeFetch`. | Precarga y cliente solicitan recursos distintos. | ✅ |
 
 ---
 
@@ -282,3 +293,26 @@ fallará y habrá que actualizarla: es lo esperado.
 | --- | --- |
 | 🐍 Python | 1️⃣ Elige el archivo por tema (`*_rules.py` para reglas de negocio). 2️⃣ Usa los clientes de `tests/conftest.py`: `anon_client`, `user_client`, `admin_client`. 3️⃣ Un caso por comportamiento; varios valores → `@pytest.mark.parametrize`. 4️⃣ Si fijas algo discutible, añade `# Comportamiento actual: …`. |
 | 🟦 TypeScript | 1️⃣ Crea `*.test.ts` en la carpeta `__tests__` del módulo. 2️⃣ Usa `mockFetch` y `jsonResponse` de `helpers.ts`. 3️⃣ Prueba la lógica (mapeo, mensajes, sesión), no el formato del JSON enviado. |
+
+---
+
+## Auditoría de rendimiento e integración
+
+### Ocho pruebas añadidas en la auditoría
+
+Desde `uis/backoffice`: `npm test -- --runInBand` ejecuta **8 pruebas**: cinco de
+`CandidateSelect` con Jest y Testing Library. Cubren etiquetas accesibles,
+traducción de opciones, eventos controlados, atributos nativos y estado de guardado;
+tres comprueban que la precarga y las lecturas de candidato/notas usan las mismas URLs.
+
+### Navegador y rendimiento
+
+Desde la raíz: `node scripts/audit-regression.mjs final` comprueba ambos frontends
+en producción. Bloquea las escrituras hacia la API real. Los resultados se guardan
+en `audit/checks/`.
+
+`node scripts/audit-frontends.mjs after 3` ejecuta Lighthouse tres veces por URL;
+las condiciones y los informes originales quedan en `audit/after/`.
+
+Las herramientas de navegador se instalan en TEMP, según `scripts/README.md`.
+Cada app se comprueba también con `npm run lint` y `npm run build`.

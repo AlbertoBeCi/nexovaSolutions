@@ -37,4 +37,28 @@ Idempotent: running it twice inserts 0 the second time (see
 `services/incident-manager-api/README.md` for the expected counts and the
 CHECK-constraint-backed data model it feeds).
 
+## `audit-frontends.mjs` — repeatable local Lighthouse measurements
+
+Requires the two Next.js production servers on ports 3000/3001 and Chrome. Install tools outside the repository:
+
+```powershell
+npm install --prefix "$env:TEMP\nexova-performance-tools" lighthouse@13.5.0 playwright@1.64.1 web-vitals@6.2.3
+node scripts/audit-frontends.mjs before/production 3
+```
+
+Run from the repository root. Arguments: output phase under `audit/`, run count (or `shots` to recapture existing reports), optional case names. It fixes the candidate URL in `audit/cases.json`, resets browser storage between Lighthouse navigations, and stores reports, conditions, traces and screenshots. Use the same versions and configuration before and after. No real-user p75 is inferred from these lab results.
+
 > _Spanish version: [README.es.md](./README.es.md)._
+
+## `audit-regression.mjs` — browser checks without real API writes
+
+Uses the same temporary Playwright/web-vitals tools and production servers above.
+Run `node scripts/audit-regression.mjs final` from the repository root. Optional
+scope: `website` or `backoffice` after the phase name. Phase names only accept
+letters, digits and hyphens; output is `audit/checks/<phase>.json`.
+
+Checks navigation, themes, the public form, accessible candidate filters, CRUD
+flows with mocked responses, API errors, contrast, fonts and preload reuse. It
+blocks real mutations. INP observations use CPU ×4 without network simulation;
+they are local observations, not real-user p75. The isolated read-only check of
+the fixed candidate preserves HTTP caching to verify that preloads are reused.

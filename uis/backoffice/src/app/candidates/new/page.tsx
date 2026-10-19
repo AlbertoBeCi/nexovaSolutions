@@ -11,16 +11,14 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { createCandidate, updateCandidateStatusStage } from "../../../services/api";
-import { CandidateStage, CandidateStatus, stageLabels, statusLabels } from "../../../types/candidate";
+import type { CandidateStage, CandidateStatus } from "../../../types/candidate";
+import { CandidateSelect, STATUS_OPTIONS, STAGE_OPTIONS } from "../_components/candidate-select";
 import {
   CandidateFields,
   EMPTY_CANDIDATE_FIELDS,
   toCandidateInput,
 } from "../_components/candidate-fields";
 import type { CandidateFieldsValue } from "../_components/candidate-fields";
-
-const statusOptions = Object.entries(statusLabels) as [CandidateStatus, string][];
-const stageOptions = Object.entries(stageLabels) as [CandidateStage, string][];
 
 const DEFAULT_STATUS: CandidateStatus = "received";
 const DEFAULT_STAGE: CandidateStage = "pending";
@@ -97,43 +95,23 @@ export default function NewCandidatePage() {
         <CandidateFields value={fields} onChange={setFields} disabled={submitting} />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="candidate-initial-status" className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Estado inicial
-            </label>
-            <select
-              id="candidate-initial-status"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as CandidateStatus)}
-              disabled={submitting}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            >
-              {statusOptions.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CandidateSelect
+            label="Estado inicial"
+            options={STATUS_OPTIONS}
+            id="candidate-initial-status"
+            value={status}
+            onChange={(event) => setStatus(event.target.value as CandidateStatus)}
+            disabled={submitting}
+          />
 
-          <div>
-            <label htmlFor="candidate-initial-stage" className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Etapa inicial
-            </label>
-            <select
-              id="candidate-initial-stage"
-              value={stage}
-              onChange={(event) => setStage(event.target.value as CandidateStage)}
-              disabled={submitting}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            >
-              {stageOptions.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CandidateSelect
+            label="Etapa inicial"
+            options={STAGE_OPTIONS}
+            id="candidate-initial-stage"
+            value={stage}
+            onChange={(event) => setStage(event.target.value as CandidateStage)}
+            disabled={submitting}
+          />
         </div>
 
         <button

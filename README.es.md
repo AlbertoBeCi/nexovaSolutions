@@ -1,298 +1,299 @@
-# Nexova Solutions — Proyecto de Compañía de Ingeniería de IA
+# Nexova Solutions — Proyecto de Ingeniería de IA
 
 [![4Geeks Academy](https://img.shields.io/badge/4Geeks-Academy-blue)](https://4geeksacademy.com)
 [![AI Engineering](https://img.shields.io/badge/track-AI%20Engineering-green)](https://4geeksacademy.com/es/programas-de-carrera/ingenieria-ia)
 
-_Proyecto transversal del Programa de Carrera en Ingeniería de IA de 4Geeks Academy, sobre la empresa ficticia **Nexova Solutions** (consultora de RRHH y adquisición de talento — Valencia + Miami). Basado en la plantilla monorepo de 4Geeks._
+_Proyecto transversal del Programa de Carrera en Ingeniería de IA de 4Geeks Academy. Construimos la empresa ficticia **Nexova Solutions**, una consultora de RR. HH. y adquisición de talento con sedes en Valencia y Miami, sobre una plantilla monorepo de 4Geeks._
 
-_These instructions are also available in [English](./README.md)._
+También puedes leer esta guía en [inglés](./README.md).
 
----
+## 🧭 Índice
 
-## Propósito
+- [El proyecto](#el-proyecto)
+- [Arranque rápido](#arranque-rapido)
+- [Desarrollo con Docker Compose](#desarrollo-con-docker-compose)
+- [Cómo trabajar en el repo](#como-trabajar-en-el-repo)
+- [Mapa del monorepo](#mapa-del-monorepo)
+- [Estado de los hitos](#estado-de-los-hitos)
+- [Guía de carpetas](#guia-de-carpetas)
+- [¿Dónde pongo esto?](#donde-pongo-esto)
+- [Estructura del repositorio](#estructura-del-repositorio)
+- [Enlaces y colaboradores](#enlaces-y-colaboradores)
 
-Una sola empresa construida a lo largo de varios hitos (Web, Programación, Backend, Telemetría, RAG, Agentes, Workflows, Tiempo real). Cada carpeta de primer nivel tiene una responsabilidad única, como en un repo real de un equipo de ingeniería.
+<a id="el-proyecto"></a>
+## 🌱 El proyecto
 
-- **[`CONTEXT.md`](./CONTEXT.md)** es la fuente única de verdad del dominio (nombres de campos, textos, validaciones, reglas de negocio). Los briefings por hito están en [`docs/context/`](./docs/context/).
-- **[`AGENTS.md`](./AGENTS.md)** define cómo opera cualquier agente de IA aquí: qué leer al inicio de sesión, el flujo obligatorio antes de commit y qué no se debe modificar sin confirmación.
-- Las reglas detalladas y las skills reutilizables están en [`.agents/`](./.agents/); la memoria del proyecto en [`memory-bank/`](./memory-bank/).
+Una sola empresa construida a lo largo de varios hitos: web, programación, backend, telemetría, RAG, agentes, workflows y tiempo real. Cada carpeta de primer nivel tiene una responsabilidad concreta, como en un equipo real de ingeniería.
 
----
+### Fuentes y orientación
 
-## Cómo trabajar aquí
+- **[`CONTEXT.md`](./CONTEXT.md)** es la fuente única de verdad del dominio: nombres de campos, textos, validaciones y reglas de negocio. Los briefings de cada hito están en [`docs/context/`](./docs/context/).
+- **[`AGENTS.md`](./AGENTS.md)** explica cómo deben trabajar los agentes de IA: qué leer al comenzar, el flujo previo a un commit y qué archivos no modificar sin confirmación.
+- **[`.agents/`](./.agents/)** contiene reglas detalladas y skills reutilizables; **[`memory-bank/`](./memory-bank/)** conserva la memoria del proyecto.
 
-1. **Lee** [`AGENTS.md`](./AGENTS.md) y los archivos de [`memory-bank/`](./memory-bank/).
-2. **Abre el `README.md`** de la carpeta en la que vas a trabajar, y su regla en [`.agents/rules/`](./.agents/rules/) si tiene una.
-3. **Implementa en la carpeta correcta** — nunca vuelques código en la raíz.
-4. **Documenta** lo que añadas: cada app, servicio, agente o pipeline nuevo lleva subcarpeta + `README.md`.
+<a id="arranque-rapido"></a>
+## 🚀 Arranque rápido
 
----
+Cada app tiene su propio `package.json` y `node_modules`. Ejecuta los comandos desde la carpeta indicada.
 
-## Cómo ejecutar las apps
+### Interfaces web
 
-Cada app tiene su propio `package.json` y `node_modules` — ejecuta los comandos desde su carpeta.
-
-| App | Ruta | Comandos |
+| Aplicación | Carpeta | Arranque |
 | --- | --- | --- |
-| Web pública (Hito 1) | [`uis/website/`](./uis/website/) | `npm install` · `npm run dev` (→ http://localhost:3000) |
-| Backoffice — pipeline de talento (Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | `npm install` · `npm run dev` — necesita `.env.local` (ver `.env.example`) |
-| Operaciones — proveedores + gestor de incidencias | [`uis/application/`](./uis/application/) | `npm install` · `npm run dev` (→ http://localhost:3001) — necesita `services/api` y `services/incident-manager-api` en marcha |
-| API — incidencias (análisis de CSV) + proveedores | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
-| API — gestor de incidencias (persistente) | [`services/incident-manager-api/`](./services/incident-manager-api/) | `uv sync` · `uv run --project services/incident-manager-api python scripts/seed_incidents.py` · `uv run serve` (→ http://localhost:8001) |
-| Modelo de dominio + lógica (Hito 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
+| Web pública (Hito 1) | [`uis/website/`](./uis/website/) | `npm install` y `npm run dev` → [localhost:3000](http://localhost:3000) |
+| Backoffice — pipeline de talento (Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | `npm install` y `npm run dev`; necesita `.env.local` (ver `.env.example`) |
+| Operaciones — proveedores e incidencias | [`uis/application/`](./uis/application/) | `npm install` y `npm run dev` → [localhost:3001](http://localhost:3001); necesita las dos APIs en marcha |
 
-### Desarrollo local con Docker Compose
+### APIs y lógica de dominio
 
-Desde la raíz del repositorio, ejecuta `docker compose up`. Arranca la web pública en http://localhost:3000, el backoffice en http://localhost:3001, la API en http://localhost:8000 y PostgreSQL local para inventario. `.env.example` aporta valores locales; si necesitas personalizarlos, crea o edita `.env` en la raíz. Reconstruye las imágenes tras cambiar dependencias o Dockerfiles con `docker compose up --build`.
+| Área | Carpeta | Comandos principales |
+| --- | --- | --- |
+| API de incidencias (análisis CSV) y proveedores | [`services/api/`](./services/api/) | `uv sync` · `uv run seed` · `uv run uvicorn main:app --reload --port 8000` |
+| Gestor de incidencias persistente | [`services/incident-manager-api/`](./services/incident-manager-api/) | `uv sync` · `uv run --project services/incident-manager-api python scripts/seed_incidents.py` · `uv run serve` (puerto 8001) |
+| Modelo y lógica de dominio (Hito 2) | [`packages/domain/`](./packages/domain/) | `npm install` · `npm run typecheck` · `npm run demo` |
 
-La API comienza con el directorio local de usuarios vacío. Crea una vez el administrador de desarrollo con `docker compose exec api uv run seed-users`; el email y la contraseña salen de `.env` en la raíz o de los valores predeterminados de Compose. `docker compose down` detiene los servicios y conserva los volúmenes de datos.
+<a id="desarrollo-con-docker-compose"></a>
+## 🐳 Desarrollo con Docker Compose
 
----
+Desde la raíz del repositorio, ejecuta:
 
-## Cómo entender este monorepo
+```bash
+docker compose up
+```
 
-| Capa                    | Carpetas                                | Qué vive aquí                                                             |
-| ----------------------- | --------------------------------------- | ------------------------------------------------------------------------ |
-| **Contexto de empresa** | `CONTEXT.md`, `docs/context/`           | Datos del dominio, nombres de campos, restricciones, briefings por hito  |
-| **Config de agentes**   | `AGENTS.md`, `.agents/`, `memory-bank/` | Cómo operan los agentes, reglas, skills, memoria del proyecto            |
-| **Cara al usuario**     | `uis/`, `services/`                     | Frontends y backends con los que interactúan usuarios u operadores       |
-| **Datos**               | `data/`                                 | Archivos crudos, pipelines, datasets procesados y conjuntos de evaluación|
-| **IA**                  | `agents/`, `skills/`, `mcps/`           | Agentes, capacidades reutilizables para agentes y servidores MCP         |
-| **Automatización**      | `workflows/`                            | Flujos n8n y orquestación entre sistemas                                 |
-| **Reutilización**       | `packages/`, `shared/`                  | Tipos compartidos, lógica de dominio, SDKs, esquemas, plantillas         |
-| **Operaciones**         | `infra/`, `scripts/`, `internal/`       | Docker, despliegue, scripts puntuales, CLIs internas                     |
-| **Documentación**       | `docs/`                                 | Arquitectura, decisiones, convenciones, registro de prompts              |
+Arranca la web pública en `localhost:3000`, el backoffice en `localhost:3001`, la API en `localhost:8000` y PostgreSQL local para inventario. El archivo `.env.example` contiene valores locales; crea o edita `.env` en la raíz solo si necesitas personalizarlos. Para reconstruir las imágenes después de cambiar dependencias o Dockerfiles, ejecuta `docker compose up --build`.
 
-**Regla rápida:** si tiene interfaz visual → `uis/`. Si expone una API o corre en segundo plano → `services/`. Si mueve o transforma datos → `data/`. Si el trabajo lo hace un modelo de IA → `agents/` (+ `skills/` o `mcps/` según haga falta).
+La API empieza con el almacén local de usuarios vacío. Crea una vez el administrador de desarrollo con:
 
----
+```bash
+docker compose exec api uv run seed-users
+```
 
-## Estado del proyecto
+El email y la contraseña se toman del `.env` de la raíz o de los valores predeterminados de Compose. `docker compose down` detiene los servicios y conserva los volúmenes de datos.
+
+<a id="como-trabajar-en-el-repo"></a>
+## 🛠️ Cómo trabajar en el repo
+
+1. Lee [`AGENTS.md`](./AGENTS.md) y los archivos de [`memory-bank/`](./memory-bank/).
+2. Abre el `README.md` de la carpeta donde trabajarás y consulta su regla en [`.agents/rules/`](./.agents/rules/) si existe.
+3. Implementa en la carpeta que corresponda; no añadas código suelto a la raíz.
+4. Documenta lo que añadas: cada app, servicio, agente o pipeline nuevo debe tener su propia carpeta y un `README.md`.
+
+<a id="mapa-del-monorepo"></a>
+## 🗺️ Mapa del monorepo
+
+| Área | Carpetas | Qué encontrarás |
+| --- | --- | --- |
+| Contexto de empresa | `CONTEXT.md`, `docs/context/` | Dominio, nombres de campos, restricciones y briefings por hito |
+| Configuración de agentes | `AGENTS.md`, `.agents/`, `memory-bank/` | Instrucciones, reglas, skills y memoria del proyecto |
+| Interfaces y servicios | `uis/`, `services/` | Aplicaciones frontend y backends con los que interactúan usuarios y operadores |
+| Datos | `data/` | Archivos crudos, pipelines, datasets procesados y conjuntos de evaluación |
+| Inteligencia artificial | `agents/`, `skills/`, `mcps/` | Agentes, capacidades reutilizables y servidores MCP |
+| Automatización | `workflows/` | Flujos n8n y orquestación entre sistemas |
+| Reutilización | `packages/`, `shared/` | Tipos, lógica de dominio, SDKs, esquemas y plantillas compartidos |
+| Operaciones | `infra/`, `scripts/`, `internal/` | Docker, despliegue, scripts puntuales y CLIs internas |
+| Documentación | `docs/` | Arquitectura, decisiones, convenciones y registro de prompts |
+
+**Regla rápida:** si tiene interfaz visual → `uis/`; si expone una API o corre en segundo plano → `services/`; si mueve o transforma datos → `data/`; si el trabajo lo hace un modelo de IA → `agents/` (con `skills/` o `mcps/` cuando haga falta).
+
+<a id="estado-de-los-hitos"></a>
+## 📍 Estado de los hitos
 
 | Hito | Entregable | Estado |
 | --- | --- | --- |
-| 1 — Web pública | Landing corporativa + formulario de captación de talento (responsive, accesible, SEO) | ✅ En [`uis/website/`](./uis/website/) (Next.js/React). Migrado del HTML estático original, ya eliminado. |
-| 2 — Fundamentos de programación | Modelo de dominio + lógica (scoring, matching, filtrado) en TypeScript | ✅ En [`packages/domain/`](./packages/domain/) (`@repo/domain`) |
-| 3 — Pipeline de talento | App interna: listado con filtros, ficha, alta/edición, notas; consume la API de 4Geek Tracker | 🚧 En [`uis/backoffice/`](./uis/backoffice/) |
-| 4+ — Backend, Telemetría, RAG, Agentes, Workflows, Tiempo real | — | ⏳ Sin empezar |
+| 1 — Web pública | Landing corporativa y formulario de captación de talento: responsive, accesible y optimizado para SEO | ✅ En [`uis/website/`](./uis/website/), con Next.js/React. El HTML estático original ya se migró y eliminó. |
+| 2 — Fundamentos de programación | Modelo de dominio y lógica de scoring, matching y filtrado en TypeScript | ✅ En [`packages/domain/`](./packages/domain/) (`@repo/domain`) |
+| 3 — Pipeline de talento | App interna con listado y filtros, ficha, alta y edición, notas; consume la API de 4Geek Tracker | 🚧 En [`uis/backoffice/`](./uis/backoffice/) |
+| 4+ — Backend, telemetría, RAG, agentes, workflows y tiempo real | — | ⏳ Sin empezar |
 
 `data/`, `agents/`, `mcps/`, `workflows/` e `internal/` siguen siendo estructura de plantilla. `infra/` contiene documentación de infraestructura; los Dockerfiles se mantienen junto a las aplicaciones en `uis/` y `services/`.
 
----
+<a id="guia-de-carpetas"></a>
+## 📂 Guía de carpetas
 
-## Guía de carpetas — qué va en cada una
+Lee el `README.md` de cada carpeta antes de empezar a trabajar allí.
 
-Lee el `README.md` enlazado dentro de cada carpeta antes de empezar a programar ahí.
+### Archivos de la raíz
 
-### Archivos en la raíz
+| Ruta | Propósito | Uso |
+| --- | --- | --- |
+| [`CONTEXT.md`](./CONTEXT.md) | Fuente única de verdad del dominio Nexova | Léelo antes de construir; solo lo cambia el desarrollador |
+| [`AGENTS.md`](./AGENTS.md) | Guía operativa para agentes de IA | Lectura inicial, flujo de commit y archivos restringidos |
+| `README.md` / `README.es.md` | Guía del repositorio | Orientación general |
+| [`docker-compose.yml`](./docker-compose.yml) | Orquestación local | Arranca las apps Next.js, FastAPI y PostgreSQL local |
 
-| Ruta                         | Propósito                                              | Qué haces aquí                                              |
-| ---------------------------- | ----------------------------------------------------- | ---------------------------------------------------------- |
-| [`CONTEXT.md`](./CONTEXT.md) | Fuente única de verdad del dominio de Nexova           | Léelo antes de construir nada; solo lo cambia el desarrollador |
-| [`AGENTS.md`](./AGENTS.md)   | Cómo opera cualquier agente de IA en este repo         | Lectura al inicio de sesión, flujo de commit, lista de "no tocar" |
-| `README.md` / `README.es.md` | Esta guía                                             | Orientación — estás aquí                                   |
-| [`docker-compose.yml`](./docker-compose.yml) | Orquestación del entorno local | Arranca las dos apps Next.js, FastAPI y PostgreSQL local |
+### 🖥️ `uis/` — interfaces de usuario
 
-### `uis/` — interfaces de usuario
+Contiene las aplicaciones frontend: todo lo que una persona ve y con lo que interactúa.
 
-**Propósito:** Todas las aplicaciones frontend — todo lo que un humano ve y en lo que hace clic.
+- Web pública → [`uis/website/`](./uis/website/)
+- Administración y backoffice interno → [`uis/backoffice/`](./uis/backoffice/)
+- Operaciones y directorio de proveedores → [`uis/application/`](./uis/application/)
+- También caben portales de clientes, dashboards y herramientas Streamlit/Gradio.
 
-**Pon aquí:**
+Cada app debe tener su propio `package.json`, `README.md`, layout y una vista de entrada funcional desde el primer commit. Consulta [`uis/README.md`](./uis/README.md).
 
-- Sitio web público → [`uis/website/`](./uis/website/)
-- Admin interno / backoffice → [`uis/backoffice/`](./uis/backoffice/)
-- App interna de operaciones (directorio de proveedores) → [`uis/application/`](./uis/application/)
-- Portales de clientes, dashboards con UI, herramientas Streamlit/Gradio
+### ⚙️ `services/` — API de la empresa (FastAPI)
 
-Cada app: su propio `package.json`, `README.md`, layout y una vista de entrada funcional desde el primer commit.
+Aquí vive el backend centralizado de la empresa, en un único punto de entrada que reduce la complejidad al crecer.
 
-→ Ver [`uis/README.md`](./uis/README.md)
+- Pon aquí la app FastAPI principal (por ejemplo, `api/`) con routers y módulos por dominio.
+- Añade workers en segundo plano solo cuando realmente necesiten ejecutarse separados de la API.
+- Evita dividir el sistema en muchos microservicios al inicio.
 
-### `services/` — API centralizada de la empresa (FastAPI)
+**Excepción del repo:** [`services/incident-manager-api/`](./services/incident-manager-api/) es una segunda app FastAPI independiente, con su propio `pyproject.toml` y puerto, porque el ejercicio del gestor de incidencias pedía explícitamente un servicio nuevo. La justificación está en el `README.md` de esa carpeta. Consulta también [`services/README.md`](./services/README.md).
 
-**Propósito:** Un **backend FastAPI centralizado** para toda la empresa — un solo punto de entrada que reduce la complejidad a medida que crece el proyecto.
+### 📊 `data/` — datos, pipelines y evaluación
 
-**Pon aquí:**
+Todo lo relacionado con datos, desde archivos crudos hasta tablas listas para producción.
 
-- Una app FastAPI principal (p. ej. `api/`) con routers/módulos por dominio
-- Workers en background solo cuando de verdad necesiten correr separados de la API
+| Subcarpeta | Propósito | Uso |
+| --- | --- | --- |
+| [`data/raw/`](./data/raw/README.md) | Datos fuente sin modificar | Dumps y CSV/JSON de ejemplo; documenta el origen y las reglas de PII |
+| [`data/pipelines/`](./data/pipelines/README.md) | Jobs ETL/ELT | Scripts de ingesta, limpieza y transformación |
+| [`data/process/`](./data/process/README.md) | Salidas limpias o intermedias | Artefactos de pipelines: features, agregados y tablas limpias |
+| [`data/eval/`](./data/eval/README.md) | Medición de calidad | Golden sets, datasets de evaluación de RAG/agentes y métricas de experimentos |
 
-**Recomendación:** evita dividir en muchos microservicios al inicio. Excepción en
-este repo: [`services/incident-manager-api/`](./services/incident-manager-api/)
-es una segunda app FastAPI independiente (su propio `pyproject.toml`/puerto),
-porque el ejercicio del gestor de incidencias pedía explícitamente un servicio
-nuevo — ver el `README.md` de esa carpeta para la justificación.
+**Flujo de datos:** `raw` → `pipelines` → `process` → consumo desde `services/`, `uis/` o `agents/`. Usa `eval` para demostrar la calidad.
 
-→ Ver [`services/README.md`](./services/README.md)
+### 🤖 `agents/` — agentes de IA
 
-### `data/` — datasets, pipelines y evaluación
+Asistentes autónomos o semiautónomos para la empresa.
 
-**Propósito:** Todo lo relacionado con datos, desde archivos crudos hasta tablas listas para producción.
+- Crea una subcarpeta por agente (por ejemplo, `support-agent/` o `onboarding-agent/`).
+- Incluye su configuración, prompts, herramientas y pruebas.
+- Para empezar, usa [`agents/_template/`](./agents/_template/README.md).
 
-| Subcarpeta                                      | Propósito                     | Qué haces aquí                                                                  |
-| ----------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------- |
-| [`data/raw/`](./data/raw/README.md)             | Datos fuente sin tocar        | Guardar dumps, exports, CSV/JSON de ejemplo — documentar origen y reglas de PII |
-| [`data/pipelines/`](./data/pipelines/README.md) | Jobs ETL/ELT                  | Escribir scripts de ingesta, limpieza y transformación                          |
-| [`data/process/`](./data/process/README.md)     | Salidas limpias / intermedias | Guardar artefactos de pipelines (features, agregados, tablas limpias)           |
-| [`data/eval/`](./data/eval/README.md)           | Medición de calidad           | Golden sets, datasets de evaluación RAG/agentes, métricas de experimentos       |
+> No lo confundas con [`.agents/`](./.agents/), que guarda la configuración —reglas y skills— para quienes trabajan en este repo.
 
-**Flujo:** `raw` → `pipelines` → `process` → consumido por `services/`, `uis/` o `agents/`. Usa `eval` para demostrar calidad.
+Consulta [`agents/README.md`](./agents/README.md).
 
-### `agents/` — agentes de IA
+### 🧩 `skills/` — capacidades reutilizables para agentes
 
-**Propósito:** Asistentes de IA autónomos o semi-autónomos para la empresa.
+Instrucciones empaquetadas y scripts que los agentes reutilizan en el repo.
 
-**Pon aquí:**
+- Aquí van skills de análisis de datos, revisión de código, scraping e investigación, entre otras.
+- Cada skill vive en su propia carpeta con un `SKILL.md` y, opcionalmente, scripts y recursos.
+- Las skills propias del proyecto van en [`.agents/skills/`](./.agents/skills/); `skills/` y `.claude/skills/` pertenecen a la plantilla.
 
-- Una subcarpeta por agente (p. ej. `support-agent/`, `onboarding-agent/`)
-- Config del agente, prompts, herramientas, tests
-- Empieza desde [`agents/_template/`](./agents/_template/README.md) al crear un agente nuevo
+Consulta [`skills/README.md`](./skills/README.md).
 
-> No confundir con [`.agents/`](./.agents/), que contiene la **configuración** de agentes (reglas y skills) para quien trabaje en este repo.
+### 🔌 `mcps/` — servidores Model Context Protocol
 
-→ Ver [`agents/README.md`](./agents/README.md)
+Conectan modelos de IA con sistemas como bases de datos, APIs, GitHub y herramientas propias. Usa una subcarpeta por servidor MCP e incluye definiciones de tools, resources y configuración.
 
-### `skills/` — capacidades reutilizables para agentes
+Consulta [`mcps/README.md`](./mcps/README.md).
 
-**Propósito:** Instrucciones empaquetadas + scripts que agentes reutilizan en todo el repo.
+### 🔄 `workflows/` — automatización y orquestación
 
-**Pon aquí:**
+Conecta sistemas sin escribir apps completas: jobs programados, webhooks y notificaciones. Aquí van exports de n8n, configuraciones de Make/Zapier y orquestación entre `services/`, `data/pipelines/` y `agents/`.
 
-- Skills de análisis de datos, code review, scraping, investigación, etc.
-- Cada skill = carpeta con `SKILL.md`, scripts y recursos opcionales
+Consulta [`workflows/README.md`](./workflows/README.md).
 
-> Las skills propias del proyecto van en [`.agents/skills/`](./.agents/skills/); `skills/` y `.claude/skills/` son de la plantilla.
+### 📦 `packages/` — librerías compartidas
 
-→ Ver [`skills/README.md`](./skills/README.md)
+Código versionable que reutilizan varias apps, agentes o pipelines.
 
-### `mcps/` — servidores Model Context Protocol
+- [`packages/domain/`](./packages/domain/) → `@repo/domain`: modelo y lógica del dominio de reclutamiento (Hito 2).
+- [`packages/shared/`](./packages/shared/) → `@repo/shared-types` (TypeScript, tipos compartidos entre apps y servicios) y `nexova-shared` (Python, validación de incidencias y análisis compartidos por `scripts/` y `services/*`).
+- También puede contener librerías de componentes UI, clientes API y SDKs de analítica.
 
-**Propósito:** Conectar modelos de IA con tus sistemas — bases de datos, APIs, GitHub, herramientas propias. Una subcarpeta por servidor MCP, con sus definiciones de tools, resources y config.
+**Regla:** si `uis/` y `services/` comparten una interfaz, extráela aquí. Consulta [`packages/README.md`](./packages/README.md).
 
-→ Ver [`mcps/README.md`](./mcps/README.md)
+### 🗃️ `shared/` — recursos compartidos sueltos
 
-### `workflows/` — automatización y orquestación
+Para recursos que no necesitan ser un paquete completo: esquemas JSON, plantillas de email, especificaciones OpenAPI y design tokens.
 
-**Propósito:** Conectar sistemas sin escribir apps completas — jobs programados, webhooks, notificaciones. Exports de n8n, configs de Make/Zapier u orquestación que enlaza `services/`, `data/pipelines/` y `agents/`.
+Consulta [`shared/README.md`](./shared/README.md).
 
-→ Ver [`workflows/README.md`](./workflows/README.md)
+### 📚 `docs/` — documentación transversal
 
-### `packages/` — librerías compartidas
+Guarda arquitectura y decisiones que abarcan el proyecto: [`docs/context/`](./docs/context/) (briefings por hito), [`docs/company-choice.md`](./docs/company-choice.md) y [`docs/prompts.md`](./docs/prompts.md) (registro de prompts). Añade aquí diagramas de arquitectura, ADRs y convenciones.
 
-**Propósito:** Código versionable reutilizado por varias apps, agentes o pipelines.
+Consulta [`docs/README.md`](./docs/README.md).
 
-**Pon aquí:**
+### ☁️ `infra/` — infraestructura y despliegue
 
-- [`packages/domain/`](./packages/domain/) → `@repo/domain` — modelo y lógica del dominio de reclutamiento (Hito 2)
-- [`packages/shared/`](./packages/shared/) → `@repo/shared-types` (TS, tipos compartidos entre apps y servicios) +
-  `nexova-shared` (Python, validación de incidencias/analizador compartida por `scripts/` y `services/*`)
-- Librerías de componentes UI, clientes API, SDKs de analytics
+Documenta cómo corre el proyecto en Docker, cloud o CI. Aquí corresponden Dockerfiles, Terraform, manifiestos K8s, configuraciones Nginx y pipelines CI/CD.
 
-**Regla:** si `uis/` y `services/` comparten la misma interfaz → extráela aquí.
+Consulta [`infra/README.md`](./infra/README.md).
 
-→ Ver [`packages/README.md`](./packages/README.md)
+### 🧰 `scripts/` — scripts de ayuda
 
-### `shared/` — recursos sueltos compartidos
+Automatización pequeña y repetible, no apps completas: scripts de configuración, generadores de datos seed y migraciones puntuales. Documenta cada script.
 
-**Propósito:** Recursos que no son un paquete completo — esquemas JSON, plantillas de email, specs OpenAPI, design tokens.
+Consulta [`scripts/README.md`](./scripts/README.md).
 
-→ Ver [`shared/README.md`](./shared/README.md)
+### 🧑‍💻 `internal/` — herramientas internas
 
-### `docs/` — documentación transversal
+Utilidades robustas para el equipo de desarrollo: CLIs, herramientas de migración empaquetadas y evaluadores de prompts. Cada herramienta puede tener su propio `package.json` y pruebas.
 
-**Propósito:** Arquitectura y decisiones que abarcan todo el proyecto.
+Consulta [`internal/README.md`](./internal/README.md).
 
-**Contiene:** [`docs/context/`](./docs/context/) (briefings por hito), `docs/company-choice.md`, `docs/prompts.md` (registro de prompts). Añade aquí diagramas de arquitectura, ADRs y convenciones.
+<a id="donde-pongo-esto"></a>
+## 🧩 ¿Dónde pongo esto?
 
-→ Ver [`docs/README.md`](./docs/README.md)
+| Si estás creando… | Va en… |
+| --- | --- |
+| Una web pública | `uis/website/` |
+| Una app interna para operaciones o RR. HH. | `uis/backoffice/` |
+| Una app interna para proveedores y operaciones | `uis/application/` |
+| Un servicio, API o cola en segundo plano | `services/` |
+| Datos crudos o transformados | `data/raw/` o `data/process/` |
+| Un proceso que mueve datos entre sistemas | `data/pipelines/` |
+| Una evaluación de calidad de IA o pipelines | `data/eval/` |
+| Un asistente de IA con un objetivo | `agents/` |
+| Una regla para el trabajo de los agentes | `.agents/rules/` |
+| Una skill reutilizable de agente | `.agents/skills/` |
+| Estado del proyecto que deba recordarse | `memory-bank/` |
+| Código importado por dos o más carpetas | `packages/` |
+| Un esquema, plantilla o asset (no una librería) | `shared/` |
+| Arquitectura o documentación para todo el equipo | `docs/` |
+| El Dockerfile de una app o servicio | Su carpeta (`uis/` o `services/`) |
+| Una guía general de infraestructura | `infra/` |
+| Un script puntual | `scripts/` |
+| Una CLI con su propio paquete | `internal/` |
 
-### `infra/` — infraestructura y despliegue
-
-**Propósito:** Cómo corre el proyecto en Docker, cloud o CI. Dockerfiles, Terraform, manifiestos K8s, configs Nginx, pipelines CI/CD.
-
-→ Ver [`infra/README.md`](./infra/README.md)
-
-### `scripts/` — scripts de ayuda
-
-**Propósito:** Automatización pequeña y repetible — no apps completas. Scripts de setup, generadores de seed data, migraciones puntuales. Documenta cada uno.
-
-→ Ver [`scripts/README.md`](./scripts/README.md)
-
-### `internal/` — herramientas internas para desarrolladores
-
-**Propósito:** Utilidades robustas para el equipo — CLIs, herramientas de migración empaquetadas, evaluadores de prompts, con su propio `package.json` y tests.
-
-→ Ver [`internal/README.md`](./internal/README.md)
-
----
-
-## ¿Dónde pongo esto?
-
-```text
-¿Web pública?                                → uis/website/
-¿App interna (operadores / RRHH)?            → uis/backoffice/
-¿Corre en servidor / API / cola?             → services/
-¿Es dato crudo o transformado?               → data/raw/ o data/process/
-¿Mueve datos entre sistemas?                 → data/pipelines/
-¿Mides calidad de IA / pipelines?            → data/eval/
-¿Es un asistente de IA con un objetivo?      → agents/
-¿Es una regla de cómo trabajan los agentes?  → .agents/rules/
-¿Es una skill reutilizable de agente?        → .agents/skills/
-¿Estado del proyecto a recordar entre sesiones? → memory-bank/
-¿Código importado por 2+ carpetas?           → packages/
-¿Es esquema / plantilla / asset, no librería?→ shared/
-¿Es arquitectura o docs de todo el equipo?   → docs/
-¿Dockerfile de una app/servicio?             → su carpeta (`uis/` o `services/`)
-¿Guía general de infraestructura?           → infra/
-¿Es un script puntual?                       → scripts/
-¿Es una CLI con su propio paquete?           → internal/
-```
-
----
-
-## Estructura del repositorio (árbol)
+<a id="estructura-del-repositorio"></a>
+## 🌳 Estructura del repositorio
 
 ```text
 nexovaSolutions/
-├── README.md / README.es.md   # Esta guía
+├── README.md / README.es.md   # Guías del repositorio
 ├── CONTEXT.md                 # Fuente de verdad del dominio (briefing Hito 1)
-├── AGENTS.md                  # Cómo operan los agentes de IA aquí
+├── AGENTS.md                  # Cómo trabajan los agentes de IA aquí
 ├── .agents/
 │   ├── rules/                 # Reglas de desarrollo con alcance declarado
-│   └── skills/                # Skills reutilizables (+ scripts verificadores)
-├── memory-bank/               # Memoria del proyecto (negocio + técnico + estado)
+│   └── skills/                # Skills reutilizables y scripts verificadores
+├── memory-bank/               # Memoria de negocio, técnica y estado del proyecto
 ├── uis/
 │   ├── website/               # Web pública (Next.js) — Hito 1
-│   ├── backoffice/            # App de pipeline de talento (Next.js) — Hito 3
-│   └── application/           # App de operaciones: directorio de proveedores (Next.js)
+│   ├── backoffice/            # Pipeline de talento (Next.js) — Hito 3
+│   └── application/           # Operaciones: directorio de proveedores (Next.js)
 ├── packages/
 │   ├── domain/                # @repo/domain — lógica de reclutamiento — Hito 2
-│   └── shared/                # @repo/shared-types (TS) + nexova-shared (Python: validación incidencias/analizador)
+│   └── shared/                # @repo/shared-types (TS) + nexova-shared (Python)
 ├── services/
-│   ├── api/                   # API FastAPI centralizada: incidencias (análisis CSV) + proveedores (TinyDB)
-│   └── incident-manager-api/  # Gestor de incidencias: modelo persistente (SQLAlchemy/SQLite), API REST, seed CSV
+│   ├── api/                   # FastAPI: incidencias (análisis CSV) y proveedores (TinyDB)
+│   └── incident-manager-api/  # Incidencias persistentes (SQLAlchemy/SQLite), API y seed CSV
 ├── data/{raw,pipelines,process,eval}/   # Ciclo de vida del dato (vacío)
-├── agents/                    # Agentes de IA (+ plantilla _template/) (vacío)
-├── skills/  mcps/  workflows/ # Estructura de plantilla (vacía)
-├── docs/                      # context/, company-choice.md, prompts.md
-├── uis/Dockerfile              # imagen Node Alpine + supervisor website/backoffice
-├── services/Dockerfile         # imagen Python para services/api
-├── uis/.dockerignore           # exclusiones del contexto de interfaces
-├── services/.dockerignore      # exclusiones del contexto de backend
-├── scripts/  internal/  shared/ # Scripts, CLIs internas y recursos compartidos
+├── agents/                    # Agentes de IA y plantilla _template/ (vacío)
+├── skills/ mcps/ workflows/   # Estructura de plantilla (vacía)
+├── docs/                      # Contexto, company-choice.md y prompts.md
+├── uis/Dockerfile             # Imagen Node Alpine y supervisor website/backoffice
+├── services/Dockerfile        # Imagen Python para services/api
+├── uis/.dockerignore          # Exclusiones del contexto de interfaces
+├── services/.dockerignore     # Exclusiones del contexto de backend
+└── scripts/ internal/ shared/ # Scripts, CLIs internas y recursos compartidos
 ```
 
----
-
-## Enlaces
+<a id="enlaces-y-colaboradores"></a>
+## 🔗 Enlaces y colaboradores
 
 - [4Geeks Academy — Ingeniería de IA](https://4geeksacademy.com/es/programas-de-carrera/ingenieria-ia)
 - [Cómo empezar un proyecto de código](https://4geeks.com/lesson/how-to-start-a-project)
+- [Curso de Ingeniería de IA](https://4geeksacademy.com/es/programas-de-carrera/ingenieria-ia)
+- [Otros cursos](https://4geeksacademy.com/es/comparar-programas)
+- [Plantillas y recursos de 4Geeks Academy en GitHub](https://github.com/4geeksacademy)
 
----
-
-## Contribuidores
-
-Construido sobre la plantilla monorepo de Ingeniería de IA de 4Geeks Academy por [@marcogonzalo](https://www.linkedin.com/in/marcogonzalo) y [@alezanchezr](https://x.com/alesanchezr), junto a otros muchos colaboradores. Descubre más sobre nuestro [Curso de Ingeniería de IA](https://4geeksacademy.com/es/programas-de-carrera/ingenieria-ia) y sobre [otros cursos](https://4geeksacademy.com/es/comparar-programas).
-
-Puedes encontrar otras plantillas y recursos similares en la [página de GitHub de 4Geeks Academy](https://github.com/4geeksacademy).
+Construido sobre la plantilla monorepo de Ingeniería de IA de 4Geeks Academy por [@marcogonzalo](https://www.linkedin.com/in/marcogonzalo), [@alezanchezr](https://x.com/alesanchezr) y muchos otros colaboradores.

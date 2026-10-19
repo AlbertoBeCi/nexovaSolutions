@@ -37,3 +37,27 @@ uv run --project services/incident-manager-api python scripts/seed_incidents.py
 Idempotente: ejecutarlo dos veces inserta 0 la segunda vez (ver
 `services/incident-manager-api/README.md` para los conteos esperados y el
 modelo de datos con restricciones CHECK que alimenta).
+
+## `audit-frontends.mjs` — mediciones locales reproducibles
+
+Necesita ambas apps Next.js en producción en 3000/3001 y Chrome. Instala las herramientas fuera del repositorio:
+
+```powershell
+npm install --prefix "$env:TEMP\nexova-performance-tools" lighthouse@13.5.0 playwright@1.64.1 web-vitals@6.2.3
+node scripts/audit-frontends.mjs before/production 3
+```
+
+Ejecuta desde la raíz. Argumentos: fase dentro de `audit/`, número de pasadas (o `shots` para volver a capturar informes existentes) y nombres opcionales de casos. Guarda la URL fija del candidato en `audit/cases.json`, restablece el almacenamiento entre navegaciones Lighthouse y conserva informes, condiciones, trazas y capturas. Mantén versiones y configuración iguales antes/después; estas mediciones de laboratorio no representan un p75 de usuarios reales.
+
+## `audit-regression.mjs` — comprobaciones de navegador sin escrituras reales
+
+Usa las herramientas temporales Playwright/web-vitals y los servidores de
+producción anteriores. Ejecuta `node scripts/audit-regression.mjs final` desde la
+raíz. Acepta el ámbito opcional `website` o `backoffice` después de la fase.
+La fase admite letras, números y guiones; guarda `audit/checks/<fase>.json`.
+
+Comprueba navegación, temas, formulario público, filtros accesibles, CRUD con
+respuestas simuladas, errores de API, contraste, fuentes y reutilización de
+precargas. Bloquea las mutaciones reales. Observa INP con CPU ×4 sin simulación de
+red; son observaciones locales, no p75 de campo. La comprobación aislada de la
+ficha fija es de solo lectura y mantiene la caché para verificar las precargas.

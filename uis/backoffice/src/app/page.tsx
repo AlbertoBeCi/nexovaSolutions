@@ -12,6 +12,7 @@ import type { ChangeEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getCandidates } from "../services/api";
+import { CandidateSelect, STATUS_OPTIONS, STAGE_OPTIONS } from "./candidates/_components/candidate-select";
 import {
   Candidate,
   CandidateStage,
@@ -21,9 +22,6 @@ import {
 } from "../types/candidate";
 
 const SEARCH_DEBOUNCE_MS = 300;
-
-const statusOptions = Object.entries(statusLabels) as [CandidateStatus, string][];
-const stageOptions = Object.entries(stageLabels) as [CandidateStage, string][];
 
 function isCandidateStatus(value: string): value is CandidateStatus {
   return value in statusLabels;
@@ -142,39 +140,37 @@ function CandidatesPageContent() {
       </header>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <input
+        <div>
+          <label htmlFor="candidate-search" className="sr-only">Buscar por nombre o correo</label>
+          <input
+          id="candidate-search"
           type="text"
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
           placeholder="Buscar por nombre o correo..."
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-        />
+          className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
 
-        <select
+        <CandidateSelect
+          id="candidate-filter-status"
+          label="Filtrar por estado"
+          hideLabel
+          options={STATUS_OPTIONS}
+          emptyLabel="Todos los estados"
           value={status}
           onChange={handleStatusChange}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-        >
-          <option value="">Todos los estados</option>
-          {statusOptions.map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        />
 
-        <select
+        <CandidateSelect
+          id="candidate-filter-stage"
+          label="Filtrar por etapa"
+          hideLabel
+          options={STAGE_OPTIONS}
+          emptyLabel="Todas las etapas"
           value={stage}
           onChange={handleStageChange}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-        >
-          <option value="">Todas las etapas</option>
-          {stageOptions.map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        />
       </section>
 
       {loading && <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando...</p>}
