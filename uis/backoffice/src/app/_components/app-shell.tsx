@@ -11,7 +11,7 @@ function Wordmark() {
   return (
     <Link href="/" className="flex items-baseline gap-1.5 font-semibold text-zinc-900 dark:text-zinc-50">
       <span className="text-lg tracking-tight">Nexova</span>
-      <span className="text-xs font-medium uppercase tracking-widest text-zinc-400">Backoffice</span>
+      <span className="text-xs font-medium uppercase tracking-widest text-zinc-600 dark:text-zinc-400">Backoffice</span>
     </Link>
   );
 }
