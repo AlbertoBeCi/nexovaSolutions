@@ -96,3 +96,6 @@ src/
 Jest con `next/jest` y Testing Library verifica cinco casos de `CandidateSelect`:
 nombre accesible, etiquetas españolas, selección controlada, atributos nativos y
 etiqueta durante el guardado. No utiliza la API ni modifica candidatos reales.
+
+La ficha precarga sus dos respuestas JSON desde el HTML. Las tres pruebas del
+cliente HTTP comprueban que la lectura posterior utiliza exactamente esas URLs.

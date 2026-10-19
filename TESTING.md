@@ -2,9 +2,10 @@
 
 ## Backoffice
 
-Desde `uis/backoffice`: `npm test -- --runInBand` ejecuta **5 pruebas** de
+Desde `uis/backoffice`: `npm test -- --runInBand` ejecuta **8 pruebas**: cinco de
 `CandidateSelect` con Jest y Testing Library. Cubren etiquetas accesibles,
-traducción de opciones, eventos controlados, atributos nativos y estado de guardado.
+traducción de opciones, eventos controlados, atributos nativos y estado de guardado;
+tres comprueban que la precarga y las lecturas de candidato/notas usan las mismas URLs.
 
 ## Navegador y rendimiento
 

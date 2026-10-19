@@ -15,6 +15,7 @@ import {
   addCandidateNote,
   deleteCandidateNote,
   getCandidateById,
+  getCandidateResourceUrls,
   getCandidateNotes,
   updateCandidateStatusStage,
 } from "../../../services/api";
@@ -45,6 +46,7 @@ function sortNotesByDateDesc(notes: CandidateNote[]): CandidateNote[] {
 
 function CandidateDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const resources = getCandidateResourceUrls(id);
 
   const [loaded, setLoaded] = useState<LoadedData | null>(null);
   const [savingField, setSavingField] = useState<"status" | "stage" | null>(null);
@@ -170,6 +172,8 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-10">
+      <link rel="preload" as="fetch" href={resources.candidate} crossOrigin="anonymous" />
+      <link rel="preload" as="fetch" href={resources.notes} crossOrigin="anonymous" />
       <div className="flex items-center justify-between">
         <Link
           href="/"
