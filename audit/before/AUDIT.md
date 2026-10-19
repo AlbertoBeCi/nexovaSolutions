@@ -46,8 +46,10 @@ Completar este registro al ejecutar las mediciones. Si una fuente no está dispo
 
 | Fecha | Ruta / escenario | Dispositivo y condiciones | Fuente | LCP p75 / lab | INP p75 / lab | CLS p75 / lab | Observaciones |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-10-19 | Web pública `/` (`localhost:3000`) | Vista responsive, 820 × 1217; ejecución local | Captura de Lighthouse proporcionada por el usuario | Sin p75 / 2,1 s | Sin datos | Sin p75 / 0 | Rendimiento 73; TBT 1.560 ms. Advertencias de extensiones e IndexedDB. |
-| 2026-10-19 | Backoffice `/` (`localhost:3001`) | Ejecución local; viewport no legible en la captura | Captura de Lighthouse proporcionada por el usuario | Sin p75 / 1,2 s | Sin datos | Sin p75 / 0 | Rendimiento 72; TBT 1.930 ms; accesibilidad 94. Advertencias de extensiones e IndexedDB. |
+| 2026-10-19 | Web pública `/` (`localhost:3000`) | Build de producción según confirmación del usuario; vista responsive, 820 × 1217 | Captura de Lighthouse proporcionada por el usuario | Sin p75 / 2,1 s | Sin datos | Sin p75 / 0 | Rendimiento 73; TBT 1.560 ms. Advertencias de extensiones e IndexedDB. |
+| 2026-10-19 | Backoffice inicial `/` (`localhost:3001`) | Desarrollo: iniciado con `npm run dev -- -p 3001`; viewport no legible | Primera captura de Lighthouse proporcionada por el usuario | Sin p75 / 1,2 s | Sin datos | Sin p75 / 0 | Rendimiento 72; TBT 1.930 ms; accesibilidad 94. Antecedente de desarrollo. |
+| 2026-10-19 | Backoffice actual `/` (`localhost:3001`) | Producción: build completado y servidor iniciado con `npm run start -- -p 3001` | Nueva captura adjunta a la conversación | Sin datos / no visible | Sin datos | Sin datos / no visible | Rendimiento 72; accesibilidad 94; prácticas recomendadas 100; SEO 100. Advertencias de extensiones e IndexedDB. |
+| 2026-10-19 | Web pública `/talento` (`localhost:3000/talento`) | Mismo servidor de la web pública; build de producción confirmado por el usuario; viewport no visible | [Captura del registro de talento](./imagen1TalentoAntes.png) | Sin datos / no visible | Sin datos | Sin datos / no visible | Rendimiento 73; accesibilidad 100; prácticas recomendadas 100; SEO 100. Advertencias de extensiones e IndexedDB. |
 
 ### Datos de la captura de la web pública
 
@@ -56,17 +58,35 @@ Completar este registro al ejecutar las mediciones. Si una fuente no está dispo
 - Diagnósticos: ejecución de JavaScript 2,1 s; trabajo del hilo principal 2,9 s; 1.967 KiB de JavaScript sin usar; 78 KiB de ahorro estimado al minificar; 13 KiB de JavaScript antiguo; 9 tareas largas y 4 marcas User Timing.
 - Evidencia: [imagen1FrontEndAntes.png](./imagen1FrontEndAntes.png).
 
-### Datos de la captura del backoffice
+### Captura del registro de talento
+
+- URL visible: `http://localhost:3000/talento`.
+- Estado visible del formulario: paso 1 de 3, datos de contacto, en tema oscuro.
+- Puntuaciones: rendimiento 73, accesibilidad 100, prácticas recomendadas 100 y SEO 100.
+- Persisten las advertencias de extensiones de Chrome y datos almacenados en IndexedDB.
+- La captura no muestra FCP, LCP, TBT, CLS, Speed Index ni INP. No reutilizar para esta ruta las métricas medidas en la portada `/`.
+- Evidencia local: [imagen1TalentoAntes.png](./imagen1TalentoAntes.png).
+
+### Datos de la primera captura del backoffice (desarrollo)
 
 - Puntuaciones: rendimiento 72, accesibilidad 94, prácticas recomendadas 100 y SEO 100.
 - Métricas de laboratorio: FCP 0,8 s, LCP 1,2 s, TBT 1.930 ms, CLS 0 y Speed Index 2,5 s.
-- Evidencia: [imagen1BackofficeAntes.png](./imagen1BackofficeAntes.png).
+- Evidencia histórica: `imagen1BackofficeAntes.png`, guardada en el commit `24fc46d`. El archivo ya no está en el directorio de trabajo; sus datos se conservan como antecedente de desarrollo.
 - La captura no permite leer con seguridad el viewport ni muestra diagnósticos Lighthouse desplegados; no inferirlos.
+
+### Captura actual del backoffice (producción)
+
+- Recibida después de completar `npm run build` y arrancar `npm run start -- -p 3001`; se comprobó respuesta HTTP 200 en `localhost:3001`.
+- Puntuaciones visibles: rendimiento 72, accesibilidad 94, prácticas recomendadas 100 y SEO 100.
+- La nueva imagen está recortada antes de las métricas: no permite registrar FCP, LCP, TBT, CLS, Speed Index ni INP. Los valores de la captura de desarrollo no se trasladan a esta medición.
+- Persisten las advertencias de extensiones de Chrome y datos de IndexedDB.
+- Fuente: nueva imagen adjunta al chat; su archivo local aún no se ha localizado. El archivo recibido posteriormente contiene `/talento` y está registrado en esa ruta; no sirve como PNG del backoffice.
 
 ### Límites de estas capturas
 
-- Ambas son mediciones de laboratorio locales, no p75 de campo; Lighthouse no reportó INP.
-- Lighthouse advierte en ambas capturas que extensiones de Chrome y datos almacenados en IndexedDB pudieron afectar la carga. Repetir en incógnito, sin extensiones, antes de fijarlas como línea base definitiva.
+- Las capturas son mediciones de laboratorio locales, no p75 de campo; ninguna aporta INP.
+- Lighthouse advierte en las capturas que extensiones de Chrome y datos almacenados en IndexedDB pudieron afectar la carga. Mantener estas advertencias al comparar resultados y repetir la medición sin extensiones para obtener evidencia adicional.
+- Distinguir el antecedente de desarrollo del backoffice de la captura actual en producción; no atribuir al código diferencias causadas por el modo de ejecución.
 
 ## Criterios de cierre
 
@@ -78,4 +98,4 @@ Completar este registro al ejecutar las mediciones. Si una fuente no está dispo
 
 ![Primera captura de la web pública antes](imagen1FrontEndAntes.png)
 
-![Primera captura del backoffice antes](imagen1BackofficeAntes.png)
+![Captura del registro de talento antes](imagen1TalentoAntes.png)

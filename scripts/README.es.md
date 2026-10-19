@@ -37,3 +37,14 @@ uv run --project services/incident-manager-api python scripts/seed_incidents.py
 Idempotente: ejecutarlo dos veces inserta 0 la segunda vez (ver
 `services/incident-manager-api/README.md` para los conteos esperados y el
 modelo de datos con restricciones CHECK que alimenta).
+
+## `audit-frontends.mjs` — mediciones locales reproducibles
+
+Necesita ambas apps Next.js en producción en 3000/3001 y Chrome. Instala las herramientas fuera del repositorio:
+
+```powershell
+npm install --prefix "$env:TEMP\nexova-performance-tools" lighthouse@13.5.0 playwright@1.64.1 web-vitals@6.2.3
+node scripts/audit-frontends.mjs before/production 3
+```
+
+Ejecuta desde la raíz. Argumentos: fase dentro de `audit/`, número de pasadas (o `shots` para volver a capturar informes existentes) y nombres opcionales de casos. Guarda la URL fija del candidato en `audit/cases.json`, restablece el almacenamiento entre navegaciones Lighthouse y conserva informes, condiciones, trazas y capturas. Mantén versiones y configuración iguales antes/después; estas mediciones de laboratorio no representan un p75 de usuarios reales.

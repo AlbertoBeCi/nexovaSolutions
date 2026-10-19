@@ -1,0 +1,18 @@
+[
+  {
+    "name": "website-home",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "name": "website-talento",
+    "url": "http://localhost:3000/talento"
+  },
+  {
+    "name": "backoffice-home",
+    "url": "http://localhost:3001/"
+  },
+  {
+    "name": "backoffice-detail",
+    "url": "http://localhost:3001/candidates/53f2bbdc-4ea0-4b34-b076-4f8e7c2736ac"
+  }
+]

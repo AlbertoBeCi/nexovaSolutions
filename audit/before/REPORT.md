@@ -6,7 +6,7 @@
 
 ## Resumen
 
-Se revisó el código de la web pública y se registraron dos capturas locales de Lighthouse proporcionadas por el usuario: la portada pública y el backoffice. La portada usa texto renderizado desde el servidor, no presenta imágenes grandes en el hero y tiene una cantidad limitada de interactividad cliente. Las capturas sirven como referencias iniciales de laboratorio, pero no confirman el p75 de campo ni representan necesariamente dispositivos reales.
+Se revisó el código de la web pública y se registraron las capturas locales de Lighthouse proporcionadas por el usuario, correspondientes a la portada `/`, el registro `/talento` y el pipeline del backoffice. La web pública se midió sobre su build, según su confirmación. Para el backoffice se conserva una primera captura de desarrollo y se incorpora una nueva captura recibida después de iniciarlo en producción. La portada pública usa texto renderizado desde el servidor, no presenta imágenes grandes en el hero y tiene una cantidad limitada de interactividad cliente. Las capturas sirven como referencias iniciales de laboratorio, pero no confirman el p75 de campo ni representan necesariamente dispositivos reales.
 
 No se proporcionó una URL desplegada ni datos CrUX/RUM o trazas detalladas de Chrome. Lighthouse avisó que las extensiones de Chrome y datos almacenados en IndexedDB pudieron afectar la carga. Por tanto, repetir la prueba en una ventana de incógnito y sin extensiones antes de fijar la línea base.
 
@@ -14,21 +14,39 @@ No se proporcionó una URL desplegada ni datos CrUX/RUM o trazas detalladas de C
 
 ### Puntuaciones Lighthouse
 
-| Aplicación | URL | Rendimiento | Accesibilidad | Prácticas recomendadas | SEO |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Web pública | `http://localhost:3000/` | 73 | 100 | 100 | 100 |
-| Backoffice | `http://localhost:3001/` | 72 | 94 | 100 | 100 |
+| Aplicación / captura | URL | Modo | Rendimiento | Accesibilidad | Prácticas recomendadas | SEO |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| Web pública | `http://localhost:3000/` | Build de producción confirmado por el usuario | 73 | 100 | 100 | 100 |
+| Registro de talento | `http://localhost:3000/talento` | Mismo servidor de producción de la web pública | 73 | 100 | 100 | 100 |
+| Backoffice inicial | `http://localhost:3001/` | Desarrollo (`npm run dev`) | 72 | 94 | 100 | 100 |
+| Backoffice actual | `http://localhost:3001/` | Producción (`build` + `start`) | 72 | 94 | 100 | 100 |
 
 ### Métricas de laboratorio
 
 | Aplicación | FCP | LCP | TBT | CLS | Speed Index | INP |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| Web pública | 0,8 s | 2,1 s | 1.560 ms | 0 | 1,7 s | No reportado |
-| Backoffice | 0,8 s | 1,2 s | 1.930 ms | 0 | 2,5 s | No reportado |
+| Web pública (build) | 0,8 s | 2,1 s | 1.560 ms | 0 | 1,7 s | No reportado |
+| Registro de talento (build) | No visible | No visible | No visible | No visible | No visible | No reportado |
+| Backoffice inicial (desarrollo) | 0,8 s | 1,2 s | 1.930 ms | 0 | 2,5 s | No reportado |
+| Backoffice actual (producción) | No visible | No visible | No visible | No visible | No visible | No reportado |
 
 La captura de la web pública corresponde a `localhost:3000/`, vista responsive de 820 × 1217, y muestra la navegación «Inicio», «Servicios», «Por qué Nexova» y «Contacto». Evidencia: [imagen1FrontEndAntes.png](./imagen1FrontEndAntes.png).
 
-La captura del backoffice corresponde a `localhost:3001/` y muestra el pipeline de talento. El viewport no se alcanza a leer. Evidencia: [imagen1BackofficeAntes.png](./imagen1BackofficeAntes.png).
+La primera captura del backoffice corresponde a `localhost:3001/` y muestra el pipeline de talento en desarrollo. El viewport no se alcanza a leer. Su imagen original `imagen1BackofficeAntes.png` está guardada en el commit `24fc46d` y ya no está en el directorio de trabajo.
+
+### Captura del registro de talento
+
+La imagen adjunta muestra `localhost:3000/talento` y el formulario en su primer paso, con tema oscuro. Sus puntuaciones son 73 / 100 / 100 / 100. Conserva las advertencias de Lighthouse sobre extensiones de Chrome e IndexedDB.
+
+Las métricas inferiores y el viewport no aparecen. No se trasladan a esta ruta los valores de la portada pública, aunque ambas tengan las mismas puntuaciones. Evidencia local: [imagen1TalentoAntes.png](./imagen1TalentoAntes.png).
+
+### Actualización del backoffice en producción
+
+Se completó `npm run build`, se inició `npm run start -- -p 3001` y se comprobó que la página y la API responden HTTP 200. Después, el usuario aportó la captura actual: conserva las puntuaciones 72 / 94 / 100 / 100 y las advertencias de extensiones e IndexedDB.
+
+La imagen está recortada antes de mostrar las métricas inferiores. No permite confirmar FCP, LCP, TBT, CLS o Speed Index de esta ejecución; los valores de la primera captura de desarrollo quedan identificados como antecedentes.
+
+La imagen del backoffice en producción se ha leído como adjunto del chat, pero su PNG sigue pendiente en el workspace. El PNG guardado posteriormente corresponde al registro `/talento` y se ha enlazado con esa ruta. La captura inicial de desarrollo permanece disponible en el historial de Git.
 
 ### Diagnósticos Lighthouse visibles
 
@@ -73,4 +91,4 @@ Estos diagnósticos aparecen en la captura de la web pública. La captura del ba
 
 ## Limitaciones
 
-La captura es una medición local única afectada posiblemente por extensiones y datos del navegador; no equivale a una medición de campo. No se han hecho cambios de rendimiento en la aplicación. Las observaciones de código son hipótesis para orientar la medición, no estimaciones de ahorro ni conclusiones sobre el estado real de los Core Web Vitals.
+Las capturas son mediciones locales puntuales afectadas posiblemente por extensiones y datos del navegador; no equivalen a mediciones de campo. La captura actual del backoffice en producción solo muestra puntuaciones de categorías. No se han hecho cambios de rendimiento en la aplicación. Las observaciones de código son hipótesis para orientar la medición, no estimaciones de ahorro ni conclusiones sobre el estado real de los Core Web Vitals.
