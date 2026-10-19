@@ -1,0 +1,17 @@
+[project]
+name = "nexova-solutions-tests"
+version = "0.1.0"
+description = "Ejecutor raiz de las baterias de pruebas Python del monorepo: `uv run pytest` desde la raiz lanza cada suite en su propio entorno."
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+# Los servicios tienen modulos con el mismo nombre (main, models, config...) y
+# dependencias distintas, asi que no pueden compartir un unico proceso de
+# pytest: tests/test_suites.py lanza cada suite con su propio `uv run`.
+[tool.pytest.ini_options]
+testpaths = ["tests"]

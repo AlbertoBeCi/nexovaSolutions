@@ -60,6 +60,22 @@ def test_create_incident_with_non_object_body_returns_400(client: TestClient):
     assert response.json()["error"]["code"] == "validation_error"
 
 
+def test_create_incident_check_constraint_violation_returns_400_not_500(
+    client: TestClient, valid_payload: dict, monkeypatch
+):
+    """Auditoria de manejo de errores: si validate_incident() alguna vez
+    dejara pasar un valor que el CHECK constraint de la BD rechaza (hoy
+    inalcanzable, ver _commit_or_validation_error en routes/incidents.py),
+    la API debe responder 400, no un 500 generico."""
+    monkeypatch.setattr("routes.incidents.validate_incident", lambda payload: {})
+    payload = {**valid_payload, "category": "no_es_una_categoria_valida"}
+
+    response = client.post("/api/incidents", json=payload)
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "validation_error"
+
+
 # ─── GET /api/incidents ─────────────────────────────────────────────────
 
 

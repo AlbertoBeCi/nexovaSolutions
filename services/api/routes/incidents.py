@@ -65,7 +65,7 @@ async def analyze_incidents(
     "/results/export",
     summary="Descarga el ultimo analisis como CSV",
     description=(
-        "Devuelve, como archivo CSV descargable (una fila por metrica), el "
+        "Requiere login. Devuelve, como archivo CSV descargable (una fila por metrica), el "
         "resumen del ultimo analisis ejecutado con POST /api/incidents/analyze. "
         "El resultado se guarda en memoria del proceso: se pierde si el "
         "servicio se reinicia."
@@ -80,6 +80,7 @@ async def analyze_incidents(
             "description": "Todavia no se ha ejecutado ningun analisis en este proceso.",
         },
     },
+    dependencies=[Depends(get_current_user)],
 )
 async def export_last_result() -> Response:
     last_result = store.get_last_result()

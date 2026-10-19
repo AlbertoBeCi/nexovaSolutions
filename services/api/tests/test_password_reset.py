@@ -70,6 +70,21 @@ def test_forgot_password_known_email_logs_a_token(client, caplog):
     assert token
 
 
+def test_forgot_password_never_logs_token_in_production(client, caplog, monkeypatch):
+    """Auditoria de manejo de errores: en produccion, el fallback de consola
+    de forgot-password no debe dejar un token de reset (reseteable a
+    contrasena) en texto plano en los logs del servidor."""
+    monkeypatch.setattr("routes.auth.ENVIRONMENT", "production")
+    register(client)
+
+    with caplog.at_level(logging.INFO, logger="auth"):
+        response = client.post("/auth/forgot-password", json={"email": CREDENTIALS["email"]})
+
+    assert response.status_code == 200
+    assert "Token:" not in caplog.text
+    assert "no se loguea" in caplog.text
+
+
 def test_forgot_password_rejects_extra_fields(client):
     response = client.post(
         "/auth/forgot-password", json={"email": CREDENTIALS["email"], "extra": "x"}

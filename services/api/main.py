@@ -15,16 +15,21 @@ from __future__ import annotations
 
 import logging
 import os
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from routes import auth, incidents, profiles, suppliers, users
+from inventory_database import init_inventory_db
+from routes import auth, incidents, inventory, profiles, suppliers, users
 
 # Sin este basicConfig, logger.info (p. ej. el token de reset que loguea
 # routes/auth.py a falta de un proveedor de email) no se ve en la consola de
 # `uvicorn main:app`: el logger raiz no tiene handler propio por defecto.
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(name)s: %(message)s")
+
+logger = logging.getLogger("main")
 
 # Frontends de desarrollo: uis/backoffice (3000) y uis/application (3001).
 # En produccion, definir CORS_ORIGINS con los origenes reales separados por comas.
@@ -33,6 +38,14 @@ DEFAULT_CORS_ORIGINS = (
     "http://localhost:3001,http://127.0.0.1:3001"
 )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Inventory is optional in a clean checkout: existing TinyDB routes stay
+    # available without a Supabase URL. When configured, create the ORM tables.
+    init_inventory_db()
+    yield
+
+
 app = FastAPI(
     title="Nexova API",
     description=(
@@ -40,9 +53,11 @@ app = FastAPI(
         "soporte (detecta registros invalidos y calcula metricas; nunca expone "
         "customer_email). **suppliers**: directorio de proveedores con sus "
         "tarifas mensuales por contrato (Spain en EUR, USA en USD). **users** / "
-        "**auth** / **profiles**: registro, login (JWT) y perfil de usuarios."
+        "**auth** / **profiles**: registro, login (JWT) y perfil de usuarios. "
+        "**inventory**: activos y órdenes sobre PostgreSQL/Supabase."
     ),
     version="1.2.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -57,7 +72,25 @@ app.add_middleware(
 )
 
 app.include_router(incidents.router)
+app.include_router(inventory.router)
 app.include_router(suppliers.router)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(profiles.router)
+
+
+@app.exception_handler(Exception)
+async def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+    """Red de seguridad para cualquier excepcion no controlada (auditoria de
+    manejo de errores): por defecto, sin este handler, no queda ningun log
+    propio del servicio con contexto de la request (solo lo que uvicorn
+    decida imprimir al re-lanzar la excepcion), y si algun dia `debug=True`
+    se activa por error, Starlette devolveria el traceback completo al
+    cliente. El detalle real de la excepcion SOLO va al logger; el cliente
+    siempre recibe el mismo mensaje generico, en el mismo formato
+    {"detail": "..."} que ya usa el resto de esta API."""
+    logger.exception("Error interno no controlado en %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Ha ocurrido un error interno. Intentalo de nuevo mas tarde."},
+    )

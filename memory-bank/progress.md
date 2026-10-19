@@ -7,7 +7,38 @@
   del pipeline. Dos componentes reutilizables integrados, ocho pruebas Jest y
   regresión de navegador sin mutar datos reales. Informes, capturas, trazas,
   experimentos descartados y guía breve en `AUDIT.md`, `REPORT.md` y `audit/`.
-  Pendiente push autorizado; medición de campo y revisión de dependencias aparte.
+  Publicada el 20/10 con autorización; integración de main y recuperación del README
+  español para el PR realizadas. Integración: 148 pruebas en 11 suites, lint/build
+  en ambos frontends y revisión de textos correctos. Medición de campo y revisión
+  de dependencias aparte.
+
+- **Entorno local Docker Compose alineado con checklist y validado**: Dockerfiles
+  y `.dockerignore` en `uis/` y `services/`; website/backoffice en 3000/3001;
+  API con `--reload` en 8000; red `nexova-local`; variables desde
+  `.env.example` y `.env` opcional. Se reconstruyeron las imágenes y los tres
+  servicios quedaron saludables. Sitios y proxy responden HTTP 200; se probó
+  HMR real en ambas interfaces y autoreload de API. API instala versiones
+  fijadas exportadas de `uv.lock`; su contexto toma `shared/` y `packages/shared/`
+  del root. PostgreSQL es servicio auxiliar para inventario.
+
+- **Hito 5 — Backend de inventario ORM** (`services/api/`): SQLModel sobre
+  Supabase PostgreSQL para activos y órdenes, con TinyDB/JWT existente para
+  autenticación y UUID estable por usuario. Seis endpoints `/inventory`, stock
+  derivado de entradas menos salidas, checks/FK, transacciones y bloqueo para
+  salidas, agregaciones sin N+1, seed idempotente y guía `aprendiendoORM.md`.
+  Supabase de producción cargado por petición expresa con los 6 activos, 4
+  entradas y 3 salidas definidos en el plan; verificación de esquema y stock
+  completada. GET de productos, detalle, órdenes y filtros por oficina verificados
+  con la API local contra Supabase en solo lectura; UUID contrastados con TinyDB.
+  Suite API: 395 passed, 1 skipped; queda pendiente correr la prueba
+  de concurrencia en una instancia PostgreSQL aislada (no producción).
+
+- **Backoffice de inventario** (`uis/backoffice/`): `/backoffice/inventory/products` con catálogo y rutas `/backoffice/inventory/orders/...` protegidas; `/inventario...` se conserva como alias con redirección.
+  señales de stock (0, 1–5 y más de 5), formularios protegidos de entrada y
+  salida, consulta del stock actual antes de una salida e historial con producto
+  y creador. Login conserva destinos internos mediante `next`. El historial de
+  API expone `creator_name` sin migración de datos. Jest 140/140, API 395 passed
+  y 1 skip; lint, build y verificador de textos PASS.
 
 - **Hito 1** — Web pública migrada a Next/React en `uis/website/`: landing (`/`) +
   registro de talento en 3 pasos (`/talento`) con validaciones (mensajes literales
@@ -92,6 +123,17 @@
   pytest` → 63 tests en `packages/shared`, 43 en
   `services/incident-manager-api`; `npm run lint`/`build` y el verificador
   de textos de UI en verde; probado en navegador real con Playwright.
+
+- **Auditoría de manejo de errores en `uis/backoffice`** — la UI ya no
+  muestra errores crudos: `services/api.ts` envuelve `fetch` en un `safeFetch`
+  que traduce los fallos de red ("Failed to fetch") a un mensaje en español;
+  `services/incidents-api.ts` traduce los errores de validación de Pydantic
+  (con `FIELD_NAMES` + `issue.type`) y corrige las tildes de los mensajes en
+  texto plano de la API (`KNOWN_MESSAGE_FIXES` + `polishErrorMessage`, mismo
+  patrón que `lib/auth-api.ts`); las tres páginas del pipeline de candidatos
+  (`/`, `candidates/[id]`, `candidates/[id]/edit`) cambian el bloque de error
+  de carga por un `<div role="alert">` con botón **"Reintentar"**
+  (`reloadToken`/`loadedToken`). `npm run lint`/`build` en verde.
 
 ## Falta
 

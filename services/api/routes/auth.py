@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
 
-from config import FRONTEND_URL
+from config import ENVIRONMENT, FRONTEND_URL
 from mailer import send_password_reset_email
 from models import (
     ChangePasswordRequest,
@@ -129,9 +129,22 @@ def forgot_password(
         reset_link = f"{FRONTEND_URL}/reset-password?token={token}"
         sent = send_password_reset_email(doc["email"], reset_link)
         if not sent:
-            # Sin RESEND_API_KEY (o si Resend fallo): modo desarrollo, se
-            # loguea el token para poder probar el flujo sin email real.
-            logger.info("Password reset solicitado para %s. Token: %s", doc["email"], token)
+            if ENVIRONMENT != "production":
+                # Sin RESEND_API_KEY (o si Resend fallo): modo desarrollo, se
+                # loguea el token para poder probar el flujo sin email real.
+                logger.info("Password reset solicitado para %s. Token: %s", doc["email"], token)
+            else:
+                # En produccion NUNCA se loguea el token en claro (ver
+                # auditoria de manejo de errores): un log con acceso de
+                # lectura no debe poder resetear la contrasena de nadie. El
+                # usuario simplemente no recibe el link hasta que se
+                # arregle la configuracion de Resend.
+                logger.warning(
+                    "No se pudo entregar el email de reset a %s (RESEND_API_KEY "
+                    "ausente o Resend fallo) y ENVIRONMENT=production: el token "
+                    "no se loguea. Revisa la configuracion de Resend.",
+                    doc["email"],
+                )
 
     return MessageResponse(detail=RESET_REQUESTED_MESSAGE)
 

@@ -50,8 +50,8 @@ Luego esta guía completa y, del área en la que vayas a trabajar, su archivo en
 | --- | --- | --- | --- |
 | Modelo de dominio + utils (Hito 2) | [`packages/domain/`](./packages/domain/) | TypeScript puro, `tsx`, `esbuild` | `npm run typecheck`, `npm run demo`, `npm run build:demo-web` |
 | Web pública (Hito 1) | [`uis/website/`](./uis/website/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
-| Backoffice (pipeline de talento, Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint` |
-| Operaciones (directorio de proveedores) | [`uis/application/`](./uis/application/) | Next.js 16, React 19, Tailwind v4 (puerto 3001) | `npm run dev`, `npm run build`, `npm run lint` |
+| Backoffice (pipeline de talento, Hito 3) | [`uis/backoffice/`](./uis/backoffice/) | Next.js 16, React 19, Tailwind v4 | `npm run dev`, `npm run build`, `npm run lint`, `npm test` |
+| Operaciones (directorio de proveedores) | [`uis/application/`](./uis/application/) | Next.js 16, React 19, Tailwind v4 (puerto 3001) | `npm run dev`, `npm run build`, `npm run lint`, `npm test` |
 | API (incidencias + proveedores) | [`services/api/`](./services/api/) | FastAPI, Pydantic v2, TinyDB, `uv` | `uv sync`, `uv run seed`, `uv run pytest`, `uv run uvicorn main:app --reload` |
 
 La landing del Hito 1 se sirvió como HTML/CSS/JS estático en la raíz; ya está
@@ -126,9 +126,10 @@ No hagas `git commit` hasta haber completado estos pasos:
 
 3. **Pasa las comprobaciones del área tocada:**
    - `packages/domain/` → `npm run typecheck` (debe pasar limpio).
-   - App de `uis/` (Next.js) → `npm run lint` y `npm run build` desde su carpeta.
+   - App de `uis/` (Next.js) → `npm run lint`, `npm run build` y `npm test` (Jest, en `uis/application` y `uis/backoffice`) desde su carpeta.
    - Servicio de `services/` → linter y tests del servicio (`services/api` → `uv run pytest`).
    - Si tocaste `uis/**`, ejecuta la skill `revision-textos-ui`.
+   - Si añadiste o modificaste un endpoint, un cliente HTTP o una regla compartida, **actualiza sus pruebas en el mismo commit** (regla [`.agents/rules/testing.md`](./.agents/rules/testing.md)) y déjalas todas en verde.
    - Si tocaste varias áreas, corre las comprobaciones de todas.
 
 4. **Actualiza la documentación afectada:**
@@ -137,6 +138,7 @@ No hagas `git commit` hasta haber completado estos pasos:
    - Si el flujo del proyecto lo usa, añade el prompt al registro `docs/prompts.md`.
    - Si cambió el dominio, revisa que siga alineado con `CONTEXT.md`.
    - Si cambió el foco, el estado o una decisión, actualiza `memory-bank/`.
+   - Si cambió el número de pruebas, un comportamiento fijado o la cobertura, actualiza [`TESTING.md`](./TESTING.md).
    - Si añadiste una convención nueva de un área, documéntala en `.agents/rules/`.
 
 5. **No filtres secretos.** `.env*.local` y `.claude/` están en `.gitignore`;
@@ -230,3 +232,15 @@ tú en esta sesión, renombrar/mover carpetas de nivel superior, tocar
 `docker-compose.yml` o `infra/`.
 
 Si crees que uno de estos cambios es necesario, **propónlo y espera respuesta**.
+
+---
+
+## 8. Backup obligatorio antes de pruebas destructivas de base de datos
+
+Antes de realizar cualquier prueba destructiva sobre una base de datos,
+**actualiza su backup para incluir el estado actual**. Si no existe un backup,
+**créalo antes de ejecutar la prueba**.
+
+Comprueba que el backup se ha completado correctamente y puede restaurarse.
+Si no se puede crear o actualizar, no ejecutes la prueba destructiva.
+Los backups con datos reales o secretos no se incluyen en Git.

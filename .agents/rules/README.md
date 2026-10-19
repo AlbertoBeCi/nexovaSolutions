@@ -42,3 +42,4 @@ globs: ["uis/**"]          # solo para file-pattern
 | [`idioma-y-dominio.md`](./idioma-y-dominio.md) | `always` |
 | [`uis.md`](./uis.md) | `file-pattern` — `uis/**` |
 | [`services.md`](./services.md) | `file-pattern` — `services/**` |
+| [`testing.md`](./testing.md) | `file-pattern` — `services/**`, `uis/**`, `packages/**` |

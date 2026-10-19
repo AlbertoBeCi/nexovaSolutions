@@ -25,6 +25,7 @@ serve = "main:run"
 dev = [
     "pytest>=8",
     "httpx2>=2.13",
+    "pytest-cov>=7.1.0",
 ]
 
 [build-system]
@@ -48,3 +49,11 @@ packages = ["routes"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+# Cobertura informativa (sin fail_under): `uv run pytest --cov --cov-report=term-missing`
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", "seed*.py", ".venv/*"]
+
+[tool.coverage.report]
+show_missing = true

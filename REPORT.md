@@ -81,4 +81,21 @@ La red externa de 4Geeks puede variar. Las métricas son de laboratorio, móvil 
 - [Antes](audit/before/isolated/) y [después](audit/after/): informes HTML/JSON, trazas y capturas de las cuatro páginas.
 - Commits separados para correcciones, experimento descartado y evidencia final, en `feature/auditoria-de-rendimiento`.
 
-Los archivos quedan en Git local. **El push y compartir la URL en GitHub siguen pendientes de tu autorización explícita.**
+La rama se publicó en GitHub el **20/10/2026**, con autorización expresa del usuario.
+Se prepara el PR hacia `main`, incluyendo el `README.es.md` que estaba guardado
+en el stash de `feature/contenedorizacion-monorepo`.
+
+### Integración con `main` · 20/10/2026
+
+Se incorporan los cambios actuales de inventario, Docker y manejo de errores de
+`main`. Se conserva `safeFetch` al combinarlo con las URLs de precarga, y se
+unifica Jest para ejecutar las suites de `main` junto con las ocho pruebas de la
+auditoría. El README guardado se recupera sin eliminar el stash.
+
+Validación de integración: **148 pruebas en 11 suites**, lint y build de ambos
+frontends y skill `revision-textos-ui` correctos. Se conservan las coberturas y
+los resultados de otras áreas con su fecha original en `TESTING.md`.
+
+Las cifras Lighthouse anteriores corresponden a los builds auditados el
+19/10/2026, anteriores a esta integración. Se mantienen como evidencia histórica;
+no se presentan como una nueva medición del código combinado.

@@ -3,6 +3,26 @@
 Monorepo con áreas independientes, cada una con su propio `package.json` y
 `node_modules`. Ejecuta los comandos desde la carpeta de cada área.
 
+## Docker Compose local
+
+- `docker-compose.yml` en la raíz define `ui`, `api` y `postgres`. El conjunto
+  cubre website, backoffice, `services/api` e inventario local; no incluye
+  `uis/application` ni `services/incident-manager-api`.
+- `uis/Dockerfile` usa Node 24.18.1 Alpine; `uis/start.sh` arranca website y
+  backoffice en un contenedor, en 3000 y 3001. Cada app instala su propio
+  `package-lock.json` con `npm ci`.
+- `services/Dockerfile` usa Python 3.14.8 y uv 0.12.22. `requirements.txt` se
+  exporta con versiones fijadas desde `uv.lock`; Uvicorn corre con reload en
+  8000. PostgreSQL 18.6 no publica su puerto al host.
+- Compose carga variables desde `.env.example` y permite que un `.env` local las
+  sobreescriba. La red compartida tiene nombre explícito `nexova-local`.
+- `INTERNAL_API_URL=http://api:8000` es solo servidor; el navegador usa la
+  reescritura del backoffice `/_nexova-api`. No usar DNS Compose desde el
+  navegador.
+- El volumen `/data` conserva TinyDB; los volúmenes nombrados conservan
+  PostgreSQL y las cachés `.next`. `.env.example` de raíz contiene valores
+  locales no secretos; copiarlo a `.env` es opcional.
+
 ## Áreas
 
 | Área | Ruta | Stack | Comandos |
@@ -185,3 +205,19 @@ verdad de esa validacion para `scripts/` y `services/*`.
 - Warning de Next al construir: detecta varios `package-lock.json` y toma la raíz
   del repo como workspace root. No rompe el build; se puede fijar con
   `turbopack.root` en cada `next.config.ts` si molesta.
+
+## Pruebas
+
+- `uv run pytest` desde la **raíz** del repo ejecuta las 3 suites Python (`tests/test_suites.py`,
+  cada una en su entorno: los servicios comparten nombres de módulo).
+- Backend: `pytest` (+ `pytest-cov`, informativo) en `services/api` (369) y
+  `services/incident-manager-api` (217); `uv run pytest`.
+- Frontends: Jest + `next/jest` en `uis/application` (143) y `uis/backoffice`
+  (114); `npm test` / `npx jest --coverage`. `jest.environment.cjs` expone
+  `Response`/`Headers` de Node a jsdom.
+- Se prueba la **lógica**, no la serialización HTTP.
+- **Las pruebas evolucionan con el código**: endpoint nuevo o modificado →
+  pruebas actualizadas en el mismo commit. Regla en
+  [`.agents/rules/testing.md`](../.agents/rules/testing.md); guía y resultados en
+  [`TESTING.md`](../TESTING.md).
+

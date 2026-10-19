@@ -4,8 +4,17 @@ _Actualizar al cambiar de foco._
 
 ## Ahora — Auditoría de rendimiento de ambos frontends
 
-Rama: `feature/auditoria-de-rendimiento`. Trabajo local completado el 19/10/2026;
-pendiente de publicar únicamente cuando el usuario autorice push.
+Rama: `feature/auditoria-de-rendimiento`. Auditoría completada el 19/10/2026 y
+publicada el 20/10/2026 con autorización explícita. El usuario pide PR hacia `main`
+incluyendo el `README.es.md` guardado en el stash de contenedorización.
+
+- Se integra `origin/main` preservando inventario, Docker, errores traducidos y
+  suites existentes. Jest usa una configuración única para las pruebas de main
+  y las ocho de auditoría; las lecturas precargadas conservan `safeFetch`.
+- README español recuperado del stash sin borrarlo. Las métricas del 19/10 son
+  evidencia histórica del build auditado, no mediciones nuevas tras esta integración.
+- Integración validada: 148 pruebas Jest en 11 suites, lint/build en ambas apps
+  y skill de textos correctos. El total incluye las 140 de main y las ocho nuevas.
 
 - Línea base y final: producción, tres perfiles limpios por URL, Lighthouse 13.5.0,
   Chrome 155. Portada y talento, pipeline y ficha del mismo candidato.
@@ -19,8 +28,61 @@ pendiente de publicar únicamente cuando el usuario autorice push.
   las capturas originales 73/72 al código: tenían avisos de extensiones/IndexedDB.
 - Entrega en `AUDIT.md`, `REPORT.md`, `audit/SOLUCIONES.md`, `audit/before/isolated/`,
   `audit/runs/`, `audit/after/` y `audit/checks/`. Scripts reproducibles en `scripts/`.
-- Se dejan website:3000, backoffice:3001 y API:8000 funcionando. No hay datos de
-  campo CrUX/RUM; INP local no representa p75. La red externa requiere seguimiento.
+- No hay datos de campo CrUX/RUM; INP local no representa p75. La red externa
+  requiere seguimiento.
+
+## Anterior — entorno local con Docker Compose
+
+- Rama `feature/contenedorizacion-monorepo`. Compose desde la raíz ejecuta una
+  API FastAPI (`services/api`), PostgreSQL local y un contenedor UI con Next.js
+  para website (3000) y backoffice (3001). `uis/application` y
+  `services/incident-manager-api` quedan fuera del conjunto local inicial.
+- El backoffice llama a `/_nexova-api` en el mismo origen; rewrites de Next
+  reenvían a `http://api:8000`. La API accede a PostgreSQL por `postgres:5432`.
+- Dockerfiles y `.dockerignore` viven en los contextos `uis/` y `services/`.
+  El API usa un contexto adicional desde la raíz para importar el shim y el
+  paquete compartido. Variables cargadas por `.env.example` y sobreescritas por
+  `.env`; la red Compose tiene nombre explícito `nexova-local`.
+- Reconstrucción y validación completadas: los tres servicios están saludables;
+  website 3000, backoffice 3001, API 8000 y proxy responden. Se probó una edición
+  temporal de fuente en ambos frontends sin reconstruir y se restauraron los
+  archivos originales; WatchFiles detectó el cambio temporal de API y reinició
+  Uvicorn. El administrador local requiere `docker compose exec api uv run seed-users`.
+- El Dockerfile de la API incluye y monta también `shared/incidents_analysis.py`
+  y `packages/shared/nexova_shared`, dependencia real requerida por el router
+  de análisis para arrancar.
+
+## Contexto previo — Hito 5: inventario de operaciones en backoffice
+
+
+- Hito implementado en `services/api/`: TinyDB conserva autenticación; SQLModel y
+  Supabase PostgreSQL almacenan `Asset`, `AssetEntry` y `AssetExit`. Hay seis rutas
+  protegidas bajo `/inventory`; el stock se calcula con agregaciones y los
+  movimientos se escriben en transacciones con bloqueo de activo.
+- Supabase real fue configurado y poblado por autorización expresa: 6 activos,
+  4 entradas y 3 salidas del plan. Verificado en modo lectura: existencias
+  NXV-IT-001=13, NXV-PER-001=27 y NXV-PER-002=11; no hay tabla `users` ni columna
+  física `current_stock`; las dos FK existen y los siete UUID son válidos.
+- Auditoría de los checks del ejercicio: GET de productos, detalle y órdenes
+  comprobados con la API local contra Supabase mediante sesiones forzadas a
+  solo lectura. Filtros de ambas oficinas correctos; siete UUID coinciden con
+  TinyDB; SKU único, dos FK y 13 CHECK verificados. Las seis rutas rechazan
+  peticiones sin JWT. La cuenta de auditoría existe solo en memoria.
+- `uv run pytest -p no:cacheprovider -q`: 395 passed, 1 skipped. La prueba omitida
+  es la de concurrencia PostgreSQL; requiere una base local/de pruebas aislada.
+  No se ejecutan pruebas destructivas contra Supabase de producción.
+
+- La sección de inventario del backoffice ya está implementada en esta rama:
+  productos y señal de stock bajo, formularios de entradas/salidas con consulta
+  actualizada previa al envío, historial con creador y filtros, rutas protegidas
+  y retorno `next` después del login. `GET /inventory/orders` incluye ahora
+  `creator_name` (nombre de perfil, email alternativo o `null`). Jest: 140 passed;
+  API: 395 passed, 1 skipped. Lint, build y verificador de textos en verde.
+
+## Contexto previo — baterías de pruebas
+
+- `origin/main` incorpora suites Jest para los clientes de `uis/backoffice` y `uis/application`, más reglas para mantener las pruebas junto a cambios de endpoints y clientes.
+- La API contaba con 369 tests en `services/api`; el inventario aporta pruebas aisladas con SQLite para stock, autenticación, movimientos y errores.
 
 ## Anterior — Gestor de Incidencias Centralizado
 

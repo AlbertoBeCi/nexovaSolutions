@@ -100,49 +100,91 @@ function toIncidentsAnalysisSummary(dto: AnalysisSummaryDto): IncidentsAnalysisS
 
 // ─── Manejo de errores ────────────────────────────────────────────────
 
-/** Este dominio no tiene mensajes por campo propios: devuelve el `msg` de
- *  Pydantic tal cual (o un mensaje generico si no hay). */
+// Nombre legible de cada campo que puede fallar la validación de la API
+// (auditoría de manejo de errores: antes se mostraba el `msg` crudo de
+// Pydantic, en inglés; ahora el mensaje sale de aquí según el campo y el
+// tipo de error, no del texto del backend).
+const FIELD_NAMES: Record<string, string> = {
+  file: "Archivo CSV",
+};
+
+/** Un error de validación de FastAPI/Pydantic → frase en español. */
 function translateIssue(issue: ValidationIssue): string {
-  return issue.msg ?? "Alguno de los datos enviados no es válido.";
+  const field = issue.loc?.[issue.loc.length - 1];
+  const name = typeof field === "string" ? FIELD_NAMES[field] : undefined;
+
+  if (!issue.msg) return "Alguno de los datos enviados no es válido.";
+  if (name && issue.type === "missing") return `El campo «${name}» es obligatorio.`;
+  if (name) return `Revisa el campo «${name}».`;
+  return "Alguno de los datos enviados no es válido.";
+}
+
+/** `routes/incidents.py` y el analizador (InvalidCsvError) no llevan tildes
+ *  en sus mensajes de error; esto los muestra con la ortografía correcta
+ *  cuando la API los devuelve como `detail` en texto plano (un 400 no pasa
+ *  por translateIssue). Mismo patrón que `KNOWN_MESSAGE_FIXES` en
+ *  lib/auth-api.ts. */
+const KNOWN_MESSAGE_FIXES: Record<string, string> = {
+  "El archivo debe tener extension .csv.": "El archivo debe tener extensión .csv.",
+  "El archivo esta vacio.": "El archivo está vacío.",
+  "El archivo no es un CSV valido.": "El archivo no es un CSV válido.",
+  "El archivo no esta codificado en UTF-8.": "El archivo no está codificado en UTF-8.",
+};
+
+function polishErrorMessage(message: string): string {
+  return KNOWN_MESSAGE_FIXES[message] ?? message;
+}
+
+/** Envuelve una llamada para mostrar el error con la ortografía correcta
+ *  (auditoría de manejo de errores), sin dejar de propagar el mensaje. */
+function withPolishedErrors<T>(run: () => Promise<T>): Promise<T> {
+  return run().catch((err: unknown) => {
+    if (err instanceof Error) throw new Error(polishErrorMessage(err.message));
+    throw err;
+  });
 }
 
 // ─── Endpoints: incidencias ───────────────────────────────────────────
 
 /** Sube un CSV de tickets de soporte y devuelve el resumen agregado del análisis. */
 export async function analyzeIncidentsCsv(file: File): Promise<IncidentsAnalysisSummary> {
-  const formData = new FormData();
-  formData.append("file", file);
+  return withPolishedErrors(async () => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-  const response = await apiRequest(
-    "/api/incidents/analyze",
-    { method: "POST", body: formData },
-    "No se pudo analizar el archivo.",
-    translateIssue
-  );
+    const response = await apiRequest(
+      "/api/incidents/analyze",
+      { method: "POST", body: formData },
+      "No se pudo analizar el archivo.",
+      translateIssue
+    );
 
-  const dto = (await response.json()) as AnalysisSummaryDto;
-  return toIncidentsAnalysisSummary(dto);
+    const dto = (await response.json()) as AnalysisSummaryDto;
+    return toIncidentsAnalysisSummary(dto);
+  });
 }
 
 /** Descarga el resultado del último análisis como CSV y dispara la descarga en el navegador. */
 export async function downloadIncidentsResultsCsv(): Promise<void> {
-  const response = await apiRequest(
-    "/api/incidents/results/export",
-    { method: "GET" },
-    "No se pudo exportar el resultado del análisis.",
-    translateIssue
-  );
+  return withPolishedErrors(async () => {
+    const response = await apiRequest(
+      "/api/incidents/results/export",
+      { method: "GET" },
+      "No se pudo exportar el resultado del análisis.",
+      translateIssue
+    );
 
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  try {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "results.csv";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "results.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  });
 }

@@ -26,11 +26,15 @@ const NAV_ITEMS = [
   { href: "/", label: "Pipeline" },
   { href: "/candidates/new", label: "Registrar candidato" },
   { href: "/incidencias", label: "Incidencias" },
+  { href: "/backoffice/inventory/products", label: "Inventario" },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") {
     return pathname === "/" || (pathname.startsWith("/candidates/") && pathname !== "/candidates/new");
+  }
+  if (href === "/backoffice/inventory/products") {
+    return pathname.startsWith("/backoffice/inventory/");
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }

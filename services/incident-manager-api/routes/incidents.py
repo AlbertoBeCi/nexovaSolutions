@@ -24,6 +24,7 @@ from nexova_shared.incident_validation import (
     validate_status_value,
 )
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from db import get_session
@@ -44,6 +45,23 @@ FILTERABLE_FIELDS: dict[str, tuple[str, ...]] = {
     "branch": BRANCHES,
     "category": CATEGORIES,
 }
+
+
+def _commit_or_validation_error(session: Session) -> None:
+    """Confirma la transaccion; si la base de datos rechaza la fila por un
+    CHECK constraint (auditoria de manejo de errores: red de seguridad
+    adicional a validate_incident/validate_status_value, hoy inalcanzable
+    porque ambas capas comparten las mismas constantes de
+    nexova_shared.incident_constants, pero solo mientras eso siga siendo
+    cierto), responde 400 en vez de dejar que caiga en el 500 generico."""
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise ApiError(
+            "validation_error",
+            "Alguno de los datos enviados no es valido.",
+        ) from None
 
 
 def _validate_filters(filters: dict[str, Optional[str]]) -> None:
@@ -85,7 +103,7 @@ def create_incident(session: SessionDep, payload: dict = Body(...)) -> Incident:
         branch=payload["branch"],
     )
     session.add(incident)
-    session.commit()
+    _commit_or_validation_error(session)
     session.refresh(incident)
     return incident
 
@@ -185,6 +203,6 @@ def update_status(incident_id: int, session: SessionDep, payload: dict = Body(..
         )
 
     incident.status = new_status
-    session.commit()
+    _commit_or_validation_error(session)
     session.refresh(incident)
     return incident
