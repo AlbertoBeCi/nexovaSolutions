@@ -24,12 +24,10 @@ type AssetSummaryDto = Omit<AssetDto, "current_stock">;
 interface OrderDto {
   id: number;
   order_type: InventoryOrderType;
-  asset_id: number;
   asset: AssetSummaryDto;
   quantity: number;
   office: InventoryOffice;
   created_at: string;
-  user_uuid: string;
   creator_name?: string | null;
   supplier?: string | null;
   exit_type?: InventoryExitType | null;
@@ -41,9 +39,7 @@ interface CreatedOrderDto {
   asset_id: number;
   quantity: number;
   office: InventoryOffice;
-  created_at: string;
-  user_uuid: string;
-  supplier?: string;
+  created_at: string;  supplier?: string;
   exit_type?: InventoryExitType;
   assigned_to?: string | null;
 }
@@ -54,7 +50,6 @@ export interface CreatedInventoryOrder {
   quantity: number;
   office: InventoryOffice;
   createdAt: string;
-  userUuid: string;
 }
 
 function toAsset(dto: AssetDto): InventoryAsset {
@@ -76,13 +71,11 @@ function toOrder(dto: OrderDto): InventoryOrder {
   return {
     id: dto.id,
     orderType: dto.order_type,
-    assetId: dto.asset_id,
+    assetId: dto.asset.id,
     asset: toAssetSummary(dto.asset),
     quantity: dto.quantity,
     office: dto.office,
-    createdAt: dto.created_at,
-    userUuid: dto.user_uuid,
-    creatorName: dto.creator_name ?? null,
+    createdAt: dto.created_at,    creatorName: dto.creator_name ?? null,
     supplier: dto.supplier ?? null,
     exitType: dto.exit_type ?? null,
     assignedTo: dto.assigned_to ?? null,
@@ -95,9 +88,7 @@ function toCreatedOrder(dto: CreatedOrderDto): CreatedInventoryOrder {
     assetId: dto.asset_id,
     quantity: dto.quantity,
     office: dto.office,
-    createdAt: dto.created_at,
-    userUuid: dto.user_uuid,
-  };
+    createdAt: dto.created_at,  };
 }
 
 function translateInventoryIssue(issue: ValidationIssue): string {

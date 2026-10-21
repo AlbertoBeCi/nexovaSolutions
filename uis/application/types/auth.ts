@@ -9,7 +9,6 @@ export type UserRole = (typeof USER_ROLES)[number];
 
 export interface UserProfile {
   id: number;
-  userId: number;
   name: string;
   phone: string | null;
   address: string | null;

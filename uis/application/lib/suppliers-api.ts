@@ -37,6 +37,7 @@ interface SupplierDto {
   updated_at: string;
 }
 
+type SupplierListDto = Omit<SupplierDto, "contact_email" | "notes">;
 type SupplierCreateDto = Omit<SupplierDto, "id" | "updated_at">;
 
 // ─── Mappers DTO ↔ modelo de la UI ────────────────────────────────────
@@ -117,8 +118,8 @@ export async function listSuppliers(filters: SupplierFilters): Promise<Supplier[
     "No se pudo cargar el directorio de proveedores.",
     translateIssue
   );
-  const dtos = (await response.json()) as SupplierDto[];
-  return dtos.map(toSupplier);
+  const dtos = (await response.json()) as SupplierListDto[];
+  return dtos.map((dto) => toSupplier({ ...dto, contact_email: null, notes: null }));
 }
 
 export async function createSupplier(supplier: NewSupplier): Promise<Supplier> {

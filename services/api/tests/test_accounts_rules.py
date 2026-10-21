@@ -33,8 +33,9 @@ def test_registration_only_enforces_min_length(anon_client, password: str, statu
 def test_registration_forces_role_user_and_active(anon_client):
     body = register(anon_client).json()
 
+    assert set(body) == {"id", "role"}
     assert body["role"] == "user"
-    assert body["is_active"] is True
+    assert "email" not in body
     assert "password" not in body and "hashed_password" not in body
 
 

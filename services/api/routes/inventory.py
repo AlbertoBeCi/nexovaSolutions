@@ -17,6 +17,7 @@ from inventory_schemas import (
     AssetEntryResponse,
     AssetExitCreate,
     AssetExitResponse,
+    AssetListItem,
     AssetResponse,
     AssetSummary,
     Office,
@@ -107,7 +108,6 @@ def _entry_response(entry: AssetEntry) -> AssetEntryResponse:
         supplier=entry.supplier,
         office=entry.office,
         created_at=entry.created_at,
-        user_uuid=entry.user_uuid,
     )
 
 
@@ -120,7 +120,6 @@ def _exit_response(exit_order: AssetExit) -> AssetExitResponse:
         assigned_to=exit_order.assigned_to,
         office=exit_order.office,
         created_at=exit_order.created_at,
-        user_uuid=exit_order.user_uuid,
     )
 
 
@@ -147,13 +146,16 @@ def _creator_names(users: Table, profiles: Table) -> dict[str, str]:
 
 @router.get(
     "/products",
-    response_model=list[AssetResponse],
+    response_model=list[AssetListItem],
 )
 def list_products(
     session: InventorySession,
     office: Annotated[Office | None, Query()] = None,
-) -> list[AssetResponse]:
-    return [_asset_response(asset, stock) for asset, stock in _list_assets_with_stock(session, office)]
+) -> list[AssetListItem]:
+    return [
+        AssetListItem(**_asset_response(asset, stock).model_dump())
+        for asset, stock in _list_assets_with_stock(session, office)
+    ]
 
 
 @router.post("/products", response_model=AssetResponse, status_code=201)
@@ -267,12 +269,10 @@ def list_orders(
             OrderListItem(
                 id=entry.id,
                 order_type="inbound",
-                asset_id=entry.asset_id,
                 asset=_asset_summary(asset),
                 quantity=entry.quantity,
                 office=entry.office,
                 created_at=entry.created_at,
-                user_uuid=entry.user_uuid,
                 creator_name=creator_names.get(entry.user_uuid),
                 supplier=entry.supplier,
             )
@@ -282,12 +282,10 @@ def list_orders(
             OrderListItem(
                 id=exit_order.id,
                 order_type="outbound",
-                asset_id=exit_order.asset_id,
                 asset=_asset_summary(asset),
                 quantity=exit_order.quantity,
                 office=exit_order.office,
                 created_at=exit_order.created_at,
-                user_uuid=exit_order.user_uuid,
                 creator_name=creator_names.get(exit_order.user_uuid),
                 exit_type=exit_order.exit_type,
                 assigned_to=exit_order.assigned_to,

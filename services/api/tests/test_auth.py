@@ -26,15 +26,14 @@ def test_register_without_profile_returns_201(client):
 
     assert response.status_code == 201, response.text
     body = response.json()
-    assert body["email"] == VALID_REGISTRATION["email"]
+    assert set(body) == {"id", "role"}
     assert body["role"] == "user"
-    assert body["is_active"] is True
-    assert body["profile"] is None
+    assert "email" not in body
     assert "password" not in body
     assert "hashed_password" not in body
 
 
-def test_register_with_profile_creates_linked_profile(client):
+def test_register_with_profile_creates_linked_profile(client, profiles_table):
     payload = {
         **VALID_REGISTRATION,
         "profile": {"name": "Ana Ruiz", "phone": "+34600000000", "address": "Valencia"},
@@ -44,8 +43,11 @@ def test_register_with_profile_creates_linked_profile(client):
 
     assert response.status_code == 201, response.text
     body = response.json()
-    assert body["profile"]["name"] == "Ana Ruiz"
-    assert body["profile"]["user_id"] == body["id"]
+    assert set(body) == {"id", "role"}
+    assert "email" not in body
+    assert "profile" not in body
+    assert len(profiles_table) == 1
+    assert profiles_table.all()[0]["name"] == "Ana Ruiz"
 
 
 @pytest.mark.parametrize(
@@ -80,8 +82,10 @@ def test_login_returns_bearer_token(client):
 
     assert response.status_code == 200, response.text
     body = response.json()
+    assert set(body) == {"access_token", "token_type"}
     assert body["token_type"] == "bearer"
     assert body["access_token"]
+    assert "email" not in body and "password" not in body and "hashed_password" not in body
 
 
 def test_login_rejects_wrong_password_with_401(client):

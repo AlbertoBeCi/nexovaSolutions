@@ -41,6 +41,17 @@ class AssetResponse(AssetSummary):
     current_stock: int
 
 
+class AssetListItem(StrictSchema):
+    """List projection kept separate from the single asset detail schema."""
+
+    id: int
+    name: str
+    sku: str
+    category: Category
+    office: Office
+    current_stock: int
+
+
 class AssetEntryCreate(StrictSchema):
     asset_id: int = Field(gt=0)
     quantity: int = Field(gt=0)
@@ -62,7 +73,6 @@ class AssetEntryResponse(StrictSchema):
     supplier: str
     office: Office
     created_at: datetime
-    user_uuid: str
 
 
 class AssetExitCreate(StrictSchema):
@@ -90,18 +100,15 @@ class AssetExitResponse(StrictSchema):
     assigned_to: str | None
     office: Office
     created_at: datetime
-    user_uuid: str
 
 
 class OrderListItem(StrictSchema):
     id: int
     order_type: Literal["inbound", "outbound"]
-    asset_id: int
     asset: AssetSummary
     quantity: int
     office: Office
     created_at: datetime
-    user_uuid: str
     creator_name: str | None = None
     supplier: str | None = None
     exit_type: ExitType | None = None

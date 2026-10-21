@@ -13,9 +13,7 @@ import type { LoginCredentials, RegisterInput, User, UserProfile, UserRole } fro
 // ─── DTOs de la API (snake_case, ver services/api/models.py) ──────────
 
 interface ProfileDto {
-  id: number;
-  user_id: number;
-  name: string;
+  id: number;  name: string;
   phone: string | null;
   address: string | null;
 }
@@ -39,7 +37,7 @@ interface MessageDto {
 }
 
 function toProfile(dto: ProfileDto): UserProfile {
-  return { id: dto.id, userId: dto.user_id, name: dto.name, phone: dto.phone, address: dto.address };
+  return { id: dto.id, name: dto.name, phone: dto.phone, address: dto.address };
 }
 
 function toUser(dto: UserDto): User {
