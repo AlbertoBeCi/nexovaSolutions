@@ -123,6 +123,9 @@ def test_reset_password_full_flow_changes_password(client, caplog):
     )
 
     assert response.status_code == 200, response.text
+    assert set(response.json()) == {"detail"}
+    assert CREDENTIALS["email"] not in response.text
+    assert "password" not in response.text and "hashed_password" not in response.text
     assert client.post(
         "/auth/login", data={"username": CREDENTIALS["email"], "password": CREDENTIALS["password"]}
     ).status_code == 401
@@ -163,7 +166,7 @@ def test_reset_password_rejects_access_token_as_reset_token(client):
     )
 
     assert response.status_code == 400
-    assert user["email"] == CREDENTIALS["email"]  # sanity: no se toco nada
+    assert set(user) == {"id", "role"}  # el registro no devuelve datos personales
 
 
 def test_reset_password_rejects_same_password(client, caplog):

@@ -63,6 +63,7 @@ async def analyze_incidents(
 
 @router.get(
     "/results/export",
+    response_model=None,
     summary="Descarga el ultimo analisis como CSV",
     description=(
         "Requiere login. Devuelve, como archivo CSV descargable (una fila por metrica), el "

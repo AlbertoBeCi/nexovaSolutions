@@ -19,6 +19,7 @@ from models import (
     ErrorResponse,
     ProviderCategory,
     ProviderCreate,
+    ProviderListItem,
     ProviderResponse,
     UpdateRateRequest,
     UpdateStatusRequest,
@@ -37,6 +38,14 @@ NOT_FOUND_RESPONSE = {
 
 def _to_response(doc: Document) -> ProviderResponse:
     return ProviderResponse(id=doc.doc_id, **doc)
+
+
+def _to_list_item(doc: Document) -> ProviderListItem:
+    fields = (
+        "name", "country", "categories", "monthly_rate", "currency", "status",
+        "contract_renewal_date", "updated_at",
+    )
+    return ProviderListItem(id=doc.doc_id, **{field: doc[field] for field in fields})
 
 
 def _get_or_404(table: Table, supplier_id: int) -> Document:
@@ -74,7 +83,7 @@ def create_supplier(provider: ProviderCreate, table: SuppliersTable) -> Provider
 
 @router.get(
     "",
-    response_model=List[ProviderResponse],
+    response_model=List[ProviderListItem],
     summary="Lista proveedores",
     description="Sin parametros devuelve todos; country y category se pueden combinar.",
 )
@@ -86,7 +95,7 @@ def list_suppliers(
     category: Annotated[
         Optional[ProviderCategory], Query(description="Filtra por categoria de servicio")
     ] = None,
-) -> List[ProviderResponse]:
+) -> List[ProviderListItem]:
     conditions = []
     if country is not None:
         conditions.append(where("country") == country)
@@ -95,7 +104,7 @@ def list_suppliers(
 
     with db_lock:
         docs = table.search(reduce(and_, conditions)) if conditions else table.all()
-    return [_to_response(doc) for doc in sorted(docs, key=lambda doc: doc.doc_id)]
+    return [_to_list_item(doc) for doc in sorted(docs, key=lambda doc: doc.doc_id)]
 
 
 @router.get(
@@ -139,6 +148,7 @@ def update_supplier_status(
 
 @router.delete(
     "/{supplier_id}",
+    response_model=None,
     status_code=204,
     response_class=Response,
     summary="Elimina un proveedor",

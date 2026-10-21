@@ -25,7 +25,12 @@ def get_my_profile(current_user: CurrentUser, profiles: ProfilesTable) -> Profil
     doc = profiles.get(where("user_id") == current_user.id)
     if doc is None:
         raise HTTPException(status_code=404, detail=NOT_FOUND_MESSAGE)
-    return ProfileResponse(id=doc.doc_id, **doc)
+    return ProfileResponse(
+        id=doc.doc_id,
+        name=doc["name"],
+        phone=doc.get("phone"),
+        address=doc.get("address"),
+    )
 
 
 @router.put(
@@ -45,4 +50,10 @@ def update_my_profile(
         else:
             doc_id = existing.doc_id
             profiles.update(record, doc_ids=[doc_id])
-        return ProfileResponse(id=doc_id, **profiles.get(doc_id=doc_id))
+        doc = profiles.get(doc_id=doc_id)
+        return ProfileResponse(
+            id=doc_id,
+            name=doc["name"],
+            phone=doc.get("phone"),
+            address=doc.get("address"),
+        )

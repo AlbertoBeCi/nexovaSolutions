@@ -34,6 +34,8 @@ def test_put_creates_profile_if_missing(client, auth_headers):
 
     assert response.status_code == 200, response.text
     body = response.json()
+    assert set(body) == {"id", "name", "phone", "address"}
+    assert "user_id" not in body
     assert body["name"] == "Ana Ruiz"
     assert body["phone"] == "+34600000000"
 

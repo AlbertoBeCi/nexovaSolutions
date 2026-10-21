@@ -22,6 +22,12 @@ const DTO = {
   updated_at: "2026-01-01T00:00:00Z",
 };
 
+const LIST_DTO: Omit<typeof DTO, "contact_email" | "notes"> = {
+  id: DTO.id, name: DTO.name, country: DTO.country, categories: DTO.categories,
+  monthly_rate: DTO.monthly_rate, currency: DTO.currency, status: DTO.status,
+  contract_renewal_date: DTO.contract_renewal_date, updated_at: DTO.updated_at,
+};
+
 const NEW_SUPPLIER: NewSupplier = {
   name: "Stripe",
   country: "USA",
@@ -38,7 +44,7 @@ beforeEach(() => window.localStorage.clear());
 
 describe("mapeo DTO -> modelo de la UI", () => {
   it("convierte snake_case a camelCase en el listado", async () => {
-    mockFetch(jsonResponse(200, [DTO]));
+    mockFetch(jsonResponse(200, [LIST_DTO]));
 
     const [supplier] = await listSuppliers({ country: null, category: null });
 
@@ -51,8 +57,8 @@ describe("mapeo DTO -> modelo de la UI", () => {
       currency: "EUR",
       status: "active",
       contractRenewalDate: "2027-03-01",
-      contactEmail: "a@b.com",
-      notes: "n",
+      contactEmail: null,
+      notes: null,
       updatedAt: "2026-01-01T00:00:00Z",
     });
   });
@@ -64,7 +70,7 @@ describe("mapeo DTO -> modelo de la UI", () => {
   });
 
   it("conserva los campos opcionales nulos", async () => {
-    mockFetch(jsonResponse(200, [{ ...DTO, contract_renewal_date: null, contact_email: null, notes: null }]));
+    mockFetch(jsonResponse(200, [{ ...LIST_DTO, contract_renewal_date: null }]));
 
     const [supplier] = await listSuppliers({ country: null, category: null });
 

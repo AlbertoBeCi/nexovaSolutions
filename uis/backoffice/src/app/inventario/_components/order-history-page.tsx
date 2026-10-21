@@ -137,10 +137,7 @@ function OrderHistoryView() {
                     {order.creatorName ? (
                       <span className="text-zinc-700 dark:text-zinc-300">{order.creatorName}</span>
                     ) : (
-                      <details>
-                        <summary className="cursor-pointer text-zinc-600 underline dark:text-zinc-400">Usuario no disponible</summary>
-                        <span className="break-all text-xs text-zinc-500">{order.userUuid}</span>
-                      </details>
+                      <span className="text-zinc-600 dark:text-zinc-400">Usuario no disponible</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">

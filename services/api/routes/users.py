@@ -15,7 +15,14 @@ from tinydb import where
 from tinydb.table import Document, Table
 
 from database import utc_now_iso
-from models import ProfileResponse, UserCreate, UserResponse, UserUpdate
+from models import (
+    ProfileResponse,
+    UserCreate,
+    UserListItem,
+    UserRegistrationResponse,
+    UserResponse,
+    UserUpdate,
+)
 from security import (
     CurrentUser,
     ensure_self_or_admin,
@@ -33,7 +40,14 @@ NOT_FOUND_MESSAGE = "Usuario no encontrado."
 def build_user_response(user_doc: Document, profiles_table: Table) -> UserResponse:
     profile_doc = profiles_table.get(where("user_id") == user_doc.doc_id)
     profile = (
-        ProfileResponse(id=profile_doc.doc_id, **profile_doc) if profile_doc is not None else None
+        ProfileResponse(
+            id=profile_doc.doc_id,
+            name=profile_doc["name"],
+            phone=profile_doc.get("phone"),
+            address=profile_doc.get("address"),
+        )
+        if profile_doc is not None
+        else None
     )
     return UserResponse(id=user_doc.doc_id, profile=profile, **user_doc)
 
@@ -47,7 +61,7 @@ def _get_user_or_404(table: Table, user_id: int) -> Document:
 
 @router.post(
     "",
-    response_model=UserResponse,
+    response_model=UserRegistrationResponse,
     status_code=201,
     summary="Registra un usuario",
     description=(
@@ -57,7 +71,7 @@ def _get_user_or_404(table: Table, user_id: int) -> Document:
 )
 def create_user(
     payload: UserCreate, users: UsersTable, profiles: ProfilesTable
-) -> UserResponse:
+) -> UserRegistrationResponse:
     with users_db_lock:
         if get_user_by_email(users, payload.email) is not None:
             raise HTTPException(status_code=409, detail="Ya existe un usuario con ese email.")
@@ -75,18 +89,25 @@ def create_user(
         if payload.profile is not None:
             profiles.insert({"user_id": user_id, **payload.profile.model_dump(mode="json")})
 
-        return build_user_response(users.get(doc_id=user_id), profiles)
+        # Public registration confirms creation without reflecting the email
+        # or the submitted profile back to an unauthenticated caller.
+        return UserRegistrationResponse(id=user_id, role="user")
 
 
 @router.get(
     "",
-    response_model=List[UserResponse],
+    response_model=List[UserListItem],
     summary="Lista usuarios",
     dependencies=[Depends(get_current_admin)],
 )
-def list_users(users: UsersTable, profiles: ProfilesTable) -> List[UserResponse]:
+def list_users(users: UsersTable) -> List[UserListItem]:
     return [
-        build_user_response(doc, profiles)
+        UserListItem(
+            id=doc.doc_id,
+            email=doc["email"],
+            is_active=doc["is_active"],
+            role=doc["role"],
+        )
         for doc in sorted(users.all(), key=lambda doc: doc.doc_id)
     ]
 
@@ -142,6 +163,7 @@ def update_user(
 
 @router.delete(
     "/{user_id}",
+    response_model=None,
     status_code=204,
     response_class=Response,
     summary="Elimina un usuario (y su perfil)",

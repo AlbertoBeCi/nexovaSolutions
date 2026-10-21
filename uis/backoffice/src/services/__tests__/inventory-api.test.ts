@@ -44,18 +44,16 @@ describe("inventory queries", () => {
     mockFetch(jsonResponse(200, [{
       id: 3,
       order_type: "inbound",
-      asset_id: 7,
       asset: { id: 7, name: "Portátil", sku: "NXV-IT-007", category: "hardware", office: "Valencia" },
       quantity: 2,
       office: "Valencia",
       created_at: "2026-10-16T10:00:00+00:00",
-      user_uuid: "user-uuid",
       creator_name: "Ana García",
       supplier: "Distribuidor",
     }]));
 
     await expect(getInventoryOrders()).resolves.toMatchObject([
-      { id: 3, orderType: "inbound", asset: { name: "Portátil" }, creatorName: "Ana García", userUuid: "user-uuid", supplier: "Distribuidor" },
+      { id: 3, orderType: "inbound", asset: { name: "Portátil" }, creatorName: "Ana García", supplier: "Distribuidor" },
     ]);
   });
 });
@@ -64,7 +62,7 @@ describe("inventory order writes", () => {
   it("sends the confirmed inbound request fields", async () => {
     const fetchMock = mockFetch(jsonResponse(201, {
       id: 2, asset_id: 7, quantity: 5, supplier: "Distribuidor", office: "Valencia",
-      created_at: "2026-10-16T10:00:00+00:00", user_uuid: "uuid",
+      created_at: "2026-10-16T10:00:00+00:00",
     }));
 
     await createInboundOrder({ assetId: 7, quantity: 5, supplier: "Distribuidor", office: "Valencia" });

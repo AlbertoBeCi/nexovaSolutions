@@ -2,34 +2,22 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — Auditoría de rendimiento de ambos frontends
+## Ahora — auditoría de serialización de services/api
 
-Rama: `feature/auditoria-de-rendimiento`. Auditoría completada el 19/10/2026 y
-publicada el 20/10/2026 con autorización explícita. El usuario pide PR hacia `main`
-incluyendo el `README.es.md` guardado en el stash de contenedorización.
+Rama: `feature/serialization-audit`. Informe en `docs/serialization-audit.md`.
+Se inventariaron 26 endpoints: estado original 17 ✅ / 9 ⚠️ / 0 ❌; final
+26 ✅ / 0 ⚠️ / 0 ❌. Registro público ya no refleja email/perfil; usuarios y
+proveedores tienen proyecciones de lista propias; perfil no expone user_id;
+órdenes omiten UUID interno y FK redundante.
 
-- Se integra `origin/main` preservando inventario, Docker, errores traducidos y
-  suites existentes. Jest usa una configuración única para las pruebas de main
-  y las ocho de auditoría; las lecturas precargadas conservan `safeFetch`.
-- README español recuperado del stash sin borrarlo. Las métricas del 19/10 son
-  evidencia histórica del build auditado, no mediciones nuevas tras esta integración.
-- Integración validada: 148 pruebas Jest en 11 suites, lint/build en ambas apps
-  y skill de textos correctos. El total incluye las 140 de main y las ocho nuevas.
-
-- Línea base y final: producción, tres perfiles limpios por URL, Lighthouse 13.5.0,
-  Chrome 155. Portada y talento, pipeline y ficha del mismo candidato.
-- Performance: 98/98/97/89 → 98/98/99/98. Prácticas públicas 96 → 100;
-  accesibilidad del pipeline 94 → 100. Medianas LCP finales bajo 2,5 s.
-- Cambios dirigidos: etiquetas/contraste, fuentes no utilizadas, SVG ligeros y
-  precargas de los GET de la ficha. Se mantienen arquitectura y flujo cliente.
-- `SiteNavigation` y `CandidateSelect` extraídos e integrados; 8 pruebas Jest,
-  lint/build, revisión de textos y regresión con escrituras simuladas correctos.
-- CSS inline probado y retirado por no mejorar. No atribuir las diferencias con
-  las capturas originales 73/72 al código: tenían avisos de extensiones/IndexedDB.
-- Entrega en `AUDIT.md`, `REPORT.md`, `audit/SOLUCIONES.md`, `audit/before/isolated/`,
-  `audit/runs/`, `audit/after/` y `audit/checks/`. Scripts reproducibles en `scripts/`.
-- No hay datos de campo CrUX/RUM; INP local no representa p75. La red externa
-  requiere seguimiento.
+- API: 395 passed, 1 skipped con Python del venv. El skip es concurrencia
+  PostgreSQL aislada. POST /users, GET /suppliers y POST /suppliers se
+  verificaron con TestClient. La línea base previa no arrancó por descarga
+  bloqueada de setuptools desde PyPI.
+- Backoffice: 148 Jest, lint y build en verde. Application: 143 Jest, lint y
+  build en verde tras sincronizar dependencias locales con npm ci. La suite fijó
+  que el listado de proveedores omite email de contacto y notas.
+- Skill revision-textos-ui: PASS. Sin push ni PR.
 
 ## Anterior — entorno local con Docker Compose
 

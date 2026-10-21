@@ -2,6 +2,8 @@
 
 ## Funciona
 
+- **Auditoría de serialización de la API** (`docs/serialization-audit.md`): 26 endpoints revisados; estado final 26 correctos. Application verificada con Jest 143/143, lint y build; dependencias locales sincronizadas con `npm ci`. La prueba de listado confirma que la proyección ligera no incluye email de contacto ni notas.
+
 - **Auditoría de frontends (19/10/2026)** — producción antes/después en cuatro
   rutas: Performance final 98/98/99/98; mejora de prácticas públicas y accesibilidad
   del pipeline. Dos componentes reutilizables integrados, ocho pruebas Jest y

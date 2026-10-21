@@ -163,9 +163,10 @@ def test_inbound_records_authenticated_user_and_increases_stock(client, users_ta
         },
     )
     assert response.status_code == 201, response.text
-    user_uuid = response.json()["user_uuid"]
+    user_uuid = users_table.get(doc_id=1)["uuid"]
     assert str(UUID(user_uuid)) == user_uuid
-    assert users_table.get(doc_id=1)["uuid"] == user_uuid
+    assert "user_uuid" not in response.json()
+    assert set(response.json()) == {"id", "asset_id", "quantity", "supplier", "office", "created_at"}
     assert client.get(f"/inventory/products/{asset['id']}").json()["current_stock"] == 10
 
 
@@ -187,7 +188,9 @@ def test_order_history_includes_creator_profile_name(client, profiles_table):
 
     assert history.status_code == 200
     assert history.json()[0]["creator_name"] == "Ana García"
-    assert history.json()[0]["user_uuid"] == created.json()["user_uuid"]
+    assert "user_uuid" not in history.json()[0]
+    assert "asset_id" not in history.json()[0]
+    assert history.json()[0]["asset"]["id"] == asset["id"]
 
 
 def test_order_history_uses_creator_email_when_profile_is_missing(client):
@@ -225,7 +228,7 @@ def test_order_history_returns_null_creator_name_when_creator_uuid_is_unavailabl
     history = client.get("/inventory/orders")
 
     assert history.json()[0]["creator_name"] is None
-    assert history.json()[0]["user_uuid"] == created.json()["user_uuid"]
+    assert "user_uuid" not in history.json()[0]
 
 
 def test_orders_reject_missing_assets(client):

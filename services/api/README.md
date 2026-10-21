@@ -214,14 +214,16 @@ row per metric). Requires login (`Authorization: Bearer <token>`).
 ## Endpoints — users / auth / profiles
 
 Models in `models.py`: `UserCreate` (registration payload — `extra="forbid"`,
-no `role`/`id`/`hashed_password`/`created_at`/`is_active`) and `UserResponse`
-(never includes the password or its hash; embeds `profile` when one exists).
+no `role`/`id`/`hashed_password`/`created_at`/`is_active`), `UserRegistrationResponse`
+(only `id` and `role` for the unauthenticated registration confirmation),
+`UserListItem` (admin list projection), and `UserResponse` (detail/current user;
+never includes the password/hash and embeds a `profile` without its internal `user_id`).
 `ProfileCreate`/`ProfileUpdate`/`ProfileResponse` follow the same pattern for
 `/profiles/me`.
 
 | Method and path | Protection | Response |
 | --- | --- | --- |
-| `POST /users` | Public | `201` with the new user (+ `profile` if sent). `409` on a duplicate email, `422` on an invalid payload. |
+| `POST /users` | Public | `201` with the safe confirmation `{id, role}` only. The email and profile are never reflected in this unauthenticated response. `409` on a duplicate email, `422` on an invalid payload. |
 | `GET /users` | Admin | `200` with every user. `403` for a non-admin. |
 | `GET /users/{id}` | Self or admin | `200` with the user. `403` for another user, `404` if missing. |
 | `PUT /users/{id}` | Self or admin | Body `{"email"?, "role"?}`. `200` with the updated user. `403` if a non-admin sends `role` or targets another user. `409` on a duplicate email. |
@@ -236,8 +238,9 @@ no `role`/`id`/`hashed_password`/`created_at`/`is_active`) and `UserResponse`
 
 ## Endpoints — suppliers
 
-Models in `models.py`: `ProviderCreate` (input) and `ProviderResponse`
-(output = `ProviderCreate` + `id` + `updated_at`). `id` is TinyDB's `doc_id`, and
+Models in `models.py`: `ProviderCreate` (input), `ProviderResponse` (detail
+output), and `ProviderListItem` (lightweight list output without contact email
+or internal notes). `id` is TinyDB's `doc_id`, and
 `updated_at` (UTC) is set by the system on creation and on every change. Request
 bodies forbid unknown fields (`extra="forbid"`), so a client sending `id` or
 `updated_at` gets a `422` (`extra_forbidden`) instead of having it silently ignored.

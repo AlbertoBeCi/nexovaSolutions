@@ -18,7 +18,7 @@ const USER_DTO = {
   is_active: true,
   role: "user",
   created_at: "2026-01-01T00:00:00Z",
-  profile: { id: 5, user_id: 1, name: "Ana", phone: null, address: "Calle 1" },
+  profile: { id: 5, name: "Ana", phone: null, address: "Calle 1" },
 };
 
 beforeEach(() => window.localStorage.clear());
@@ -162,7 +162,7 @@ describe("sesión y perfil", () => {
       isActive: true,
       role: "user",
       createdAt: "2026-01-01T00:00:00Z",
-      profile: { id: 5, userId: 1, name: "Ana", phone: null, address: "Calle 1" },
+      profile: { id: 5, name: "Ana", phone: null, address: "Calle 1" },
     });
   });
 
@@ -191,14 +191,14 @@ describe("sesión y perfil", () => {
     setToken("tok");
     mockFetch(jsonResponse(200, USER_DTO.profile));
 
-    expect(await getMyProfile()).toEqual({ id: 5, userId: 1, name: "Ana", phone: null, address: "Calle 1" });
+    expect(await getMyProfile()).toEqual({ id: 5, name: "Ana", phone: null, address: "Calle 1" });
   });
 
   it("updateMyProfile devuelve el perfil mapeado", async () => {
     setToken("tok");
     mockFetch(jsonResponse(200, USER_DTO.profile));
 
-    expect((await updateMyProfile({ name: "Ana", phone: null, address: "Calle 1" })).userId).toBe(1);
+    expect((await updateMyProfile({ name: "Ana", phone: null, address: "Calle 1" }))).toMatchObject({ id: 5 });
   });
 
   it("updateMyProfile: nombre vacío -> mensaje en español", async () => {

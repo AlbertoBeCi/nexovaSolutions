@@ -129,6 +129,8 @@ def test_list_without_filters_returns_all(client):
 
     assert response.status_code == 200
     assert [s["name"] for s in response.json()] == ["Factorial", "Stripe"]
+    assert all(set(item) == {"id", "name", "country", "categories", "monthly_rate", "currency", "status", "contract_renewal_date", "updated_at"} for item in response.json())
+    assert all("notes" not in item and "contact_email" not in item for item in response.json())
 
 
 def test_list_filters_by_country_category_and_both(client):

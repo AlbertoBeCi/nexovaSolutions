@@ -52,7 +52,6 @@ export interface InventoryOrder {
   quantity: number;
   office: InventoryOffice;
   createdAt: string;
-  userUuid: string;
   creatorName: string | null;
   supplier: string | null;
   exitType: InventoryExitType | null;

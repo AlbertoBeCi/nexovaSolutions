@@ -14,7 +14,6 @@ import type { LoginCredentials, RegisterInput, User, UserProfile, UserRole } fro
 
 interface ProfileDto {
   id: number;
-  user_id: number;
   name: string;
   phone: string | null;
   address: string | null;
@@ -35,7 +34,7 @@ interface TokenDto {
 }
 
 function toProfile(dto: ProfileDto): UserProfile {
-  return { id: dto.id, userId: dto.user_id, name: dto.name, phone: dto.phone, address: dto.address };
+  return { id: dto.id, name: dto.name, phone: dto.phone, address: dto.address };
 }
 
 function toUser(dto: UserDto): User {

@@ -102,12 +102,37 @@ class ProviderCreate(BaseModel):
     }
 
 
-class ProviderResponse(ProviderCreate):
+class ProviderResponse(BaseModel):
+    """Detalle/salida de proveedor; campos declarados aparte de la entrada."""
+
+    name: str
+    country: Literal["Spain", "USA"]
+    categories: List[ProviderCategory]
+    monthly_rate: float
+    currency: Literal["EUR", "USD"]
+    status: StatusEnum
+    contract_renewal_date: Optional[date] = None
+    contact_email: Optional[EmailStr] = None
+    notes: Optional[str] = None
     id: int = Field(..., description="ID unico asignado por TinyDB")
     updated_at: datetime = Field(
         ...,
         description="Timestamp UTC de la ultima modificacion (alta, tarifa o estado)",
     )
+
+
+class ProviderListItem(BaseModel):
+    """Proyección de listado: omite email de contacto y notas internas."""
+
+    id: int
+    name: str
+    country: Literal["Spain", "USA"]
+    categories: List[ProviderCategory]
+    monthly_rate: float
+    currency: Literal["EUR", "USD"]
+    status: StatusEnum
+    contract_renewal_date: Optional[date] = None
+    updated_at: datetime
 
 
 class UpdateRateRequest(BaseModel):
@@ -257,9 +282,13 @@ class ProfileUpdate(ProfileCreate):
     """Payload de PUT /profiles/me. Mismo shape que ProfileCreate (upsert)."""
 
 
-class ProfileResponse(ProfileCreate):
+class ProfileResponse(BaseModel):
+    """Proyección pública; no expone user_id, que es una FK interna."""
+
     id: int = Field(..., description="ID unico asignado por TinyDB")
-    user_id: int = Field(..., description="ID del User propietario del perfil")
+    name: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
 
 
 class UserCreate(BaseModel):
@@ -314,6 +343,22 @@ class UserResponse(BaseModel):
     profile: Optional[ProfileResponse] = Field(
         default=None, description="Perfil vinculado, si existe"
     )
+
+
+class UserRegistrationResponse(BaseModel):
+    """Confirmación de registro público sin email ni datos de perfil."""
+
+    id: int
+    role: RoleEnum
+
+
+class UserListItem(BaseModel):
+    """Proyección ligera para administración autenticada."""
+
+    id: int
+    email: EmailStr
+    is_active: bool
+    role: RoleEnum
 
 
 class Token(BaseModel):
