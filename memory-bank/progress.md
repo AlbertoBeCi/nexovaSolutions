@@ -27,7 +27,7 @@
   Supabase PostgreSQL para activos y órdenes, con TinyDB/JWT existente para
   autenticación y UUID estable por usuario. Seis endpoints `/inventory`, stock
   derivado de entradas menos salidas, checks/FK, transacciones y bloqueo para
-  salidas, agregaciones sin N+1, seed idempotente y guía `aprendiendoORM.md`.
+  salidas, agregaciones sin N+1, seed idempotente y guía `APRENDIENDO/aprendiendoORM.md`.
   Supabase de producción cargado por petición expresa con los 6 activos, 4
   entradas y 3 salidas definidos en el plan; verificación de esquema y stock
   completada. GET de productos, detalle, órdenes y filtros por oficina verificados
