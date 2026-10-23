@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 from tinydb import where
 
 from models import ProfileResponse, ProfileUpdate
+from response_cache import response_cache
 from security import CurrentUser
 from users_db import ProfilesTable, users_db_lock
 
@@ -51,9 +52,11 @@ def update_my_profile(
             doc_id = existing.doc_id
             profiles.update(record, doc_ids=[doc_id])
         doc = profiles.get(doc_id=doc_id)
-        return ProfileResponse(
+        updated_profile = ProfileResponse(
             id=doc_id,
             name=doc["name"],
             phone=doc.get("phone"),
             address=doc.get("address"),
         )
+    response_cache.invalidate("inventory_orders")
+    return updated_profile

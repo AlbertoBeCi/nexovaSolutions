@@ -118,9 +118,24 @@ Swagger: `POST /auth/login`, copy `access_token`, click "Authorize" and enter
 | `RESEND_API_KEY` | none (falls back to console logging) | API key for [Resend](https://resend.com). Enables real email delivery for `forgot-password`. |
 | `RESEND_FROM_EMAIL` | `Nexova <onboarding@resend.dev>` | Sender address. Needs a verified domain in Resend to deliver to arbitrary recipients. |
 | `FRONTEND_URL` | `http://localhost:3001` | Base URL used to build the `/reset-password?token=...` link in the email (and in the console fallback). |
+| `API_REQUEST_TIMING_ENABLED` | `true` | Logs method, path, status and duration in milliseconds. Set `false` to disable. |
 
 Copy `.env.example` to `.env` (git-ignored, see `services/api/.gitignore`) and
 fill in real values for development.
+
+## Response caching and request timing
+
+`GET /inventory/products` uses a 10-second TTL and `GET /inventory/orders` a
+30-second TTL. The bounded in-memory cache is keyed by office filter and
+invalidated after successful product, movement, user or profile writes. Login
+and route authorization still run on every request. Each worker has its own
+cache; in a multi-worker deployment, another worker's writes can remain stale
+until that entry's TTL expires.
+
+The request-timing middleware logs only method, path, status and elapsed time;
+it omits query strings and bodies. Reproduce the isolated inventory benchmark
+from this directory with `uv run python benchmark_response_cache.py`. It seeds
+an in-memory SQLite database and never reads `SUPABASE_DATABASE_URL`.
 
 Inventory-specific environment variables are SUPABASE_DATABASE_URL
 (PostgreSQL URL, optional for starting the rest of the API),
@@ -319,6 +334,8 @@ services/api/
 ├── store.py                # in-memory store for the last analysis
 ├── seed.py                 # idempotent supplier loader
 ├── seed_users.py              # idempotent admin bootstrap
+├── response_cache.py       # bounded process-local TTL cache
+├── benchmark_response_cache.py # isolated in-memory SQLite benchmark
 ├── fixtures/suppliers.json # seeder input data
 ├── tests/
 │   ├── conftest.py            # shared user/token fixtures, rate-limit reset
@@ -327,7 +344,10 @@ services/api/
 │   ├── test_users.py
 │   ├── test_profiles.py
 │   ├── test_protected_routes.py
-│   └── test_password_reset.py
+│   ├── test_password_reset.py
+│   ├── test_inventory.py
+│   ├── test_response_cache.py
+│   └── test_request_timing.py
 └── data/                   # local TinyDB (git-ignored)
 ```
 

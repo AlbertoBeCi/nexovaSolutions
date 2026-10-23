@@ -49,6 +49,7 @@ py-modules = [
     "users_db",
     "seed_users",
     "rate_limit",
+    "response_cache",
     "mailer",
     "inventory_models",
     "inventory_schemas",

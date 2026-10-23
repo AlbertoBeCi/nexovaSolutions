@@ -24,6 +24,7 @@ from inventory_schemas import (
     OrderListItem,
 )
 from models import UserInDB
+from response_cache import response_cache
 from security import get_current_user
 from users_db import ProfilesTable, UsersTable, users_db_lock
 
@@ -152,10 +153,16 @@ def list_products(
     session: InventorySession,
     office: Annotated[Office | None, Query()] = None,
 ) -> list[AssetListItem]:
-    return [
-        AssetListItem(**_asset_response(asset, stock).model_dump())
-        for asset, stock in _list_assets_with_stock(session, office)
-    ]
+    cache_key = f"inventory:products:office={office or '*'}"
+    return response_cache.get_or_create(
+        cache_key,
+        tag="inventory_products",
+        ttl_seconds=10,
+        loader=lambda: [
+            AssetListItem(**_asset_response(asset, stock).model_dump())
+            for asset, stock in _list_assets_with_stock(session, office)
+        ],
+    )
 
 
 @router.post("/products", response_model=AssetResponse, status_code=201)
@@ -173,6 +180,7 @@ def create_product(
     except IntegrityError:
         session.rollback()
         raise HTTPException(status_code=409, detail="Ya existe un activo con este SKU.")
+    response_cache.invalidate("inventory_products")
     return _asset_response(asset, 0)
 
 
@@ -208,6 +216,8 @@ def create_inbound_order(
         session.add(entry)
         session.flush()
     session.refresh(entry)
+    response_cache.invalidate("inventory_products")
+    response_cache.invalidate("inventory_orders")
     return _entry_response(entry)
 
 
@@ -243,6 +253,8 @@ def create_outbound_order(
         session.add(exit_order)
         session.flush()
     session.refresh(exit_order)
+    response_cache.invalidate("inventory_products")
+    response_cache.invalidate("inventory_orders")
     return _exit_response(exit_order)
 
 
@@ -256,39 +268,49 @@ def list_orders(
     profiles: ProfilesTable,
     office: Annotated[Office | None, Query()] = None,
 ) -> list[OrderListItem]:
-    creator_names = _creator_names(users, profiles)
-    inbound_query = select(AssetEntry, Asset).join(Asset, Asset.id == AssetEntry.asset_id)
-    outbound_query = select(AssetExit, Asset).join(Asset, Asset.id == AssetExit.asset_id)
-    if office is not None:
-        inbound_query = inbound_query.where(AssetEntry.office == office)
-        outbound_query = outbound_query.where(AssetExit.office == office)
+    cache_key = f"inventory:orders:office={office or '*'}"
 
-    orders: list[OrderListItem] = []
-    for entry, asset in session.exec(inbound_query).all():
-        orders.append(
-            OrderListItem(
-                id=entry.id,
-                order_type="inbound",
-                asset=_asset_summary(asset),
-                quantity=entry.quantity,
-                office=entry.office,
-                created_at=entry.created_at,
-                creator_name=creator_names.get(entry.user_uuid),
-                supplier=entry.supplier,
+    def load_orders() -> list[OrderListItem]:
+        creator_names = _creator_names(users, profiles)
+        inbound_query = select(AssetEntry, Asset).join(Asset, Asset.id == AssetEntry.asset_id)
+        outbound_query = select(AssetExit, Asset).join(Asset, Asset.id == AssetExit.asset_id)
+        if office is not None:
+            inbound_query = inbound_query.where(AssetEntry.office == office)
+            outbound_query = outbound_query.where(AssetExit.office == office)
+
+        orders: list[OrderListItem] = []
+        for entry, asset in session.exec(inbound_query).all():
+            orders.append(
+                OrderListItem(
+                    id=entry.id,
+                    order_type="inbound",
+                    asset=_asset_summary(asset),
+                    quantity=entry.quantity,
+                    office=entry.office,
+                    created_at=entry.created_at,
+                    creator_name=creator_names.get(entry.user_uuid),
+                    supplier=entry.supplier,
+                )
             )
-        )
-    for exit_order, asset in session.exec(outbound_query).all():
-        orders.append(
-            OrderListItem(
-                id=exit_order.id,
-                order_type="outbound",
-                asset=_asset_summary(asset),
-                quantity=exit_order.quantity,
-                office=exit_order.office,
-                created_at=exit_order.created_at,
-                creator_name=creator_names.get(exit_order.user_uuid),
-                exit_type=exit_order.exit_type,
-                assigned_to=exit_order.assigned_to,
+        for exit_order, asset in session.exec(outbound_query).all():
+            orders.append(
+                OrderListItem(
+                    id=exit_order.id,
+                    order_type="outbound",
+                    asset=_asset_summary(asset),
+                    quantity=exit_order.quantity,
+                    office=exit_order.office,
+                    created_at=exit_order.created_at,
+                    creator_name=creator_names.get(exit_order.user_uuid),
+                    exit_type=exit_order.exit_type,
+                    assigned_to=exit_order.assigned_to,
+                )
             )
-        )
-    return sorted(orders, key=lambda order: order.created_at, reverse=True)
+        return sorted(orders, key=lambda order: order.created_at, reverse=True)
+
+    return response_cache.get_or_create(
+        cache_key,
+        tag="inventory_orders",
+        ttl_seconds=30,
+        loader=load_orders,
+    )
