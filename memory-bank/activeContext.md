@@ -2,22 +2,36 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — auditoría de serialización de services/api
+## Ahora — rendimiento y caché
+
+Rama: `feature/rendimiento-caching`. Informe: `CACHING_REPORT.md`.
+
+- Backoffice: `/incidencias` difiere el resumen hasta un análisis correcto;
+  `/candidates/[id]` difiere el panel y la petición de notas hasta abrirlo.
+  El historial de inventario memoiza un resumen agrupado por tipo y oficina.
+- API: caché TTL acotada para `GET /inventory/products` (10 s) y
+  `GET /inventory/orders` (30 s), con invalidación tras escrituras relacionadas.
+  Middleware opcional registra método, ruta, estado y duración sin query/body.
+- Mediciones: benchmark SQLite y comprobación adicional contra Supabase de
+  pruebas. La base estaba vacía; se usaron 200 activos, 1.000 entradas y 1.000
+  salidas en una transacción revertida. Se confirmó que no quedaron tablas.
+  Acierto: 0 consultas SQL. Middleware antes/después del seed: productos
+  45,58→49,10 ms fría y 1,50→2,33 ms con acierto; órdenes 86,59→137,45 ms
+  fría y 1,79→18,96 ms con acierto. Informe distingue estas mediciones HTTP de
+  las funciones directas y del benchmark SQLite.
+- Verificación: API 404 passed / 1 skipped con el Python del venv; backoffice
+  151 Jest, lint y build en verde. `uv` no pudo usar su caché global ni resolver
+  setuptools desde PyPI; se usó el entorno ya instalado. `revision-textos-ui`:
+  PASS. Sin commit ni push.
+
+## Anterior — auditoría de serialización de services/api
 
 Rama: `feature/serialization-audit`. Informe en `docs/serialization-audit.md`.
 Se inventariaron 26 endpoints: estado original 17 ✅ / 9 ⚠️ / 0 ❌; final
 26 ✅ / 0 ⚠️ / 0 ❌. Registro público ya no refleja email/perfil; usuarios y
 proveedores tienen proyecciones de lista propias; perfil no expone user_id;
-órdenes omiten UUID interno y FK redundante.
-
-- API: 395 passed, 1 skipped con Python del venv. El skip es concurrencia
-  PostgreSQL aislada. POST /users, GET /suppliers y POST /suppliers se
-  verificaron con TestClient. La línea base previa no arrancó por descarga
-  bloqueada de setuptools desde PyPI.
-- Backoffice: 148 Jest, lint y build en verde. Application: 143 Jest, lint y
-  build en verde tras sincronizar dependencias locales con npm ci. La suite fijó
-  que el listado de proveedores omite email de contacto y notas.
-- Skill revision-textos-ui: PASS. Sin push ni PR.
+órdenes omiten UUID interno y FK redundante. En esa sesión, API 395 passed / 1
+skipped y backoffice 148 Jest.
 
 ## Anterior — entorno local con Docker Compose
 

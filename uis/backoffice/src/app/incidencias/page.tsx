@@ -8,11 +8,18 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { RequireAuth } from "../_components/require-auth";
 import { analyzeIncidentsCsv, downloadIncidentsResultsCsv } from "../../services/incidents-api";
 import type { IncidentsAnalysisSummary } from "../../types/incidents";
-import { AnalysisSummaryView } from "./_components/analysis-summary";
 import { CsvUploader } from "./_components/csv-uploader";
+
+const AnalysisSummaryView = dynamic(
+  () => import("./_components/analysis-summary").then((module) => module.AnalysisSummaryView),
+  {
+    loading: () => <p role="status" aria-live="polite" className="text-sm text-zinc-500 dark:text-zinc-400">Preparando el resumen del análisis…</p>,
+  }
+);
 
 export default function IncidenciasPage() {
   return (
@@ -84,7 +91,7 @@ function IncidenciasView() {
 
       <CsvUploader onFileSelected={handleFileSelected} disabled={analyzing} />
 
-      {analyzing && <p className="text-sm text-zinc-500 dark:text-zinc-400">Analizando archivo...</p>}
+      {analyzing && <p role="status" aria-live="polite" className="text-sm text-zinc-500 dark:text-zinc-400">Analizando archivo...</p>}
 
       {errorMessage && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">

@@ -32,11 +32,15 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest` | 395 | ✅ 395 · ❌ 0 · ⏭ 1 | 86,4 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 405 | ✅ 404 · ❌ 0 · ⏭ 1 | 78,7 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
-| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 148 | ✅ 148 · ❌ 0 | 14,85 s | — |
-| 🏁 **Total documentado** | | **903** | ✅ **903** · ❌ **0** · ⏭ 1 | | |
+| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 151 | ✅ 151 · ❌ 0 | 3,72 s | — |
+| 🏁 **Total documentado** | | **915** | ✅ **915** · ❌ **0** · ⏭ 1 | | |
+
+\* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
+resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
+con `services/api/.venv/Scripts/python.exe -m pytest -p no:cacheprovider`.
 
 | ✅ Otras comprobaciones | 🟦 `uis/application` | 🟦 `uis/backoffice` |
 | --- | :---: | :---: |
@@ -127,7 +131,7 @@ exigidos. La IA ayudó a generar el boilerplate y a sugerir casos límite.
 Cada tabla indica **qué se comprueba**, **qué significa que pase** y **qué
 significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 
-### 🐍 `services/api` — 369 pruebas
+### 🐍 `services/api` — 404 pruebas aprobadas + 1 omitida condicionada
 
 | 📄 Archivo | 🔢 | 🧪 Qué comprueba | ✅ Si pasa | ❌ Si falla | 🚦 |
 | --- | ---: | --- | --- | --- | :---: |
@@ -143,6 +147,9 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 | ⏳ `test_rate_limit.py` | 4 | Límite de intentos. | Se frena la fuerza bruta. | Intentos ilimitados. | ✅ |
 | 🛡️ `test_protected_routes.py` | 3 | 401 sin sesión. | Las rutas protegidas exigen login. | Una ruta queda abierta. | ✅ |
 | 🙈 `test_error_handling.py` | 1 | Un 500 no expone detalles internos. | No se filtra información. | Un fallo mostraría datos internos. | ✅ |
+| 📦 `test_inventory.py` | 29 + 1 omitida | Caché de productos y órdenes, filtros, invalidación tras escrituras, autorización en aciertos y pruebas aisladas con SQLite. | Las lecturas repetidas se reutilizan y reflejan cambios confirmados; una sesión sigue siendo obligatoria. | Una variante colisiona, una escritura deja datos obsoletos o un acierto evita el login. | ✅ |
+| ⏱️ `test_request_timing.py` | 2 | Registra método, ruta, estado y duración sin query string; permite desactivarlo por entorno. | El log contiene tiempos sin valores de parámetros. | Faltan mediciones o se filtra la query. | ✅ |
+| 🧠 `test_response_cache.py` | 4 | TTL controlable, claves independientes, invalidación, barrera ante cargas obsoletas, copia de valores, errores y límite LRU. | La caché caduca, invalida y mantiene memoria acotada. | Se reutiliza un valor vencido o crece sin límite. | ✅ |
 
 ### 🐍 `services/incident-manager-api` — 217 pruebas
 
@@ -169,7 +176,7 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 | 🚨 `incidents-api.test.ts` | Mapeo, filtros, errores por tipo, transiciones con etiquetas en español y **nunca el texto del backend**. | Los errores usan textos propios de la UI. | Se filtraría texto crudo o un código como `in_progress`. | ✅ |
 | 🔀 `incident-types.test.ts` | Transiciones de la UI = las del backend; etiquetas en español; *type guards*. | UI y backend coinciden en el flujo de estados. | Se ofrecerían transiciones que el backend rechaza. | ✅ |
 
-### 🟦 `uis/backoffice` — 148 pruebas (Jest)
+### 🟦 `uis/backoffice` — 151 pruebas (Jest)
 
 | 📄 Archivo | 🧪 Qué comprueba | ✅ Si pasa | ❌ Si falla | 🚦 |
 | --- | --- | --- | --- | :---: |
@@ -182,6 +189,9 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 | 🧭 `src/lib/__tests__/auth-navigation.test.ts` y `src/app/inventario/_lib/__tests__/` | Retorno seguro tras login, redirecciones antiguas y aviso de stock. | Navegación interna y aviso conservados. | Retorno inseguro o aviso incorrecto. | ✅ |
 | 🏷️ `src/app/candidates/_components/candidate-select.test.tsx` | Cinco casos: nombre accesible, diccionarios, eventos controlados, atributos y guardado. | Selector reutilizable accesible en filtros, alta y ficha. | Se pierden etiquetas o comportamiento nativo. | ✅ |
 | ⏳ `src/services/api.test.tsx` | Tres casos: precarga y lectura comparten las URLs de candidato y notas. | Respuestas reutilizables sin alterar `safeFetch`. | Precarga y cliente solicitan recursos distintos. | ✅ |
+| 📦 `src/app/candidates/[id]/__tests__/page.test.tsx` | La ficha no consulta notas hasta abrir su panel diferido; comprueba carga de notas. | La consulta y la vista secundaria se activan bajo demanda. | Se descarga el panel o se consultan notas en la carga inicial. | ✅ |
+| 📊 `src/app/incidencias/__tests__/page.test.tsx` | El resumen aparece solo después de un análisis correcto y muestra el estado de análisis. | El módulo diferido conserva el flujo de CSV. | El resumen aparece antes de tener datos o no se carga. | ✅ |
+| 🧮 `src/app/inventario/_components/__tests__/order-history-summary.test.tsx` | Agregación por tipo/oficina, memoización para la misma referencia y actualización con movimientos nuevos. | El cálculo se reutiliza y responde a datos nuevos. | Se recalcula en cada render o queda obsoleto. | ✅ |
 
 ---
 

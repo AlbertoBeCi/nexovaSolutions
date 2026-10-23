@@ -2,6 +2,20 @@
 
 ## Funciona
 
+- **Rendimiento y caché (23/10/2026)** — en `feature/rendimiento-caching`:
+  backoffice difiere el resumen de incidencias hasta analizar CSV y el panel de
+  notas hasta abrirlo; `useMemo` evita repetir la agregación del historial cuando
+  conserva su array de órdenes. `services/api` cachea listados de inventario con
+  TTL de 10/30 s, invalidación tras escrituras y timing HTTP configurable.
+  Benchmark reproducible con SQLite en memoria y prueba adicional contra la
+  Supabase de pruebas. Como la base estaba vacía, se usaron 200 activos y 2.000
+  movimientos sintéticos dentro de una transacción revertida; se confirmó que
+  no quedaron tablas. Se midió también el middleware HTTP antes/después: latencia
+  fría de órdenes 86,59→137,45 ms y acierto 1,79→18,96 ms; productos
+  45,58→49,10 ms y 1,50→2,33 ms. Los aciertos hicieron cero consultas SQL.
+  API: 404 passed, 1 skip; backoffice: 151 Jest; lint/build en verde. Sin
+  commit/push. Informe: `CACHING_REPORT.md`.
+
 - **Auditoría de serialización de la API** (`docs/serialization-audit.md`): 26 endpoints revisados; estado final 26 correctos. Application verificada con Jest 143/143, lint y build; dependencias locales sincronizadas con `npm ci`. La prueba de listado confirma que la proyección ligera no incluye email de contacto ni notas.
 
 - **Auditoría de frontends (19/10/2026)** — producción antes/después en cuatro

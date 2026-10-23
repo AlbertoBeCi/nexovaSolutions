@@ -23,6 +23,7 @@ from models import (
     UserResponse,
     UserUpdate,
 )
+from response_cache import response_cache
 from security import (
     CurrentUser,
     ensure_self_or_admin,
@@ -91,7 +92,9 @@ def create_user(
 
         # Public registration confirms creation without reflecting the email
         # or the submitted profile back to an unauthenticated caller.
-        return UserRegistrationResponse(id=user_id, role="user")
+        registration = UserRegistrationResponse(id=user_id, role="user")
+    response_cache.invalidate("inventory_orders")
+    return registration
 
 
 @router.get(
@@ -158,7 +161,10 @@ def update_user(
         if fields:
             users.update(fields, doc_ids=[user_id])
 
-        return build_user_response(users.get(doc_id=user_id), profiles)
+        updated_user = build_user_response(users.get(doc_id=user_id), profiles)
+    if fields:
+        response_cache.invalidate("inventory_orders")
+    return updated_user
 
 
 @router.delete(
@@ -176,4 +182,5 @@ def delete_user(
         _get_user_or_404(users, user_id)
         users.remove(doc_ids=[user_id])
         profiles.remove(where("user_id") == user_id)
+    response_cache.invalidate("inventory_orders")
     return Response(status_code=204)

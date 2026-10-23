@@ -119,9 +119,25 @@ en "Authorize" e ingresa `Bearer <token>`.
 | `RESEND_API_KEY` | ninguno (cae a loguear por consola) | API key de [Resend](https://resend.com). Habilita el envio real del email de `forgot-password`. |
 | `RESEND_FROM_EMAIL` | `Nexova <onboarding@resend.dev>` | Remitente. Necesita un dominio verificado en Resend para entregar a cualquier destinatario. |
 | `FRONTEND_URL` | `http://localhost:3001` | Base para construir el link `/reset-password?token=...` del email (y del fallback de consola). |
+| `API_REQUEST_TIMING_ENABLED` | `true` | Registra método, ruta, estado y duración en milisegundos. Usa `false` para desactivarlo. |
 
 Copia `.env.example` a `.env` (ignorado por git, ver `services/api/.gitignore`)
 y completa valores reales para desarrollo.
+
+## Caché de respuestas y tiempos de petición
+
+`GET /inventory/products` usa un TTL de 10 segundos y `GET /inventory/orders`
+uno de 30 segundos. La caché en memoria tiene tamaño acotado, usa la oficina
+como filtro de clave y se invalida tras altas de productos y movimientos, y
+cambios de usuario o perfil. El login y la autorización de ruta se comprueban
+en cada petición. Cada worker mantiene su propia caché; en despliegues con
+varios workers, una escritura de otro proceso puede quedar sin reflejar hasta
+que caduque la entrada.
+
+El middleware de tiempos solo registra método, ruta, estado y duración; omite
+parámetros de consulta y cuerpos. Para repetir el benchmark aislado, ejecuta
+`uv run python benchmark_response_cache.py` desde esta carpeta. Crea una base
+SQLite en memoria y nunca lee `SUPABASE_DATABASE_URL`.
 
 Las variables específicas del inventario son SUPABASE_DATABASE_URL (URL de
 PostgreSQL, opcional para arrancar el resto de la API),
@@ -320,6 +336,8 @@ services/api/
 ├── store.py                # almacén en memoria del último análisis
 ├── seed.py                 # carga idempotente de proveedores
 ├── seed_users.py              # creacion idempotente del admin inicial
+├── response_cache.py       # caché TTL local por proceso y de tamaño acotado
+├── benchmark_response_cache.py # benchmark aislado con SQLite en memoria
 ├── fixtures/suppliers.json # datos iniciales del seeder
 ├── tests/
 │   ├── conftest.py            # fixtures compartidas de usuario/token, reset de rate limit
@@ -328,7 +346,10 @@ services/api/
 │   ├── test_users.py
 │   ├── test_profiles.py
 │   ├── test_protected_routes.py
-│   └── test_password_reset.py
+│   ├── test_password_reset.py
+│   ├── test_inventory.py
+│   ├── test_response_cache.py
+│   └── test_request_timing.py
 └── data/                   # TinyDB local (ignorado por git)
 ```
 

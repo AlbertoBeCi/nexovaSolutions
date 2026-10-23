@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import os
+from time import perf_counter
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -77,6 +78,25 @@ app.include_router(suppliers.router)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(profiles.router)
+
+
+@app.middleware("http")
+async def log_request_timing(request: Request, call_next):
+    """Log request timing without query strings, credentials, or request bodies."""
+    if os.environ.get("API_REQUEST_TIMING_ENABLED", "true").lower() not in {"1", "true", "yes", "on"}:
+        return await call_next(request)
+
+    started_at = perf_counter()
+    response = await call_next(request)
+    duration_ms = (perf_counter() - started_at) * 1000
+    logger.info(
+        "http_request method=%s path=%s status=%s duration_ms=%.2f",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
 
 
 @app.exception_handler(Exception)

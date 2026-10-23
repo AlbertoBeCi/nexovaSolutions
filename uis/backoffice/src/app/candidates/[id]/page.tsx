@@ -9,22 +9,22 @@
 
 import { Suspense, use, useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { CandidateSelect, STATUS_OPTIONS, STAGE_OPTIONS } from "../_components/candidate-select";
 import {
-  addCandidateNote,
-  deleteCandidateNote,
   getCandidateById,
   getCandidateResourceUrls,
-  getCandidateNotes,
   updateCandidateStatusStage,
 } from "../../../services/api";
-import {
-  Candidate,
-  CandidateNote,
-  CandidateStage,
-  CandidateStatus,
-} from "../../../types/candidate";
+import { Candidate, CandidateStage, CandidateStatus } from "../../../types/candidate";
+
+const LazyCandidateNotesPanel = dynamic(
+  () => import("../_components/candidate-notes-panel").then((module) => module.CandidateNotesPanel),
+  {
+    loading: () => <p role="status" aria-live="polite" className="text-sm text-zinc-500 dark:text-zinc-400">Preparando las notas internas…</p>,
+  }
+);
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
@@ -36,12 +36,7 @@ interface LoadedData {
   id: string;
   outcome: "found" | "not-found" | "error";
   candidate: Candidate | null;
-  notes: CandidateNote[];
   errorMessage: string | null;
-}
-
-function sortNotesByDateDesc(notes: CandidateNote[]): CandidateNote[] {
-  return [...notes].sort((a, b) => b.date.getTime() - a.date.getTime());
 }
 
 function CandidateDetailContent({ params }: { params: Promise<{ id: string }> }) {
@@ -51,9 +46,7 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
   const [loaded, setLoaded] = useState<LoadedData | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [savingField, setSavingField] = useState<"status" | "stage" | null>(null);
-  const [noteText, setNoteText] = useState("");
-  const [addingNote, setAddingNote] = useState(false);
-  const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null);
+  const [showNotes, setShowNotes] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   // `loaded === null` es la primera carga; `loaded.id !== id` cubre la
@@ -67,17 +60,16 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([getCandidateById(id), getCandidateNotes(id)])
-      .then(([candidate, notes]) => {
+    getCandidateById(id)
+      .then((candidate) => {
         if (cancelled) return;
         if (candidate === null) {
-          setLoaded({ id, outcome: "not-found", candidate: null, notes: [], errorMessage: null });
+          setLoaded({ id, outcome: "not-found", candidate: null, errorMessage: null });
         } else {
           setLoaded({
             id,
             outcome: "found",
             candidate,
-            notes: sortNotesByDateDesc(notes),
             errorMessage: null,
           });
         }
@@ -89,7 +81,6 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
           id,
           outcome: "error",
           candidate: null,
-          notes: [],
           errorMessage:
             err instanceof Error ? err.message : "No se pudo cargar la información del candidato",
         });
@@ -132,46 +123,6 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
       setActionError(err instanceof Error ? err.message : "No se pudo actualizar la etapa del candidato");
     } finally {
       setSavingField(null);
-    }
-  }
-
-  /** Añade la nota al inicio de la lista (más reciente primero) sin refetch completo. */
-  async function handleAddNote() {
-    const trimmedText = noteText.trim();
-    if (trimmedText === "") return;
-
-    setAddingNote(true);
-    setActionError(null);
-
-    try {
-      const newNote = await addCandidateNote(id, trimmedText);
-      setLoaded((prev) =>
-        prev && prev.outcome === "found" ? { ...prev, notes: [newNote, ...prev.notes] } : prev
-      );
-      setNoteText("");
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "No se pudo agregar la nota");
-    } finally {
-      setAddingNote(false);
-    }
-  }
-
-  /** Borra la nota en el servidor y la retira de la lista local por id. */
-  async function handleDeleteNote(noteId: string) {
-    setDeletingNoteId(noteId);
-    setActionError(null);
-
-    try {
-      await deleteCandidateNote(id, noteId);
-      setLoaded((prev) =>
-        prev && prev.outcome === "found"
-          ? { ...prev, notes: prev.notes.filter((note) => note.id !== noteId) }
-          : prev
-      );
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "No se pudo borrar la nota");
-    } finally {
-      setDeletingNoteId(null);
     }
   }
 
@@ -336,59 +287,18 @@ function CandidateDetailContent({ params }: { params: Promise<{ id: string }> })
             </div>
           </section>
 
-          <section className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Notas internas
-            </h2>
-
-            <div className="mt-4 flex flex-col gap-2">
-              <textarea
-                value={noteText}
-                onChange={(event) => setNoteText(event.target.value)}
-                placeholder="Escribe una nota interna sobre este candidato..."
-                rows={3}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-              />
-              <button
-                type="button"
-                onClick={handleAddNote}
-                disabled={addingNote || noteText.trim() === ""}
-                className="inline-flex w-fit items-center justify-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
-              >
-                {addingNote ? "Añadiendo..." : "Añadir nota"}
-              </button>
-            </div>
-
-            {loaded.notes.length === 0 ? (
-              <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-                Este candidato todavía no tiene notas.
-              </p>
-            ) : (
-              <ul className="mt-4 flex flex-col gap-3">
-                {loaded.notes.map((note) => (
-                  <li
-                    key={note.id}
-                    className="flex items-start justify-between gap-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900"
-                  >
-                    <div>
-                      <p className="text-sm text-zinc-900 dark:text-zinc-50">{note.text}</p>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        {formatDate(note.date)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteNote(note.id)}
-                      disabled={deletingNoteId === note.id}
-                      className="shrink-0 text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60 dark:text-red-400"
-                    >
-                      {deletingNoteId === note.id ? "Borrando..." : "Eliminar"}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          <div>
+            <button
+              type="button"
+              aria-expanded={showNotes}
+              aria-controls="candidate-notes-panel"
+              onClick={() => setShowNotes((shown) => !shown)}
+              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 focus-visible:outline-2 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            >
+              {showNotes ? "Ocultar notas internas" : "Ver notas internas"}
+            </button>
+            {showNotes && <LazyCandidateNotesPanel candidateId={id} />}
+          </div>
         </>
       )}
     </main>

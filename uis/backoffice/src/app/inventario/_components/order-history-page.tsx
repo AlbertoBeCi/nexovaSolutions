@@ -14,6 +14,7 @@ import {
   type InventoryOrderType,
 } from "../../../types/inventory";
 import { INVENTORY_ERROR_CLASS } from "./inventory-fields";
+import { OrderHistorySummary } from "./order-history-summary";
 
 type OrdersResult =
   | { key: string; status: "success"; orders: InventoryOrder[] }
@@ -95,6 +96,8 @@ function OrderHistoryView() {
           </select>
         </label>
       </section>
+
+      {!loading && !error && <OrderHistorySummary orders={allOrders} />}
 
       {loading && <p role="status" className="text-sm text-zinc-500 dark:text-zinc-400">Cargando historial…</p>}
       {error && (

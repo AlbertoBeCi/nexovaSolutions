@@ -14,9 +14,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, SQLModel, create_engine, select
 
 import seed_inventory as seed_script
+import routes.inventory as inventory_routes
 from inventory_database import get_engine, get_inventory_session
 from inventory_models import Asset, AssetEntry, AssetExit
 from main import app
+from response_cache import response_cache
 from seed_inventory import seed_inventory
 from users_db import get_profiles_table, get_users_table
 
@@ -57,11 +59,13 @@ def client(inventory_engine, users_table, profiles_table, auth_headers, monkeypa
     app.dependency_overrides[get_inventory_session] = get_test_session
     app.dependency_overrides[get_users_table] = lambda: users_table
     app.dependency_overrides[get_profiles_table] = lambda: profiles_table
+    response_cache.clear()
     test_client = TestClient(app)
     test_client.headers.update(auth_headers)
     yield test_client
     test_client.close()
     app.dependency_overrides.clear()
+    response_cache.clear()
 
 
 def create_asset(client: TestClient, payload: dict | None = None) -> dict:
@@ -134,6 +138,104 @@ def test_get_asset_and_missing_asset(client):
     created = create_asset(client)
     assert client.get(f"/inventory/products/{created['id']}").json() == created
     assert client.get("/inventory/products/999").status_code == 404
+
+
+def test_product_list_cache_uses_filters_and_invalidates_after_stock_write(client, monkeypatch):
+    asset = create_asset(client)
+    original = inventory_routes._list_assets_with_stock
+    calls = 0
+
+    def counted_list(session, office=None):
+        nonlocal calls
+        calls += 1
+        return original(session, office)
+
+    monkeypatch.setattr(inventory_routes, "_list_assets_with_stock", counted_list)
+
+    valencia_url = "/inventory/products?office=Valencia"
+    first = client.get(valencia_url)
+    second = client.get(valencia_url)
+    assert first.status_code == second.status_code == 200
+    assert first.json() == second.json()
+    assert calls == 1
+
+    assert client.get("/inventory/products?office=Miami").json() == []
+    assert calls == 2
+
+    inbound = client.post(
+        "/inventory/orders/inbound",
+        json={
+            "asset_id": asset["id"],
+            "quantity": 6,
+            "supplier": "Proveedor de prueba",
+            "office": "Valencia",
+        },
+    )
+    assert inbound.status_code == 201
+    assert client.get(valencia_url).json()[0]["current_stock"] == 6
+    assert calls == 3
+
+
+def test_inventory_cache_hit_still_checks_authentication(client):
+    create_asset(client)
+    assert client.get("/inventory/products").status_code == 200
+
+    client.headers.pop("Authorization")
+    assert client.get("/inventory/products").status_code == 401
+
+
+def test_order_list_cache_reuses_queries_and_profile_write_invalidates(client, monkeypatch):
+    asset = create_asset(client)
+    inbound = client.post(
+        "/inventory/orders/inbound",
+        json={
+            "asset_id": asset["id"],
+            "quantity": 2,
+            "supplier": "Proveedor de prueba",
+            "office": "Valencia",
+        },
+    )
+    assert inbound.status_code == 201
+
+    original = inventory_routes._creator_names
+    calls = 0
+
+    def counted_creator_names(users, profiles):
+        nonlocal calls
+        calls += 1
+        return original(users, profiles)
+
+    monkeypatch.setattr(inventory_routes, "_creator_names", counted_creator_names)
+    first = client.get("/inventory/orders?office=Valencia")
+    second = client.get("/inventory/orders?office=Valencia")
+    assert first.status_code == second.status_code == 200
+    assert first.json() == second.json()
+    assert calls == 1
+    assert client.get("/inventory/orders?office=Miami").json() == []
+    assert calls == 2
+
+    failed_exit = client.post(
+        "/inventory/orders/outbound",
+        json={
+            "asset_id": asset["id"],
+            "quantity": 3,
+            "exit_type": "consumption",
+            "assigned_to": None,
+            "office": "Valencia",
+        },
+    )
+    assert failed_exit.status_code == 400
+    client.get("/inventory/orders?office=Valencia")
+    assert calls == 2
+
+    profile = client.put(
+        "/profiles/me",
+        json={"name": "Ana García", "phone": None, "address": None},
+    )
+    assert profile.status_code == 200
+    updated_orders = client.get("/inventory/orders?office=Valencia")
+    assert updated_orders.json()[0]["creator_name"] == "Ana García"
+    assert calls == 3
 
 
 @pytest.mark.parametrize("quantity", [0, -1])
