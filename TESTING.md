@@ -326,3 +326,12 @@ las condiciones y los informes originales quedan en `audit/after/`.
 
 Las herramientas de navegador se instalan en TEMP, según `scripts/README.md`.
 Cada app se comprueba también con `npm run lint` y `npm run build`.
+
+
+## Telemetría — validación de diseño (26/10/2026)
+
+Desde la raíz: node scripts/validate-telemetry.cjs. Requiere Node y Ajv 6 del tooling ya instalado de uis/backoffice; no añade dependencias ni accede a red, servidores o bases de datos.
+
+Resultado: **PASS — 9.450 comprobaciones documentales y de contrato**, 66 esquemas/fichas, cinco obligatorios y 61 oportunidades en siete categorías. Comprueba Draft-07, ejemplos, formatos activos, allowlists, campos requeridos, versiones, oficina/moneda, identidad, autoridad de origen, tablas/metadata/ejemplos Markdown frente a JSON, categorías reales de incidencias y fixtures semánticos de costo/stock/zona horaria. Demuestra que un valor con forma válida necesita además registro/procedencia para ser seguro.
+
+Estas comprobaciones se contabilizan aparte de las suites de aplicación anteriores: no son nuevas pruebas Jest/pytest ni medición de cobertura de instrumentación. Rollback, concurrencia, entrega durable, correlador de abandono y sanitización desplegada están especificados para la fase posterior en el plan; no se afirman ejecutados aquí.
