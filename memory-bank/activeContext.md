@@ -4,12 +4,13 @@ _Actualizar al cambiar de foco._
 
 ## Ahora — diseño de telemetría
 
-Rama: feature/telemetry-design-plan, creada primero desde origin/main y verificada contra la referencia actualizada.
+Diseño inicial integrado en PR #28. Revisión actual: feature/telemetry-plan-compact, desde main actualizada.
 
 - Entregables en docs/telemetry/: plan en español y JSON Schema Draft-07 con 66 eventos (5 obligatorios / 61 oportunidades), siete categorías y trazabilidad a los 23 checks.
 - Adaptación documentada de Asset/AssetEntry/AssetExit; categoría analítica, programa, proveedor estable y costos son prerrequisitos futuros, sin migrar tablas ni instrumentar aplicaciones.
 - Decisiones confirmadas: mínimo inicial 6, variación absoluta >10% frente a media ponderada de 90 días y mínimo tres entradas comparables. EUR/Valencia y USD/Miami sin conversión.
-- node scripts/validate-telemetry.cjs: 9.450 comprobaciones correctas; 66 ejemplos válidos, coherencia MD/JSON, negativos, dominio y fixtures semánticos. Usa Ajv existente del tooling del backoffice, sin dependencias nuevas ni DB/red.
+- Documento reducido de 4.597 a 639 líneas: decisiones comunes una vez, cinco obligatorios detallados, catálogo de 66 hipótesis/decisiones, disparo/entrega por evento y allowlists tipadas. event-schemas.json permanece idéntico; conserva contratos, metadata y ejemplos completos.
+- node scripts/validate-telemetry.cjs: 6.774 comprobaciones correctas en la revisión compacta; se conservan las pruebas de contrato y se verifican las referencias/allowlists del nuevo formato. Cinco mutaciones en memoria fueron rechazadas. El recuento inicial de 9.450 incluía comparaciones de texto que ya no se duplica.
 - Instrumentación, outbox, pipeline y controles reales de sanitización pendientes de fase posterior. La entrega actual es diseño validado, no captura ni despliegue.
 
 
