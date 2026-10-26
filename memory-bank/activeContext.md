@@ -2,7 +2,18 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — rendimiento y caché
+## Ahora — diseño de telemetría
+
+Rama: feature/telemetry-design-plan, creada primero desde origin/main y verificada contra la referencia actualizada.
+
+- Entregables en docs/telemetry/: plan en español y JSON Schema Draft-07 con 66 eventos (5 obligatorios / 61 oportunidades), siete categorías y trazabilidad a los 23 checks.
+- Adaptación documentada de Asset/AssetEntry/AssetExit; categoría analítica, programa, proveedor estable y costos son prerrequisitos futuros, sin migrar tablas ni instrumentar aplicaciones.
+- Decisiones confirmadas: mínimo inicial 6, variación absoluta >10% frente a media ponderada de 90 días y mínimo tres entradas comparables. EUR/Valencia y USD/Miami sin conversión.
+- node scripts/validate-telemetry.cjs: 9.450 comprobaciones correctas; 66 ejemplos válidos, coherencia MD/JSON, negativos, dominio y fixtures semánticos. Usa Ajv existente del tooling del backoffice, sin dependencias nuevas ni DB/red.
+- Instrumentación, outbox, pipeline y controles reales de sanitización pendientes de fase posterior. La entrega actual es diseño validado, no captura ni despliegue.
+
+
+## Anterior — rendimiento y caché
 
 Rama: `feature/rendimiento-caching`. Informe: `CACHING_REPORT.md`.
 

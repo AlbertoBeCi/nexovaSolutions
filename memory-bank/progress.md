@@ -2,6 +2,9 @@
 
 ## Funciona
 
+- **Diseño de telemetría (26/10/2026)** — rama feature/telemetry-design-plan: docs/telemetry/telemetry-plan.md y event-schemas.json, 66 eventos / 5 obligatorios / 61 oportunidades en siete categorías. Envelope, allowlists, privacidad, stream/batch, indicadores y 23 checks documentados. Adaptación del inventario actual sin inventar metadatos; mínimo 6 y anomalía de costo >10% con media ponderada de 90 días y tres antecedentes. Verificador aislado node scripts/validate-telemetry.cjs: 9.450 comprobaciones PASS. Sin instrumentación, migraciones, dependencias nuevas ni escrituras en Supabase. La captura y sus pruebas de integración siguen pendientes.
+
+
 - **Rendimiento y caché (23/10/2026)** — en `feature/rendimiento-caching`:
   backoffice difiere el resumen de incidencias hasta analizar CSV y el panel de
   notas hasta abrirlo; `useMemo` evita repetir la agregación del historial cuando

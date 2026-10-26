@@ -307,3 +307,10 @@ Construir el "Gestor de Incidencias Centralizado" de Nexova dentro del monorepo 
 - **Fase 4 — backend**: `POST/GET /api/incidents`, `GET /api/incidents/summary` (declarado antes que `/{id}`, con todas las claves de cada enum aunque sea 0), `GET /api/incidents/{id}`, `PATCH /api/incidents/{id}/status` (valida la transición); formato de error uniforme con campo identificado; 500 genérico sin stack trace; CORS y configuración por variables de entorno; tests de integración.
 - **Fase 5 — frontend**: páginas de Registro, Listado y Resumen en el menú de la aplicación, con un cliente HTTP centralizado que traduzca errores; formulario con `branch` siempre visible y resaltado cuando `origin = branch`; listado con filtros, tres estados (cargando/error/vacío) y cambio de estado optimista que revierte si falla; panel de resumen con estados de carga/error aislados.
 - **Entrega**: árbol de carpetas, comandos exactos, salida del seed (dos ejecuciones) y del summary comparada con lo esperado, decisiones asumidas, y checklist de criterios de evaluación.
+
+
+# Telemetría — diseño
+
+## Prompt: responder al RFI con catálogo exhaustivo y esquemas
+
+Implementar el plan aprobado de telemetría de Nexova en docs/telemetry/telemetry-plan.md y event-schemas.json, sin instrumentar la aplicación. Crear primero feature/telemetry-design-plan desde la base de main. Diseñar 66 eventos (cinco obligatorios exactos del briefing y 61 oportunidades), siete categorías, allowlists cerradas, privacidad, entrega, hipótesis/decisiones individuales y matriz de los 23 checks. Adaptar el modelo Asset/AssetEntry/AssetExit sin migración; documentar metadatos faltantes. Decisiones confirmadas: mínimo configurable inicial 6; variación absoluta de costo >10% frente a media ponderada de 90 días con mínimo tres entradas comparables; no convertir EUR/USD. Validar ejemplos y coherencia Markdown/JSON, actualizar memoria y preparar commit/PR docs: telemetry design plan; merge condicionado a aprobación y comprobaciones satisfechas.
