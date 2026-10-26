@@ -119,9 +119,11 @@ Puente futuro de ingesta verifica sesión Nexova y transforma IDs de Tracker; na
 
 ### 3.2. Contratos JSON
 
-JSON Schema Draft-07: definitions y oneOf de 66 referencias; ocho campos cerrados de envelope y payloads con required explícito y additionalProperties=false. Arrays tipados y acotados. x-telemetry/x-required/x-sensitivity son anotaciones documentales, no reglas de negocio. Referencias locales; el $id https://nexova.example/schemas/telemetry/events-1.0.0.json es lógico y no implica servicio desplegado.
+JSON Schema Draft-07 con oneOf de 66 eventos. definitions.envelope declara y cierra los ocho campos; envelopeRules conserva las reglas de identidad. Cada evento combina mediante allOf ese envelope con su event_type constante y su payload cerrado. definitions.field_* y rule_* reutilizan campos y reglas idénticos mediante referencias locales. required y additionalProperties=false se conservan; x-telemetry/x-required/x-sensitivity siguen siendo anotaciones. El $id es lógico, sin servicio desplegado.
 
-Fuente primaria: [Draft-07](https://json-schema.org/draft-07) y [objetos/additionalProperties](https://json-schema.org/understanding-json-schema/reference/object). Cada objeto cerrado declara todas sus claves en el mismo nivel; no se extiende un objeto cerrado con claves fuera de su declaración. No se usa unevaluatedProperties de versiones posteriores.
+Fuente primaria: [Draft-07](https://json-schema.org/draft-07) y [objetos/additionalProperties](https://json-schema.org/understanding-json-schema/reference/object). Cada objeto cerrado declara todas sus claves en el mismo nivel; no se extiende un objeto cerrado con claves fuera de su declaración. No se usa unevaluatedProperties de versiones posteriores. En Draft-07 no se añaden restricciones como hermanos de una nueva $ref: se referencia el bloque completo. Véase [composición modular](https://json-schema.org/understanding-json-schema/structuring).
+
+Validar contra la raíz o la definición del evento, no contra un helper aislado. El envelope reserva properties=true como punto abstracto; el segundo miembro de allOf define ese mismo campo como payload cerrado con su allowlist. No se amplía el envelope con campos nuevos. El payload concreto está en definitions[event_type].allOf[1].properties.properties; sus referencias conducen a los campos compartidos.
 
 El esquema valida forma, tipos, enums, límites, oficina–moneda, identidad estructural y autoridad. Histórico de costos, cruces, autenticación, deduplicación y saneamiento real requieren controles semánticos. Un slug con forma válida no prueba que su valor pertenezca al registro controlado.
 
@@ -232,7 +234,7 @@ Saneamiento por códigos y registros permitidos; regex no basta. Huella = hash d
 
 ## 7. Verificación y aceptación
 
-Desde raíz: node scripts/validate-telemetry.cjs. Requiere Node y Ajv Draft-07 ya instalado en uis/backoffice/node_modules mediante tooling existente; no instala ni modifica dependencias. Si falta, seguir instalación habitual de esa app conservando lockfile. No inicia aplicaciones, accede a red ni bases de datos.
+Desde raíz: node scripts/validate-telemetry.cjs. Para comprobar equivalencia con el diseño aprobado: node scripts/validate-telemetry.cjs --compare 43c39a3 (requiere Git y ese commit disponible localmente; no hace fetch). La comparación reconstruye los contratos completos, exige igualdad de restricciones, metadata y ejemplos, y ejecuta casos diferenciales contra ambos validadores. Requiere Node y Ajv Draft-07 ya instalado en uis/backoffice/node_modules mediante tooling existente; no instala ni modifica dependencias. Si falta, seguir instalación habitual de esa app conservando lockfile. No inicia aplicaciones, accede a red ni bases de datos.
 
 Valida metaschema, 66 contratos/fichas, cinco obligatorios, siete categorías, formatos activos, ejemplos, claves extra, tipos, enums, oficina–moneda, fuente/autoridad e identidad. Compara catálogo, hipótesis/decisiones, disparadores, entrega, allowlists tipadas y referencias Markdown/JSON; valida metadata completa y ejemplos directamente en el JSON, sin duplicarlos. Fixtures semánticos demuestran cálculos y límites; no prueban transacciones ni un sanitizador desplegado.
 
@@ -293,7 +295,7 @@ Diseñado = especificado; validación documental = contrato/revisión; instrumen
 
 ## 8. Catálogo compacto y contratos
 
-Cada ficha se compone de la fila de este catálogo y su definición homónima en [event-schemas.json](./event-schemas.json). El JSON conserva **sin cambios los 66 contratos y ejemplos completos**: properties/required definen tipos, obligatoriedad, null, enums, rangos, unidades, descripciones y sensibilidad; x-telemetry contiene hipótesis, decisión, responsable, disparador, productor, disponibilidad, dependencias, entrega/urgencia, frecuencia, deduplicación, privacidad, reglas semánticas y aceptación. El enlace de cada evento identifica su definición mediante JSON Pointer (#/definitions/event_type).
+Cada ficha se compone de la fila de este catálogo y su definición homónima en [event-schemas.json](./event-schemas.json). El JSON conserva **66 contratos lógicamente idénticos y sus ejemplos completos**, con definiciones compartidas: properties/required, tras resolver las referencias y el envelope, definen tipos, obligatoriedad, null, enums, rangos, unidades, descripciones y sensibilidad; x-telemetry contiene hipótesis, decisión, responsable, disparador, productor, disponibilidad, dependencias, entrega/urgencia, frecuencia, deduplicación, privacidad, reglas semánticas y aceptación. El enlace de cada evento identifica su definición mediante JSON Pointer (#/definitions/event_type).
 
 La frase de justificación se lee en cada fila de §8.2: **“Capturamos [evento] porque necesitamos saber [hipótesis], lo que nos permite tomar la decisión de [decisión]”.** Las dos columnas completan esa frase sin repetir el prefijo 66 veces. §8.3 concreta disparo/urgencia; §8.4 enumera toda la allowlist específica. Las reglas comunes se documentan una vez en §3–§7 y se aplican a cada ficha.
 
@@ -614,7 +616,7 @@ La allowlist completa es la unión de **source, environment, actor_type, authori
 
 ### 8.5. Implementación, privacidad y aceptación sin repetición
 
-Para instrumentar cualquier fila: abrir su definición JSON de §8.2; usar x-telemetry.producer y trigger; resolver availability/dependencies; construir únicamente las propiedades declaradas; aplicar semanticRules y privacy antes de emitir; seguir frequency/deduplication/delivery. Los campos x-sensitivity identifican seudónimos o datos comerciales por propiedad. La aceptación común exige una emisión por disparador válido, ninguna sin disparador, ejemplo válido y rechazo de claves extra, versiones o required ausentes; §7.2 añade casos de integración futuros. El verificador comprueba que esos apartados no desaparecen de ninguna de las 66 fichas.
+Para instrumentar cualquier fila: abrir su definición JSON de §8.2; usar x-telemetry.producer y trigger; resolver availability/dependencies; construir únicamente las propiedades declaradas; aplicar semanticRules y privacy antes de emitir; seguir frequency/deduplication/delivery. Los campos x-sensitivity identifican seudónimos o datos comerciales por propiedad. La aceptación común exige una emisión por disparador válido, ninguna sin disparador, ejemplo válido y rechazo de claves extra, versiones o required ausentes; §7.2 añade casos de integración futuros. El verificador resuelve referencias, comprueba que esos apartados no desaparecen de ninguna de las 66 fichas y mantiene las pruebas de tipos, límites, privacidad estructural y coherencia documental.
 
 Excepciones que el implementador debe respetar:
 
@@ -636,4 +638,4 @@ Descripción del PR: 66 eventos (5 obligatorios/61 oportunidades), siete categor
 
 ### Resultado de validación de esta entrega
 
-Revisión del 26/10/2026: PASS con 6.774 comprobaciones de diseño/contrato; 66 contratos/fichas, 5 obligatorios, 61 oportunidades y siete categorías. El JSON conserva exactamente los mismos bytes que la entrega aprobada; contratos, ejemplos y metadata no se han reducido. Las pruebas positivas/negativas de contrato se mantienen; se sustituyen comparaciones de texto duplicado por comprobaciones del catálogo compacto, referencias y allowlists tipadas. Además, cinco alteraciones en memoria (hipótesis, tipo, disparador, referencia y omisión de evento) fueron rechazadas por el verificador. Sin acceso a DB/red ni instrumentación.
+Revisión del 26/10/2026: JSON reducido de 27.435 a 5.696 líneas (830.132→335.345 bytes), sin eliminar datos ni cambiar contratos. Validación habitual: PASS, 10.158 comprobaciones. Comparación con 43c39a3: 66 contratos expandidos idénticos, incluidos metadata y ejemplos; 13.678 casos diferenciales coincidentes y 23.905 comprobaciones totales. Las pruebas positivas/negativas y semánticas de contrato se conservan. Markdown sigue compacto, con los 66 eventos y 23 checks. Sin red, DB ni instrumentación.
