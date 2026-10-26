@@ -24,20 +24,102 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const sorted = value => [...value].sort();
 const bq = String.fromCharCode(96);
 const cell = value => String(value).replaceAll("|", "&#124;").replaceAll("\n", " ");
-const cleanField = field => Object.fromEntries(Object.entries(field).filter(([key]) => !["description", "examples", "x-required", "x-sensitivity"].includes(key)));
 const labels = {"category":"Categoría","classification":"Clasificación","owner":"Responsable","trigger":"Disparador","producer":"Productor / referencia","availability":"Disponibilidad","dependencies":"Dependencias","delivery":"Entrega","urgency":"Urgencia / decisión temporal","frequency":"Frecuencia / control de volumen","deduplication":"Deduplicación","privacy":"PII / saneamiento","acceptance":"Aceptación"};
 const ajv = new Ajv({ allErrors: true, format: "full", jsonPointers: true, schemaId: "auto" });
 check(ajv.validateSchema(schema), "Metaschema Draft-07 inválido: " + JSON.stringify(ajv.errors));
 check(schema.$schema === "http://json-schema.org/draft-07/schema#", "Versión Draft-07");
 const validate = ajv.compile(schema);
+// Solo referencias internas; expandir aliases recupera la vista completa de cada contrato.
+function pointer(document, ref) {
+  check(ref.startsWith("#/definitions/"), "Referencia interna: " + ref);
+  let node = document;
+  for (const key of ref.slice(2).split("/").map(part => part.replaceAll("~1", "/").replaceAll("~0", "~"))) node = node?.[key];
+  check(node !== undefined, "Referencia resuelta: " + ref);
+  return node;
+}
+function expandShared(document, node, seen = []) {
+  if (Array.isArray(node)) return node.map(item => expandShared(document, item, seen));
+  if (node === null || typeof node !== "object") return node;
+  const primitives = ["#/definitions/uuid", "#/definitions/utcTimestamp", "#/definitions/pseudonym"];
+  if (node.$ref && !primitives.includes(node.$ref)) {
+    equal(Object.keys(node), ["$ref"], "Sin hermanos ignorados de $ref Draft-07");
+    check(!seen.includes(node.$ref), "Sin ciclos de referencias");
+    return expandShared(document, pointer(document, node.$ref), [...seen, node.$ref]);
+  }
+  const expanded = Object.fromEntries(Object.entries(node).map(([key, value]) => [key, expandShared(document, value, seen)]));
+  if (expanded.allOf) expanded.allOf = expanded.allOf.flatMap(rule => rule && Object.keys(rule).length === 1 && Array.isArray(rule.allOf) ? rule.allOf : [rule]);
+  return expanded;
+}
+function materializeEvent(document, name) {
+  const definition = document.definitions[name];
+  if (!definition.allOf?.some(part => part.$ref === "#/definitions/envelope")) return expandShared(document, definition);
+  equal(definition.allOf.length, 2, name + ": envelope y restricción específica");
+  equal(definition.allOf[0], {$ref:"#/definitions/envelope"}, name + ": envelope compartido");
+  equal(Object.keys(definition).sort(), ["allOf","description","examples","title","x-telemetry"], name + ": sin restricciones ocultas fuera de allOf");
+  const base = expandShared(document, document.definitions.envelope);
+  equal(base.properties.properties, true, name + ": payload abstracto se cierra solo en el evento");
+  equal(base.properties.event_type, {type:"string"}, name + ": discriminador común sin restricciones ocultas");
+  const restriction = expandShared(document, definition.allOf[1]);
+  equal(Object.keys(restriction), ["properties"], name + ": extensión acotada al envelope");
+  equal(Object.keys(restriction.properties).sort(), ["event_type", "properties"], name + ": discriminador y payload específicos");
+  equal(restriction.properties.event_type, {const:name}, name + ": restricción del discriminador exacta");
+  return {title:definition.title, description:definition.description, ...base,
+    properties:{...base.properties, event_type:{...base.properties.event_type, ...restriction.properties.event_type}, properties:restriction.properties.properties},
+    "x-telemetry":clone(definition["x-telemetry"]), examples:clone(definition.examples)};
+}
+const contracts = new Map(expected.map(name => [name, materializeEvent(schema, name)]));
 const refs = schema.oneOf.map(item => item.$ref.replace("#/definitions/", ""));
 equal(sorted(refs), sorted(expected), "Referencias exactas de los 66 eventos");
 check(new Set(refs).size === 66, "No hay eventos duplicados");
-const namesInMarkdown = [...plan.matchAll(/^### ([a-z][a-z0-9_]+)$/gm)].map(match => match[1]);
-equal(sorted(namesInMarkdown), sorted(expected), "66 fichas Markdown exactas");
-equal(sorted(expected.filter(name => schema.definitions[name]["x-telemetry"].classification === "obligatorio")), sorted(mandatory), "Cinco obligatorios exactos");
-check(new Set(expected.map(name => schema.definitions[name]["x-telemetry"].category)).size === 7, "Siete categorías");
-check(expected.filter(name => schema.definitions[name]["x-telemetry"].classification === "oportunidad_identificada").length === 61, "61 oportunidades");
+const commonKeys = ["source", "environment", "actor_type", "authority", "key_version"];
+const categoryNames = {inventario:"Inventario",autenticacion:"Autenticación y cuentas",navegacion:"Navegación y flujos",rendimiento:"Rendimiento",errores:"Errores",negocio:"Otros procesos de negocio",telemetria:"Operación de telemetría"};
+function typeName(field) {
+  if (field.$ref) return field.$ref.endsWith("utcTimestamp") ? "date-time" : field.$ref.endsWith("uuid") ? "uuid" : "string";
+  if (field.anyOf) return field.anyOf.map(typeName).join("/");
+  if (field.type === "array") return "array<" + typeName(field.items) + ">";
+  return field.format || field.type;
+}
+function allowlist(def) {
+  const payload = def.properties.properties;
+  return Object.entries(payload.properties).filter(([key]) => !commonKeys.includes(key)).map(([key,field]) => key + (payload.required.includes(key) ? "" : "?") + ":" + typeName(field)).join("; ");
+}
+const purposeRows = [...plan.matchAll(/^\| \[([a-z][a-z0-9_]+)\]\(\.\/event-schemas\.json#\/definitions\/([a-z][a-z0-9_]+)\) \| (.*?) \| (.*?) \|$/gm)];
+const purposeByName = new Map(purposeRows.map(row => [row[1], row]));
+const typedRows = [];
+const deliveryRows = [];
+for (const line of plan.split("\n")) {
+  if (!line.startsWith("| " + bq)) continue;
+  const columns = line.split("|").slice(1,-1).map(value => value.trim());
+  const name = columns[0].slice(1,-1);
+  if (!expected.includes(name)) continue;
+  if (columns.length === 2) typedRows.push([name, columns[1]]);
+  if (columns.length === 3) deliveryRows.push([name, columns[1], columns[2]]);
+}
+const typedByName = new Map(typedRows.map(row => [row[0], row[1]]));
+const deliveryByName = new Map(deliveryRows.map(row => [row[0], row]));
+equal(sorted(purposeRows.map(row=>row[1])), sorted(expected), "66 justificaciones sin duplicados");
+equal(sorted(typedRows.map(row=>row[0])), sorted(expected), "66 allowlists sin duplicados");
+equal(sorted(deliveryRows.map(row=>row[0])), sorted(expected), "66 disparadores/entregas sin duplicados");
+for (const link of plan.matchAll(/\.\/event-schemas\.json#\/definitions\/([a-z][a-z0-9_]+)/g)) check(expected.includes(link[1]),"Referencia JSON resuelta: "+link[1]);
+for (const name of mandatory) check(plan.includes("#### " + bq + name + bq),"Obligatorio explicado en detalle: "+name);
+equal(sorted(expected.filter(name => contracts.get(name)["x-telemetry"].classification === "obligatorio")), sorted(mandatory), "Cinco obligatorios exactos");
+check(new Set(expected.map(name => contracts.get(name)["x-telemetry"].category)).size === 7, "Siete categorías");
+check(expected.filter(name => contracts.get(name)["x-telemetry"].classification === "oportunidad_identificada").length === 61, "61 oportunidades");
+for (const name of mandatory) {
+  const meta=contracts.get(name)["x-telemetry"];
+  const start=plan.indexOf("#### "+bq+name+bq+"\n");
+  const next=plan.indexOf("\n#### ",start+1);
+  const end=next<0?plan.indexOf("\n### 8.2.",start):next;
+  const detail=plan.slice(start,end);
+  check(detail.includes("necesitamos saber "+meta.hypothesis+" para "+meta.decision+"."),name+": finalidad del detalle obligatorio");
+  check(detail.includes("**Responsable:** "+meta.owner+"."),name+": responsable del obligatorio");
+  check(detail.includes("**Disparo:** "+meta.trigger),name+": disparador del detalle");
+  check(detail.includes(bq+meta.producer+bq),name+": productor del detalle");
+  check(detail.includes("**Urgencia:** "+meta.urgency),name+": urgencia del detalle");
+  check(detail.includes("**Deduplicación:** "+meta.deduplication),name+": deduplicación del detalle");
+  check(detail.includes("Dependencias: "+meta.dependencies),name+": dependencias del detalle");
+  if(meta.semanticRules.length)check(detail.includes(meta.semanticRules.join(" ")),name+": reglas del detalle");
+}
 const envelope = ["eventId","timestamp","sessionId","userId","event_type","schemaVersion","requestId","properties"];
 function closedObjects(node, location) {
   if (!node || typeof node !== "object") return;
@@ -50,47 +132,35 @@ function closedObjects(node, location) {
   }
 }
 closedObjects(schema, "schema");
+for (const [name, contract] of contracts) closedObjects(contract, name);
 function rejects(sample, message) { check(!validate(sample), "Debe rechazar: " + message); }
 for (const name of expected) {
-  const def = schema.definitions[name];
+  const def = contracts.get(name);
   const meta = def["x-telemetry"];
   const payload = def.properties.properties;
   const example = def.examples[0];
-  const start = plan.indexOf("### " + name + "\n");
-  let end = plan.indexOf("\n<a id=", start + 1);
-  if (end === -1) end = plan.indexOf("\n## 9.", start);
-  const section = plan.slice(start, end === -1 ? undefined : end);
   equal(sorted(def.required), sorted(envelope), name + ": ocho required de envelope");
   equal(sorted(Object.keys(def.properties)), sorted(envelope), name + ": ocho campos exactos");
   check(/^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/.test(name), name + ": taxonomía");
   check(def.properties.event_type.const === name, name + ": discriminador");
   check(def.properties.schemaVersion.const === "1.0.0", name + ": versión");
   check(["stream", "batch"].includes(meta.delivery), name + ": entrega");
-  for (const [key, label] of Object.entries(labels)) {
-    check(typeof meta[key] === "string" && meta[key].length > 0, name + ": metadata " + key);
-    check(section.includes("| " + label + " | " + cell(meta[key]) + " |"), name + ": metadata Markdown " + key);
-  }
-  check(section.includes("Capturamos " + bq + name + bq + " porque necesitamos saber " + meta.hypothesis + ", lo que nos permite tomar la decisión de " + meta.decision + "."), name + ": justificación exacta");
-  if (meta.semanticRules.length) check(section.includes(meta.semanticRules.map(cell).join(" ")), name + ": reglas semánticas");
-  const rows = section.split("\n").filter(line => line.startsWith("| " + bq));
-  const parsedNames = [];
-  for (const row of rows) {
-    const columns = row.split("|").slice(1, -1).map(value => value.trim());
-    check(columns.length === 5, name + ": cinco columnas del diccionario");
-    const key = columns[0].slice(1, -1);
-    parsedNames.push(key);
-    const field = payload.properties[key];
-    check(Boolean(field), name + ": campo Markdown existe " + key);
-    equal(columns[1], payload.required.includes(key) ? "Sí" : "No", name + ": obligatoriedad " + key);
-    equal(columns[2], field["x-sensitivity"], name + ": sensibilidad " + key);
-    equal(columns[3], cell(field.description), name + ": descripción/unidad " + key);
-    const contract = JSON.parse(columns[4].slice(1,-1).replaceAll("&#124;", "|"));
-    equal(contract, cleanField(field), name + ": contrato " + key);
-  }
-  equal(sorted(parsedNames), sorted(Object.keys(payload.properties)), name + ": allowlist completa");
-  const block = section.match(/~~~json\n([\s\S]*?)\n~~~/);
-  check(Boolean(block), name + ": ejemplo Markdown");
-  equal(JSON.parse(block[1]), example, name + ": mismo ejemplo MD/JSON");
+  for (const key of Object.keys(labels)) check(typeof meta[key] === "string" && meta[key].length > 0, name + ": ficha completa " + key);
+  check(typeof meta.hypothesis === "string" && meta.hypothesis.length > 0 && typeof meta.decision === "string" && meta.decision.length > 0,name+": finalidad completa");
+  check(Array.isArray(meta.semanticRules) && meta.semanticRules.every(rule=>typeof rule==="string" && rule.length>0),name+": reglas semánticas");
+  const purpose = purposeByName.get(name);
+  check(Boolean(purpose),name+": justificación Markdown");
+  equal(purpose[2],name,name+": enlace a definición exacta");
+  equal(purpose[3],cell(meta.hypothesis),name+": hipótesis exacta");
+  equal(purpose[4],cell(meta.decision),name+": decisión exacta");
+  const priorHeadings = [...plan.slice(0,purpose.index).matchAll(/^#### (.+)$/gm)];
+  equal(priorHeadings.at(-1)[1],categoryNames[meta.category],name+": categoría visible");
+  const delivery = deliveryByName.get(name);
+  equal(delivery[1],cell(meta.trigger),name+": disparador exacto");
+  equal(delivery[2],meta.delivery+" — "+cell(meta.urgency),name+": entrega y urgencia exactas");
+  equal(typedByName.get(name),cell(allowlist(def)),name+": allowlist/tipos/null/obligatoriedad exactos");
+  for (const key of commonKeys) check(payload.required.includes(key),name+": propiedad común obligatoria "+key);
+  check(def.examples.length > 0,name+": conserva ejemplo completo JSON");
   check(validate(example), name + ": ejemplo válido");
   const minimum = clone(example);
   for (const key of Object.keys(minimum.properties)) if (!payload.required.includes(key)) delete minimum.properties[key];
@@ -112,7 +182,7 @@ for (const name of expected) {
   }
   if (meta.category === "inventario") for (const key of ["office","product_id","product_category","programme_id","quantity","currency"]) check(payload.required.includes(key), name+": dimensión de inventario " + key);
 }
-const sample = name => clone(schema.definitions[name].examples[0]);
+const sample = name => clone(contracts.get(name).examples[0]);
 const unknown=sample("page_viewed"); unknown.event_type="unregistered_action"; rejects(unknown,"tipo desconocido");
 const direct=sample("direct_stock_edit_rejected"); check(validate(direct),"rechazo no resoluble conserva claves null");
 direct.properties.resolution_reason="resolved"; rejects(direct,"resolved no permite dimensiones null");
@@ -143,8 +213,8 @@ equal(localHour("2026-10-25T00:30:00Z","Europe/Madrid"),localHour("2026-10-25T01
 equal(localHour("2026-11-01T05:30:00Z","America/New_York"),localHour("2026-11-01T06:30:00Z","America/New_York"),"Hora repetida de otoño de Miami");
 // Contrastar muestras con reglas aritméticas y enums reales, además del metaschema.
 for (const name of expected) {
-  const def=schema.definitions[name]; const p=def.examples[0].properties;
-  for (const [key,field] of Object.entries(def.properties.properties.properties)) equal(field["x-required"]!==false,def.properties.properties.required.includes(key),name+": anotación required coherente "+key);
+  const def=contracts.get(name); const p=def.examples[0].properties;
+  for (const [key,field] of Object.entries(def.properties.properties.properties)) { equal(field["x-required"]!==false,def.properties.properties.required.includes(key),name+": anotación required coherente "+key); check(typeof field.description==="string" && field.description.length>0,name+": descripción/unidad "+key); check(["operativo","seudonimo","confidencial_comercial"].includes(field["x-sensitivity"]),name+": sensibilidad explícita "+key); }
   for (const source of def.properties.properties.properties.source.enum) {
     const variant=sample(name); variant.properties.source=source;
     variant.properties.authority=source==="telemetry_worker"?"derived":["api","incident_api"].includes(source)?"server":"client_observed";
@@ -166,7 +236,55 @@ const incidentConstants=fs.readFileSync(path.join(repo,"packages/shared/nexova_s
 const categoryTuple=incidentConstants.match(/CATEGORIES:[\s\S]*?=\s*\(([\s\S]*?)\)/);
 check(Boolean(categoryTuple),"Leer categorías fuente del gestor");
 const incidentCategories=[...categoryTuple[1].matchAll(/"([^"]+)"/g)].map(match=>match[1]);
-for (const name of ["incident_created","incident_status_changed"]) equal(schema.definitions[name].properties.properties.properties.incident_category.enum,incidentCategories,name+": categorías exactas del dominio");
+for (const name of ["incident_created","incident_status_changed"]) equal(contracts.get(name).properties.properties.properties.incident_category.enum,incidentCategories,name+": categorías exactas del dominio");
+
+// Comparación opcional con una revisión local aprobada; git show es solo lectura.
+const args = process.argv.slice(2);
+if (args.length) {
+  check(args.length === 2 && args[0] === "--compare" && /^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(args[1]), "Uso: node scripts/validate-telemetry.cjs [--compare revision]");
+  const { execFileSync } = require("node:child_process");
+  const baseline = JSON.parse(execFileSync("git", ["show", args[1] + ":docs/telemetry/event-schemas.json"], {cwd:repo, encoding:"utf8", maxBuffer:5*1024*1024}));
+  const baselineAjv = new Ajv({allErrors:true, format:"full", jsonPointers:true, schemaId:"auto"});
+  check(baselineAjv.validateSchema(baseline), "Metaschema del baseline");
+  const baselineValidate = baselineAjv.compile(baseline);
+  equal(sorted(baseline.oneOf.map(item=>item.$ref.split("/").at(-1))), sorted(expected), "Mismos eventos en baseline");
+  let compared = 0;
+  function compare(sample, label) {
+    compared++;
+    equal(Boolean(validate(sample)), Boolean(baselineValidate(sample)), "Equivalencia con baseline: " + label);
+  }
+  function change(example, key, value, payload=false) {
+    const sample=clone(example); const object=payload?sample.properties:sample;
+    object[key]=value; return sample;
+  }
+  const primitives=[null, false, 0, -1, "", "invalid", [], {}];
+  for (const name of expected) {
+    const before=materializeEvent(baseline,name); const after=contracts.get(name);
+    equal(after,before,name+": contrato expandido, metadata y ejemplos idénticos");
+    const example=before.examples[0]; compare(example,name+": ejemplo");
+    for (const payload of [false,true]) {
+      const source=payload?example.properties:example;
+      const fields=payload?before.properties.properties.properties:before.properties;
+      for (const key of Object.keys(source)) {
+        const absent=clone(example); delete (payload?absent.properties:absent)[key]; compare(absent,name+": falta "+key);
+        for (const value of primitives) compare(change(example,key,value,payload),name+": tipo/null "+key);
+        const field=fields[key];
+        for (const value of field.enum || []) compare(change(example,key,value,payload),name+": enum "+key);
+        if (typeof field.minimum === "number") for (const value of [field.minimum,field.minimum-1]) compare(change(example,key,value,payload),name+": mínimo "+key);
+        if (typeof field.maximum === "number") for (const value of [field.maximum,field.maximum+1]) compare(change(example,key,value,payload),name+": máximo "+key);
+      }
+      compare(change(example,"unexpected_property","synthetic",payload),name+": clave extra");
+    }
+    for (const actor of ["user","anonymous","system"]) for (const userId of [null,"p1_"+"a".repeat(64)]) {
+      const mixed=clone(example); mixed.properties.actor_type=actor; mixed.userId=userId; compare(mixed,name+": identidad/actor");
+    }
+    for (const office of ["valencia","miami",null]) for (const currency of ["EUR","USD",null]) {
+      if (!("office" in example.properties)) continue;
+      const mixed=clone(example); mixed.properties.office=office; mixed.properties.currency=currency; compare(mixed,name+": oficina/moneda");
+    }
+  }
+  console.log("PASS: equivalencia exacta de 66 contratos y " + compared + " casos diferenciales frente a " + args[1] + ".");
+}
 
 const checkRows=[...plan.matchAll(/^\| (\d+)\. /gm)].map(match=>Number(match[1]));
 equal(checkRows.filter(value=>value>=1&&value<=23).slice(-23),Array.from({length:23},(_,index)=>index+1),"Matriz de los 23 checks");

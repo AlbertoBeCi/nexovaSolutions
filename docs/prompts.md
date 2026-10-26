@@ -314,3 +314,13 @@ Construir el "Gestor de Incidencias Centralizado" de Nexova dentro del monorepo 
 ## Prompt: responder al RFI con catálogo exhaustivo y esquemas
 
 Implementar el plan aprobado de telemetría de Nexova en docs/telemetry/telemetry-plan.md y event-schemas.json, sin instrumentar la aplicación. Crear primero feature/telemetry-design-plan desde la base de main. Diseñar 66 eventos (cinco obligatorios exactos del briefing y 61 oportunidades), siete categorías, allowlists cerradas, privacidad, entrega, hipótesis/decisiones individuales y matriz de los 23 checks. Adaptar el modelo Asset/AssetEntry/AssetExit sin migración; documentar metadatos faltantes. Decisiones confirmadas: mínimo configurable inicial 6; variación absoluta de costo >10% frente a media ponderada de 90 días con mínimo tres entradas comparables; no convertir EUR/USD. Validar ejemplos y coherencia Markdown/JSON, actualizar memoria y preparar commit/PR docs: telemetry design plan; merge condicionado a aprobación y comprobaciones satisfechas.
+
+
+## Revisión: compactar sin perder requisitos
+
+El usuario pide reducir el documento de más de 4.000 líneas manteniendo todo el plan aprobado. Eliminar duplicación de envelope/contratos/ejemplos; conservar los 66 eventos, cinco obligatorios detallados, hipótesis/decisión y entrega por evento, allowlists y los 23 checks. El JSON completo permanece intacto; actualizar verificador para el catálogo compacto sin retirar pruebas de contratos. Como PR #28 ya está integrado, entregar la revisión en feature/telemetry-plan-compact desde main actualizada.
+
+
+## Revisión: reutilizar definiciones del JSON
+
+El usuario pide mejorar también el JSON, evitando miles de líneas repetidas. Mantener los 66 contratos, ejemplos, restricciones y metadatos; compartir envelope, campos y reglas mediante definitions/$ref. Adaptar introspección del verificador y documentación. Demostrar igualdad de contratos expandidos y aceptación/rechazo equivalente contra la versión aprobada mediante comparación reproducible, sin instrumentar la aplicación.
