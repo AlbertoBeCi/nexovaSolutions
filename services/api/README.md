@@ -69,6 +69,27 @@ Nexova's single FastAPI backend, with one router per domain:
 
 All `/inventory` routes require an active authenticated user. Products are+listed with `GET /inventory/products` and fetched individually with+`GET /inventory/products/{asset_id}`. Register movements with+`POST /inventory/orders/inbound` (`asset_id`, `quantity`, `supplier`, `office`)+or `POST /inventory/orders/outbound` (`asset_id`, `quantity`, `exit_type`,+`assigned_to`, `office`). `GET /inventory/orders` returns both movement types,+including the current product summary, `user_uuid`, and `creator_name` (profile+name, falling back to email; `null` if the account is unavailable). Stock is+derived from entries and exits; outbound creation validates it transactionally.
 
+### Telemetry verification stub
+
+`POST /telemetry/events` accepts the eight-field telemetry envelope in a batch
+and returns `200 {"received": N}`, including zero for an empty batch. It is public
+for Beacon, does not persist or forward events, and logs only counts and types.
+`TELEMETRY_ENDPOINT` reserves future configuration. See
+[capture documentation](../../docs/telemetry/capture.md).
+
+`GET /telemetry/context` requires the existing JWT and returns a server-generated
+user pseudonym. Configure the private `TELEMETRY_HMAC_KEY_P1` independently of
+`SECRET_KEY`; without it, only this optional endpoint returns 503.
+
+Server producers share `telemetry_capture.track()` and the in-process stub sink:
+authentication, verified session rejection, inventory access/stock-edit rejection
+and aggregate CSV analysis. Requests receive a validated/generated `X-Request-ID`.
+No business writes, new inventory metadata or self-HTTP calls are introduced.
+All five mandatory producers are implemented. An explicitly synthetic sidecar
+supplies metadata for the authorized six-product/twenty-entry demo dataset.
+Unknown metadata produces a diagnostic instead of an incomplete business event.
+See [demo provenance and limitations](../../docs/telemetry/demo-data.md).
+
 ## Requirements
 
 - Python 3.10+

@@ -333,6 +333,7 @@ def test_profile_requires_login(anon_client):
 
 @pytest.mark.parametrize("method,path", [
     ("get", "/auth/me"), ("get", "/users"), ("get", "/users/1"), ("put", "/users/1"),
+    ("get", "/telemetry/context"),
     ("delete", "/users/1"), ("get", "/profiles/me"), ("put", "/profiles/me"),
     ("post", "/auth/change-password"), ("post", "/api/incidents/analyze"),
     ("get", "/api/incidents/results/export"), ("post", "/suppliers"),
@@ -346,6 +347,7 @@ def test_protected_routes_reject_anonymous_requests(anon_client, method: str, pa
 @pytest.mark.parametrize("method,path", [
     ("post", "/users"), ("post", "/auth/login"), ("post", "/auth/forgot-password"),
     ("post", "/auth/reset-password"), ("get", "/suppliers"), ("get", "/suppliers/1"),
+    ("post", "/telemetry/events"),
 ])
 def test_public_routes_do_not_demand_a_token(anon_client, method: str, path: str):
     assert getattr(anon_client, method)(path).status_code != 401

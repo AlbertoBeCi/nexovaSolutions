@@ -53,6 +53,10 @@ py-modules = [
     "mailer",
     "inventory_models",
     "inventory_schemas",
+    "telemetry_schemas",
+    "telemetry_core",
+    "telemetry_capture",
+    "telemetry_inventory",
     "inventory_database",
     "seed_inventory",
 ]

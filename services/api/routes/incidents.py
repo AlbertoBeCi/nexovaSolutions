@@ -6,6 +6,7 @@ scripts/analyze.py, para que el CSV se pueda subir desde un frontend o
 cualquier cliente HTTP en lugar de ejecutarse por linea de comandos.
 """
 from __future__ import annotations
+from time import perf_counter
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import Response
@@ -14,6 +15,7 @@ import store
 from analysis import InvalidCsvError, analyze_csv, summary_to_csv_bytes
 from models import AnalysisSummary, ErrorResponse
 from security import get_current_user
+from telemetry_capture import record_analysis
 
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
@@ -42,6 +44,7 @@ router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 async def analyze_incidents(
     file: UploadFile = File(..., description="Archivo CSV de tickets de soporte"),
 ) -> AnalysisSummary:
+    started_at = perf_counter()
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(
             status_code=400,
@@ -58,6 +61,7 @@ async def analyze_incidents(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     store.set_last_result(summary)
+    record_analysis(summary, started_at)
     return store.get_last_result()
 
 

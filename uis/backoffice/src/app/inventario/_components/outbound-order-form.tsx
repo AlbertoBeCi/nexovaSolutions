@@ -12,6 +12,8 @@ import {
 } from "../../../types/inventory";
 import { useInventoryProducts } from "../_hooks/use-inventory-products";
 import { useProductStock } from "../_hooks/use-product-stock";
+import { useInventoryTelemetry } from "../_hooks/use-inventory-telemetry";
+import { withTelemetryRequest } from "../../../services/telemetry-context";
 import { getOutboundStockWarning } from "../_lib/outbound-stock-warning";
 import { StockIndicator } from "./stock-indicator";
 import {
@@ -42,6 +44,7 @@ export function OutboundOrderForm({ initialProductId }: { initialProductId: stri
     [products, selectedId]
   );
   const office = officeOverride ?? product?.office ?? "Valencia";
+  const telemetry = useInventoryTelemetry("outbound", product?.id ?? null, office);
   const { loading: stockLoading, product: stockProduct, error: stockError, retry: retryStock } =
     useProductStock(product?.id ?? null);
   const stockWarning = stockProduct ? getOutboundStockWarning(quantity, stockProduct.currentStock) : null;
@@ -58,24 +61,29 @@ export function OutboundOrderForm({ initialProductId }: { initialProductId: stri
     setSuccessMessage(null);
     const amount = Number(quantity);
     if (!product) {
+      telemetry.invalid("product_id", "required");
       setErrorMessage("Selecciona un producto del inventario.");
       return;
     }
     if (!Number.isSafeInteger(amount) || amount <= 0) {
+      telemetry.invalid("quantity", Number.isSafeInteger(amount) ? "out_of_range" : "invalid_type");
       setQuantityError("La cantidad debe ser un número entero mayor que cero.");
       return;
     }
     if (stockProduct && amount > stockProduct.currentStock) {
+      telemetry.invalid("quantity", "out_of_range");
       setQuantityError(
         `Stock insuficiente: hay ${stockProduct.currentStock} unidades disponibles y has solicitado ${amount}.`
       );
       return;
     }
     if (exitType === "allocation" && !assignedTo.trim()) {
+      telemetry.invalid("assigned_to", "required");
       setErrorMessage("Indica a quién se asigna el producto.");
       return;
     }
     if (exitType === "allocation" && assignedTo.trim().length > 160) {
+      telemetry.invalid("assigned_to", "out_of_range");
       setErrorMessage("El destinatario no puede superar los 160 caracteres.");
       return;
     }
@@ -85,6 +93,7 @@ export function OutboundOrderForm({ initialProductId }: { initialProductId: stri
     try {
       const latestProduct = await getInventoryProduct(product.id);
       if (amount > latestProduct.currentStock) {
+        telemetry.invalid("quantity", "out_of_range");
         setQuantityError(
           `Stock insuficiente: hay ${latestProduct.currentStock} unidades disponibles y has solicitado ${amount}.`
         );
@@ -92,14 +101,15 @@ export function OutboundOrderForm({ initialProductId }: { initialProductId: stri
         return;
       }
 
-      const created = await createOutboundOrder({
+      const created = await withTelemetryRequest(telemetry.submitted(), () => createOutboundOrder({
         assetId: product.id,
         quantity: amount,
         exitType,
         assignedTo: exitType === "allocation" ? assignedTo.trim() : null,
         office,
-      });
+      }));
       setSuccessMessage(`Salida de ${created.quantity} unidades de «${product.name}» registrada correctamente.`);
+      telemetry.completed();
       setQuantity("");
       setAssignedTo("");
       retryStock();
@@ -147,7 +157,7 @@ export function OutboundOrderForm({ initialProductId }: { initialProductId: stri
       )}
 
       {!productsLoading && !productsError && products.length > 0 && (
-        <form onSubmit={handleSubmit} noValidate className="flex max-w-2xl flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+        <form onChangeCapture={telemetry.interact} onSubmit={handleSubmit} noValidate className="flex max-w-2xl flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
           <ProductSelect products={products} value={product ? selectedId : ""} disabled={submitting} onChange={(value) => { setSelectedId(value); setOfficeOverride(null); setErrorMessage(null); setQuantityError(null); setSuccessMessage(null); }} />
 
           {!product && <p className="text-sm text-zinc-500 dark:text-zinc-400">Selecciona un producto para consultar sus existencias.</p>}

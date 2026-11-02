@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { getInventoryProducts } from "../../../services/inventory-api";
@@ -14,6 +14,8 @@ import {
 } from "../../../types/inventory";
 import { INVENTORY_ERROR_CLASS, INVENTORY_SECONDARY_BUTTON_CLASS } from "./inventory-fields";
 import { StockIndicator } from "./stock-indicator";
+import { track } from "../../../services/telemetry";
+import { uuid } from "../../../services/telemetry-context";
 
 type ProductsResult =
   | { key: string; status: "success"; products: InventoryAsset[] }
@@ -29,6 +31,7 @@ function ProductsView() {
     : "";
   const [reloadToken, setReloadToken] = useState(0);
   const [result, setResult] = useState<ProductsResult | null>(null);
+  const lastOffice = useRef<string | null>(null);
   const requestKey = JSON.stringify({ office, reloadToken });
   const loading = result === null || result.key !== requestKey;
   const products = !loading && result.status === "success" ? result.products : [];
@@ -38,7 +41,14 @@ function ProductsView() {
     let cancelled = false;
     getInventoryProducts(office || undefined)
       .then((data) => {
-        if (!cancelled) setResult({ key: requestKey, status: "success", products: data });
+        if (!cancelled) {
+          setResult({ key: requestKey, status: "success", products: data });
+          if (lastOffice.current !== office) {
+            const changed = lastOffice.current !== null;
+            lastOffice.current = office;
+            if (office || changed) track("filter_applied", { route_template: "/backoffice/inventory/products", filter_keys: office ? ["office"] : [], result_count: data.length, filter_id: uuid() });
+          }
+        }
       })
       .catch((cause: unknown) => {
         if (!cancelled) {

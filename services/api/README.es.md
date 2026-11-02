@@ -14,6 +14,27 @@ Backend FastAPI único de Nexova, con un router por dominio:
 - **inventory** (/inventory): activos y órdenes persistidos en PostgreSQL de
   Supabase mediante SQLModel. TinyDB y la autenticación existentes no cambian.
 
+### Stub de verificación de telemetría
+
+`POST /telemetry/events` recibe el envelope de ocho campos en un lote y devuelve
+`200 {"received": N}`, incluido cero para un lote vacío. Es público para Beacon,
+no persiste ni reenvía eventos y solo registra cantidad y tipos.
+`TELEMETRY_ENDPOINT` reserva la configuración futura. Ver
+[documentación de captura](../../docs/telemetry/capture.md).
+
+`GET /telemetry/context` exige el JWT existente y devuelve el seudónimo del
+usuario generado en servidor. Configura `TELEMETRY_HMAC_KEY_P1` de forma privada
+e independiente de `SECRET_KEY`; si falta, solo este endpoint opcional da 503.
+
+Los productores del servidor comparten `telemetry_capture.track()` y el receptor
+interno: autenticación, rechazo verificado de sesión, rechazo de acceso/edición
+de stock y conteos del análisis CSV. Las peticiones reciben `X-Request-ID`
+validado o generado. Sin escrituras de negocio, nuevos metadatos ni auto-HTTP.
+Los cinco productores obligatorios están implementados. Un registro privado
+aporta metadatos explícitamente sintéticos para seis productos y veinte entradas
+DEMO autorizadas. Si faltan datos se emite un diagnóstico, no un hecho incompleto.
+Ver [procedencia y límites](../../docs/telemetry/demo-data.md).
+
 ### Autenticación
 
 - `User` (email, hash de contraseña, `is_active`, `role`) y `Profile` (name,

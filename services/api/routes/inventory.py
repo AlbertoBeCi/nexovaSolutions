@@ -27,6 +27,7 @@ from models import UserInDB
 from response_cache import response_cache
 from security import get_current_user
 from users_db import ProfilesTable, UsersTable, users_db_lock
+from telemetry_inventory import prepare_inbound, prepare_outbound, publish
 
 router = APIRouter(
     prefix="/inventory",
@@ -215,6 +216,8 @@ def create_inbound_order(
         )
         session.add(entry)
         session.flush()
+        events, metadata = prepare_inbound(session, asset, entry)
+    publish(events, metadata)
     session.refresh(entry)
     response_cache.invalidate("inventory_products")
     response_cache.invalidate("inventory_orders")
@@ -252,6 +255,8 @@ def create_outbound_order(
         )
         session.add(exit_order)
         session.flush()
+        events = prepare_outbound(asset, exit_order, available)
+    publish(events)
     session.refresh(exit_order)
     response_cache.invalidate("inventory_products")
     response_cache.invalidate("inventory_orders")
