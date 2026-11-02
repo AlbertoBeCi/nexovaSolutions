@@ -23,7 +23,9 @@ Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrad
   request ID conservado. Lecturas reales 6 productos / 7 órdenes, filtros 4/2;
   archivo de usuarios intacto. Sin escrituras de negocio, seeds ni migraciones.
 - Entrega y guía: `docs/telemetry/capture.md`; borrador de PR con tabla y marcador
-  de captura Network: `docs/telemetry/capture-pr.md`. Sin publicar PR/push.
+  de captura Network: `docs/telemetry/capture-pr.md`. Rama publicada y
+  [PR #31](https://github.com/AlbertoBeCi/nexovaSolutions/pull/31) abierto en
+  borrador contra main con el título solicitado. Sin merge.
 - Cierre de obligatorios: 22 tipos (10 navegador / 12 servidor), incluidos los
   cinco obligatorios y diagnóstico de metadatos. Evaluación bajo bloqueo y
   publicación tras commit, cruces sin repetición y costes ponderados exactos.
@@ -39,7 +41,7 @@ Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrad
   Guía pública: `docs/telemetry/demo-data.md`; no tratar precios DEMO como reales.
 - Pendiente visual: Computer Use detecta Chrome pero se detiene al verificar URL,
   incluso tras maximizar por indicación del usuario. No eludir esa comprobación.
-  Crear PR en borrador con esta limitación; no hacer merge sin aprobación.
+  PR #31 en borrador con esta limitación; no hacer merge sin aprobación.
 - Persistencia/outbox/pipeline y otros frontends son tareas posteriores. Sin
   cambios de esquema, persistencia de eventos ni secretos en Git.
 

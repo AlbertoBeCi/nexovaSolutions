@@ -13,7 +13,9 @@
   filas nuevas. Veinte entradas y dos anomalías en logs. Procedencia, IDs y
   sustitución futura en `docs/telemetry/demo-data.md`. Sin migraciones ni
   persistencia de eventos. Captura DevTools bloqueada por verificación de URL
-  de Computer Use, también con Chrome maximizado; PR debe seguir en borrador.
+  de Computer Use, también con Chrome maximizado;
+  [PR #31](https://github.com/AlbertoBeCi/nexovaSolutions/pull/31) publicado en
+  borrador contra main. Sin merge; espera captura y aprobación.
 
 - **Captura de telemetría, fase 3 (02/11/2026)** — 17 tipos del contrato en
   backoffice/API, con autoridad diferenciada, HMAC, correlación y observación
