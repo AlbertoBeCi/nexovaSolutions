@@ -109,11 +109,7 @@ su respuesta `200 {"received": N}`. No crear movimientos sobre Supabase real par
 esta verificación. Instrucciones de variables, arranque sin Docker, Beacon y
 limitaciones: [capture.md](./capture.md#verificación-local).
 
-> **CAPTURA PENDIENTE:** pegar aquí la captura de DevTools (Network) que muestre
-> el lote enviado al stub y la respuesta HTTP 200. Ocultar tokens y datos de
-> cuenta que puedan aparecer en otras peticiones.
->
-> La integración detecta Chrome con Nexova, pero se detiene al no poder verificar
-> la URL de la ventana. Se ha reproducido incluso con Chrome maximizado y la
-> barra visible. La prueba HTTP del proxy está verificada; no se presenta como
-> una captura visual del navegador. Mantener el PR en borrador hasta adjuntarla.
+> **Evidencia comprobada (03/11/2026):** las capturas aportadas muestran el
+> payload `{events:[...]}`, la respuesta `{"received": 2}` y `HTTP/1.1 200 OK`
+> en los encabezados. Los adjuntos siguen en la conversación; falta incrustarlos
+> en GitHub para que queden visibles a los revisores. El PR sigue en borrador.

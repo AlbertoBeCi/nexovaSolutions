@@ -39,9 +39,10 @@ Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrad
   idénticos por firma. Backup de public restaurado antes de escribir; rerun cero
   filas nuevas. Entradas y dos variaciones de coste observadas en logs del stub.
   Guía pública: `docs/telemetry/demo-data.md`; no tratar precios DEMO como reales.
-- Pendiente visual: Computer Use detecta Chrome pero se detiene al verificar URL,
-  incluso tras maximizar por indicación del usuario. No eludir esa comprobación.
-  PR #31 en borrador con esta limitación; no hacer merge sin aprobación.
+- El usuario aportó capturas con payload `{events:[...]}`, respuesta
+  `received: 2` y encabezado `HTTP/1.1 200 OK`. Los adjuntos aún no están
+  incrustados en GitHub porque el conector disponible no los transfiere desde el
+  chat. PR #31 permanece en borrador hasta incorporar esa evidencia.
 - Persistencia/outbox/pipeline y otros frontends son tareas posteriores. Sin
   cambios de esquema, persistencia de eventos ni secretos en Git.
 
