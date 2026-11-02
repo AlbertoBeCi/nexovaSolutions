@@ -43,9 +43,11 @@ Each app has its own `package.json` and `node_modules` — run commands from its
 
 ### Local development with Docker Compose
 
-From the repository root, run `docker compose up`. It starts the public website at http://localhost:3000, the backoffice at http://localhost:3001, the API at http://localhost:8000, and a local PostgreSQL database for inventory. `.env.example` provides local values; create or edit a root `.env` only if you need to override them. Rebuild images after dependency or Dockerfile changes with `docker compose up --build`.
+For a new checkout, copy `.env.example` to `.env` and `services/api/.env.example` to `services/api/.env`. If these files already exist, edit them without replacing their contents. Set `SUPABASE_DATABASE_URL` in the root `.env` to the Supabase PostgreSQL connection URL, including `sslmode=require` and a URL-encoded password. Configure `SECRET_KEY`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `services/api/.env`; use a valid email domain. These files are ignored by Git.
 
-The API starts with an empty local user store. Create the development administrator once with `docker compose exec api uv run seed-users`; its email and password come from the root `.env` values or the Compose defaults. `docker compose down` stops the services and keeps their named data volumes.
+From the repository root, run `docker compose up`. It starts the public website at http://localhost:3000, the backoffice at http://localhost:3001 and the API at http://localhost:8000. Inventory connects to Supabase; Compose does not start a local PostgreSQL service. Rebuild images after dependency or Dockerfile changes with `docker compose up --build`.
+
+Docker shares `services/api/data/users.json` with the backend running outside containers, preserving accounts, profiles, passwords and UUIDs. Existing users can log in immediately. Only for a new user store, run `docker compose exec api uv run --no-sync seed-users` to create the administrator configured in `services/api/.env`. Suppliers keep their separate named data volume. `docker compose down` preserves both the shared user file and named volumes. After changing environment variables, apply them with `docker compose up -d --no-deps --force-recreate api`.
 
 ---
 
@@ -91,7 +93,7 @@ Read the linked `README.md` inside each folder before you start coding there.
 | [`CONTEXT.md`](./CONTEXT.md) | Single source of truth for the Nexova domain                              | Read it before building anything; only the developer changes it       |
 | [`AGENTS.md`](./AGENTS.md)   | How any AI agent operates in this repo                                    | Session-start reading, pre-commit flow, no-touch list                 |
 | `README.md` / `README.es.md` | This guide                                                                | Orientation — you are here                                            |
-| [`docker-compose.yml`](./docker-compose.yml) | Local development orchestration | Starts the two Next.js apps, FastAPI, and local PostgreSQL |
+| [`docker-compose.yml`](./docker-compose.yml) | Local development orchestration | Starts the two Next.js apps and FastAPI, connected to Supabase |
 
 ### `uis/` — user interfaces
 

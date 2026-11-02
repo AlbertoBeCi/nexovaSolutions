@@ -3,14 +3,15 @@
 ## Desarrollo local en contenedores
 
 - El Compose de raíz agrupa website y backoffice en un único contenedor de
-  interfaces con un proceso Next por app; la API y PostgreSQL permanecen en
-  contenedores separados.
+  interfaces con un proceso Next por app; la API permanece en otro contenedor
+  y el inventario usa PostgreSQL externo de Supabase.
 - Los Dockerfiles y `.dockerignore` viven en los contextos `uis/` y `services/`.
   La API recibe un contexto adicional de la raíz para copiar `shared/` y
   `packages/shared/`, dependencias reales de sus imports.
-- Compose declara la red `nexova-local` y carga variables desde `.env.example`,
-  sobreescritas opcionalmente por el `.env` local.
-- Los nombres DNS `api` y `postgres` solo se usan en la red Compose. El
+- Compose declara la red `nexova-local`. La API carga `.env.example`, `.env` de
+  raíz y `services/api/.env`; los dos últimos son obligatorios. Las credenciales
+  se mantienen fuera de Git y las rutas del contenedor se fijan en Compose.
+- El nombre DNS `api` solo se usa en la red Compose. El
   navegador accede a la API del backoffice mediante el proxy de rewrites de
   Next en `/_nexova-api`, evitando exponer el hostname interno al bundle.
 - Los montajes de desarrollo cubren directorios de código, no la raíz completa
@@ -18,9 +19,12 @@
   enmascara su `.env` con el ejemplo seguro y desactiva `load_dotenv`; Compose
   inyecta la configuración de forma explícita.
 - La API usa dotenv desactivado en el contenedor; la configuración entra por
-  `env_file`, no se carga un `.env` dentro de la imagen. Persistencia local en
-  volúmenes nombrados para PostgreSQL, TinyDB y cachés `.next`. Los seeds siguen
-  siendo una operación explícita.
+  `env_file`, no se carga un `.env` dentro de la imagen. La URL de Supabase se
+  toma explícitamente del `.env` de raíz y debe estar definida antes de arrancar.
+- La autenticación comparte `services/api/data/users.json` entre Docker y host;
+  no se crea otro administrador ni se regeneran UUID al cambiar de entorno.
+  Proveedores y cachés `.next` mantienen sus volúmenes nombrados. Los seeds
+  siguen siendo una operación explícita, solo necesaria para un almacén nuevo.
 
 ## Organización
 
