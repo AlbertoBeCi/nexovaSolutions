@@ -2,7 +2,25 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — diseño de telemetría
+## Ahora — Docker con Supabase y autenticación compartida
+
+Rama: `feature/docker-supabase`, desde `origin/main`.
+
+- Compose usa Supabase para inventario y ya no define PostgreSQL local. Exige
+  conexión en `.env` de raíz y carga autenticación desde `services/api/.env`.
+- Docker comparte `services/api/data/users.json` con el host: se conserva el
+  administrador existente, sus hashes y UUID. Sin migrar ni sembrar datos.
+- Verificación real mediante `/_nexova-api`: login y `/auth/me` 200; seis
+  productos, siete órdenes y siete creadores resueltos. Filtros por oficina:
+  Valencia cuatro productos, Miami dos. Archivo de usuarios intacto.
+- Compose validado, también el rechazo de una URL de Supabase ausente. API
+  saludable; PostgreSQL local anterior detenido con su volumen conservado.
+  Suite de API aislada: 404 passed / 1 skipped en 70,98 s. Documentación bilingüe
+  actualizada; cambio listo para revisión. El perfil de la cuenta es opcional y no está
+  creado; `/profiles/me` devuelve el 404 previsto.
+- Captura de telemetría pendiente; este cambio prepara conexión y acceso.
+
+## Anterior — diseño de telemetría
 
 Rama: feature/telemetry-design-plan, creada primero desde origin/main y verificada contra la referencia actualizada.
 

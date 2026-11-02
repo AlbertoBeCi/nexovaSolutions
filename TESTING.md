@@ -9,6 +9,11 @@
 > Python, application y coberturas que siguen conservan su fecha histórica;
 > no se han vuelto a ejecutar en esta integración del PR.
 
+> Integración del 02/11/2026 (`feature/docker-supabase`): API **404 passed / 1
+> skipped**, 70,98 s, con dotenv y conexiones remotas desactivados y TinyDB
+> temporal. La omisión existente corresponde a concurrencia PostgreSQL, que
+> requiere una base de pruebas aislada. No se añadieron pruebas ni dependencias.
+
 🎯 Las pruebas verifican la **lógica** (reglas, permisos, validaciones y errores).
 🚫 No prueban la serialización HTTP (CORS, cabeceras, JSON mal formado). La auditoría
 añade cinco pruebas del selector React accesible y tres de las URLs de precarga.
@@ -47,6 +52,21 @@ con `services/api/.venv/Scripts/python.exe -m pytest -p no:cacheprovider`.
 | `npm run lint` | ✅ | ✅ |
 | `npm run build` | — | ✅ |
 | 🔤 Verificador `revision-textos-ui` | ✅ PASS | ✅ PASS |
+
+### Integración manual de Docker y Supabase — 02/11/2026
+
+| Comprobación | Resultado |
+| --- | --- |
+| `docker compose config` | API/UI únicamente; URL Supabase obligatoria y secretos de autenticación del backend. |
+| Configuración sin `SUPABASE_DATABASE_URL` | Rechazo antes de arrancar contenedores. |
+| Login por `localhost:3001/_nexova-api` y `GET /auth/me` | 200; administrador existente, activo. |
+| Lecturas de inventario por el mismo proxy | 200; 6 productos, 7 órdenes y 7 creadores resueltos. Filtros: Valencia 4 productos, Miami 2. |
+| Persistencia y conexión | Archivo de usuarios idéntico antes/después; UUID y hashes conservados. TLS y transacciones de auditoría de solo lectura. Inventario real: 6 activos, 4 entradas y 3 salidas. |
+| Perfil opcional | `/profiles/me` devuelve 404 porque la cuenta aún no tiene perfil; no impide login ni inventario. |
+| Estado de servicios | API saludable; web y backoffice disponibles. PostgreSQL local anterior detenido con su volumen conservado. |
+
+Las comprobaciones reales solo emitieron tokens de sesión y realizaron lecturas;
+no crearon usuarios, perfiles ni movimientos. No se ejecutaron seeds ni migraciones.
 
 ---
 

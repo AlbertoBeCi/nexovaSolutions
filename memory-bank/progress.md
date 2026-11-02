@@ -2,6 +2,18 @@
 
 ## Funciona
 
+- **Docker con Supabase y autenticación compartida (02/11/2026)** — rama
+  `feature/docker-supabase`: Compose define API/UI, exige la conexión Supabase
+  de `.env` y reutiliza los secretos del backend. El archivo de usuarios del
+  host se comparte conservando sus UUID y hashes; resueltos los 500 de sesión
+  causados por el administrador separado de Docker. Login y lecturas de sesión
+  e inventario por el proxy devuelven 200: seis productos, siete órdenes y sus
+  siete creadores. Inventario real conservado (6 activos / 4 entradas / 3 salidas)
+  y conexión TLS comprobada. PostgreSQL local anterior detenido sin borrar su
+  volumen. Compose válido, URL ausente rechazada antes del arranque; API aislada
+  404 passed / 1 skipped (70,98 s). Documentación bilingüe y guía de pruebas
+  actualizadas. Sin seeds, migraciones ni credenciales versionadas.
+
 - **Diseño de telemetría (26/10/2026)** — rama feature/telemetry-design-plan: docs/telemetry/telemetry-plan.md y event-schemas.json, 66 eventos / 5 obligatorios / 61 oportunidades en siete categorías. Envelope, allowlists, privacidad, stream/batch, indicadores y 23 checks documentados. Adaptación del inventario actual sin inventar metadatos; mínimo 6 y anomalía de costo >10% con media ponderada de 90 días y tres antecedentes. Verificador aislado node scripts/validate-telemetry.cjs: 9.450 comprobaciones PASS. Sin instrumentación, migraciones, dependencias nuevas ni escrituras en Supabase. La captura y sus pruebas de integración siguen pendientes.
 
 

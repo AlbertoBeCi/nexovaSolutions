@@ -55,21 +55,23 @@ Cada app tiene su propio `package.json` y `node_modules`. Ejecuta los comandos d
 <a id="desarrollo-con-docker-compose"></a>
 ## 🐳 Desarrollo con Docker Compose
 
+En una instalación nueva, copia `.env.example` a `.env` y `services/api/.env.example` a `services/api/.env`. Si esos archivos ya existen, edítalos sin reemplazar su contenido. Define `SUPABASE_DATABASE_URL` en el `.env` de la raíz con la conexión PostgreSQL de Supabase, `sslmode=require` y la contraseña codificada para URL. Configura `SECRET_KEY`, `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `services/api/.env`; utiliza un dominio de email válido. Ambos archivos están excluidos de Git.
+
 Desde la raíz del repositorio, ejecuta:
 
 ```bash
 docker compose up
 ```
 
-Arranca la web pública en `localhost:3000`, el backoffice en `localhost:3001`, la API en `localhost:8000` y PostgreSQL local para inventario. El archivo `.env.example` contiene valores locales; crea o edita `.env` en la raíz solo si necesitas personalizarlos. Para reconstruir las imágenes después de cambiar dependencias o Dockerfiles, ejecuta `docker compose up --build`.
+Arranca la web pública en `localhost:3000`, el backoffice en `localhost:3001` y la API en `localhost:8000`. El inventario se conecta a Supabase; Compose ya no inicia PostgreSQL local. Para reconstruir las imágenes después de cambiar dependencias o Dockerfiles, ejecuta `docker compose up --build`.
 
-La API empieza con el almacén local de usuarios vacío. Crea una vez el administrador de desarrollo con:
+Docker comparte `services/api/data/users.json` con el backend ejecutado fuera de contenedores: conserva cuentas, perfiles, contraseñas y UUID. Los usuarios existentes pueden iniciar sesión directamente. Solo si el almacén es nuevo, crea el administrador configurado en `services/api/.env` con:
 
 ```bash
-docker compose exec api uv run seed-users
+docker compose exec api uv run --no-sync seed-users
 ```
 
-El email y la contraseña se toman del `.env` de la raíz o de los valores predeterminados de Compose. `docker compose down` detiene los servicios y conserva los volúmenes de datos.
+Los proveedores conservan su volumen de datos independiente. `docker compose down` detiene los servicios y conserva tanto el archivo compartido de usuarios como los volúmenes. Después de cambiar variables de entorno, aplícalas con `docker compose up -d --no-deps --force-recreate api`.
 
 <a id="como-trabajar-en-el-repo"></a>
 ## 🛠️ Cómo trabajar en el repo
@@ -120,7 +122,7 @@ Lee el `README.md` de cada carpeta antes de empezar a trabajar allí.
 | [`CONTEXT.md`](./CONTEXT.md) | Fuente única de verdad del dominio Nexova | Léelo antes de construir; solo lo cambia el desarrollador |
 | [`AGENTS.md`](./AGENTS.md) | Guía operativa para agentes de IA | Lectura inicial, flujo de commit y archivos restringidos |
 | `README.md` / `README.es.md` | Guía del repositorio | Orientación general |
-| [`docker-compose.yml`](./docker-compose.yml) | Orquestación local | Arranca las apps Next.js, FastAPI y PostgreSQL local |
+| [`docker-compose.yml`](./docker-compose.yml) | Orquestación local | Arranca las apps Next.js y FastAPI, conectado a Supabase |
 
 ### 🖥️ `uis/` — interfaces de usuario
 
