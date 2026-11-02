@@ -37,11 +37,11 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest`* | 433 | ✅ 432 · ❌ 0 · ⏭ 1 | 68,68 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 436 | ✅ 435 · ❌ 0 · ⏭ 1 | 71,97 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
-| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 151 | ✅ 151 · ❌ 0 | 3,72 s | — |
-| 🏁 **Total documentado** | | **943** | ✅ **943** · ❌ **0** · ⏭ 1 | | |
+| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 163 | ✅ 163 · ❌ 0 | 2,73 s | — |
+| 🏁 **Total documentado** | | **958** | ✅ **958** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
@@ -52,6 +52,14 @@ con `services/api/.venv/Scripts/python.exe -m pytest -p no:cacheprovider`.
 | `npm run lint` | ✅ | ✅ |
 | `npm run build` | — | ✅ |
 | 🔤 Verificador `revision-textos-ui` | ✅ PASS | ✅ PASS |
+
+### Captura de telemetría — fase 2
+
+La captura añade `test_telemetry.py` (envelope, lotes y puente HMAC) y
+`telemetry.test.ts` (12 casos: lotes, reloj, Beacon, reintentos, descarte,
+concurrencia, identidad opcional, privacidad, límites, correlación y sesión).
+Fase 2: Jest, TypeScript, lint, build y revisión de textos correctos. Las pruebas
+de transporte usan mocks; el puente utiliza las fixtures TinyDB aisladas.
 
 ### Integración manual de Docker y Supabase — 02/11/2026
 

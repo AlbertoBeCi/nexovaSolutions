@@ -22,6 +22,10 @@ no persiste ni reenvía eventos y solo registra cantidad y tipos.
 `TELEMETRY_ENDPOINT` reserva la configuración futura. Ver
 [documentación de captura](../../docs/telemetry/capture.md).
 
+`GET /telemetry/context` exige el JWT existente y devuelve el seudónimo del
+usuario generado en servidor. Configura `TELEMETRY_HMAC_KEY_P1` de forma privada
+e independiente de `SECRET_KEY`; si falta, solo este endpoint opcional da 503.
+
 ### Autenticación
 
 - `User` (email, hash de contraseña, `is_active`, `role`) y `Profile` (name,

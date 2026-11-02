@@ -111,6 +111,16 @@ src/
 
 ## Convenciones
 
+### Servicio de telemetría
+
+`src/services/telemetry.ts` centraliza `track(eventType, properties)`, la cola
+temporal, los lotes y los reintentos. Configura `NEXT_PUBLIC_TELEMETRY_ENDPOINT`
+en `.env.local` (ver `.env.example`); Docker utiliza el proxy `/_nexova-api`.
+El puente autenticado `/telemetry/context` proporciona un seudónimo HMAC del
+servidor, sin exponer el UUID original. Ver
+[captura y límites](../../docs/telemetry/capture.md). La integración del layout
+y los disparadores se incorporan en la fase de instrumentación.
+
 - La UI va en **español**; nunca se muestran valores crudos de la API (se traducen
   con `statusLabels` / `stageLabels`).
 - La UI tampoco muestra errores crudos: `services/api.ts` traduce los fallos de

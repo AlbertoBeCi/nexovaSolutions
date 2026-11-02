@@ -333,6 +333,7 @@ def test_profile_requires_login(anon_client):
 
 @pytest.mark.parametrize("method,path", [
     ("get", "/auth/me"), ("get", "/users"), ("get", "/users/1"), ("put", "/users/1"),
+    ("get", "/telemetry/context"),
     ("delete", "/users/1"), ("get", "/profiles/me"), ("put", "/profiles/me"),
     ("post", "/auth/change-password"), ("post", "/api/incidents/analyze"),
     ("get", "/api/incidents/results/export"), ("post", "/suppliers"),

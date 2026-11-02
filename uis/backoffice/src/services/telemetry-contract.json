@@ -1,0 +1,556 @@
+{
+  "schemaVersion": "1.0.0",
+  "routes": [
+    "/",
+    "/login",
+    "/register",
+    "/account/profile",
+    "/account/change-password",
+    "/forgot-password",
+    "/reset-password",
+    "/talento",
+    "/candidates/new",
+    "/candidates/{id}",
+    "/candidates/{id}/edit",
+    "/incidencias",
+    "/suppliers",
+    "/incidents",
+    "/incidents/new",
+    "/incidents/summary",
+    "/backoffice/inventory/products",
+    "/backoffice/inventory/orders",
+    "/backoffice/inventory/orders/inbound",
+    "/backoffice/inventory/orders/outbound",
+    "/inventory/products",
+    "/inventory/products/{asset_id}",
+    "/inventory/orders",
+    "/inventory/orders/inbound",
+    "/inventory/orders/outbound",
+    "/auth/login",
+    "/auth/me",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/auth/change-password",
+    "/users",
+    "/users/{id}",
+    "/profiles/me",
+    "/suppliers/{id}",
+    "/suppliers/{id}/rate",
+    "/suppliers/{id}/status",
+    "/api/incidents",
+    "/api/incidents/analyze",
+    "/api/incidents/summary",
+    "/api/incidents/{id}",
+    "/api/incidents/{id}/status",
+    "unmatched"
+  ],
+  "events": {
+    "page_viewed": {
+      "required": [
+        "page_view_id",
+        "route_template",
+        "ui_language"
+      ],
+      "properties": {
+        "page_view_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        },
+        "ui_language": {
+          "type": "string",
+          "enum": [
+            "es",
+            "en"
+          ]
+        }
+      }
+    },
+    "session_logged_out": {
+      "required": [
+        "app",
+        "reason_code"
+      ],
+      "properties": {
+        "app": {
+          "type": "string",
+          "enum": [
+            "backoffice",
+            "application"
+          ]
+        },
+        "reason_code": {
+          "type": "string",
+          "enum": [
+            "user_requested"
+          ]
+        }
+      }
+    },
+    "filter_applied": {
+      "required": [
+        "route_template",
+        "filter_keys",
+        "result_count",
+        "filter_id"
+      ],
+      "properties": {
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        },
+        "filter_keys": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "office",
+              "category",
+              "country",
+              "status",
+              "stage",
+              "branch",
+              "origin",
+              "skills",
+              "availability"
+            ]
+          }
+        },
+        "result_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "filter_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "flow_started": {
+      "required": [
+        "flow_id",
+        "flow_type",
+        "route_template"
+      ],
+      "properties": {
+        "flow_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "flow_type": {
+          "type": "string",
+          "enum": [
+            "inbound_order",
+            "outbound_order",
+            "candidate_create",
+            "candidate_edit",
+            "supplier_create",
+            "incident_create",
+            "incident_analysis",
+            "talent_registration",
+            "login",
+            "password_reset",
+            "password_change",
+            "profile_edit"
+          ]
+        },
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        }
+      }
+    },
+    "flow_submitted": {
+      "required": [
+        "flow_id",
+        "flow_type",
+        "route_template",
+        "attempt_id",
+        "submission_mode"
+      ],
+      "properties": {
+        "flow_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "flow_type": {
+          "type": "string",
+          "enum": [
+            "inbound_order",
+            "outbound_order",
+            "candidate_create",
+            "candidate_edit",
+            "supplier_create",
+            "incident_create",
+            "incident_analysis",
+            "talent_registration",
+            "login",
+            "password_reset",
+            "password_change",
+            "profile_edit"
+          ]
+        },
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "submission_mode": {
+          "type": "string",
+          "enum": [
+            "http",
+            "local_simulation"
+          ]
+        }
+      }
+    },
+    "flow_completed": {
+      "required": [
+        "flow_id",
+        "flow_type",
+        "route_template",
+        "attempt_id",
+        "completion_mode",
+        "duration_ms"
+      ],
+      "properties": {
+        "flow_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "flow_type": {
+          "type": "string",
+          "enum": [
+            "inbound_order",
+            "outbound_order",
+            "candidate_create",
+            "candidate_edit",
+            "supplier_create",
+            "incident_create",
+            "incident_analysis",
+            "talent_registration",
+            "login",
+            "password_reset",
+            "password_change",
+            "profile_edit"
+          ]
+        },
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "completion_mode": {
+          "type": "string",
+          "enum": [
+            "server_response",
+            "local_simulation"
+          ]
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600000
+        }
+      }
+    },
+    "inventory_validation_failed": {
+      "required": [
+        "product_id",
+        "order_type",
+        "stage",
+        "field_codes",
+        "reason_code",
+        "office",
+        "product_category",
+        "programme_id",
+        "quantity",
+        "currency"
+      ],
+      "properties": {
+        "product_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "order_type": {
+          "type": "string",
+          "enum": [
+            "inbound",
+            "outbound"
+          ]
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "client",
+            "server"
+          ]
+        },
+        "field_codes": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "product_id",
+              "quantity",
+              "supplier",
+              "office",
+              "exit_type",
+              "assigned_to",
+              "unknown"
+            ]
+          }
+        },
+        "reason_code": {
+          "type": "string",
+          "enum": [
+            "required",
+            "invalid_type",
+            "out_of_range",
+            "invalid_enum",
+            "assignment_mismatch",
+            "other"
+          ]
+        },
+        "office": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "valencia",
+                "miami"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "product_category": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "training_kit",
+                "certification",
+                "onboarding_equipment"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "programme_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9][a-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "quantity": {
+          "type": "integer",
+          "const": 0
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "EUR",
+                "USD"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "client_request_completed": {
+      "required": [
+        "route_template",
+        "method",
+        "status_code",
+        "duration_ms",
+        "outcome",
+        "dependency"
+      ],
+      "properties": {
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS"
+          ]
+        },
+        "status_code": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 599
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600000
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "response",
+            "network_error",
+            "aborted"
+          ]
+        },
+        "dependency": {
+          "type": "string",
+          "enum": [
+            "nexova_api",
+            "incident_api",
+            "tracker_api"
+          ]
+        }
+      }
+    },
+    "page_performance_recorded": {
+      "required": [
+        "page_view_id",
+        "route_template",
+        "metric",
+        "value",
+        "navigation_type",
+        "measurement_origin"
+      ],
+      "properties": {
+        "page_view_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        },
+        "metric": {
+          "type": "string",
+          "enum": [
+            "LCP",
+            "INP",
+            "CLS",
+            "load"
+          ]
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "navigation_type": {
+          "type": "string",
+          "enum": [
+            "navigate",
+            "reload",
+            "back_forward",
+            "spa"
+          ]
+        },
+        "measurement_origin": {
+          "type": "string",
+          "enum": [
+            "field",
+            "synthetic"
+          ]
+        }
+      }
+    },
+    "frontend_error_captured": {
+      "required": [
+        "route_template",
+        "error_code",
+        "fingerprint",
+        "first_seen_at",
+        "last_seen_at",
+        "occurrence_count",
+        "sanitizer_version"
+      ],
+      "properties": {
+        "route_template": {
+          "type": "string",
+          "format": "route"
+        },
+        "error_code": {
+          "type": "string",
+          "enum": [
+            "network",
+            "render",
+            "unhandled_rejection",
+            "unexpected_exception",
+            "timeout",
+            "unknown"
+          ]
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "last_seen_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "occurrence_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sanitizer_version": {
+          "type": "string",
+          "const": "1.0.0"
+        }
+      }
+    }
+  }
+}

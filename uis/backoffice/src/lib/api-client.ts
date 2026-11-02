@@ -85,7 +85,8 @@ export async function apiRequest(
   path: string,
   init: RequestInit,
   fallbackMessage: string,
-  translateIssue: TranslateIssue
+  translateIssue: TranslateIssue,
+  options: { redirectOnUnauthorized?: boolean } = {}
 ): Promise<Response> {
   const token = getToken();
   const headers = new Headers(init.headers);
@@ -101,7 +102,7 @@ export async function apiRequest(
     );
   }
 
-  if (response.status === 401 && token) {
+  if (response.status === 401 && token && options.redirectOnUnauthorized !== false) {
     clearToken();
     // Navegacion dura a proposito: apiRequest corre fuera de un componente
     // o evento de React (no hay useRouter aca), y un reload completo deja

@@ -9,6 +9,7 @@
 import { API_URL, apiRequest, genericTranslateIssue, jsonInit, type ValidationIssue } from "./api-client";
 import { clearToken, getToken, setToken } from "./auth-storage";
 import type { LoginCredentials, RegisterInput, User, UserProfile, UserRole } from "../types/auth";
+import { beginTelemetrySession, endTelemetrySession, markTelemetryAuthReady } from "../services/telemetry-context";
 
 // ─── DTOs de la API (snake_case, ver services/api/models.py) ──────────
 
@@ -101,6 +102,7 @@ async function withPolishedErrors<T>(run: () => Promise<T>): Promise<T> {
 
 /** Inicia sesion y guarda el access token. Lanza si las credenciales son invalidas. */
 export async function login(credentials: LoginCredentials): Promise<void> {
+  beginTelemetrySession();
   let response: Response;
   try {
     response = await fetch(`${API_URL}/auth/login`, {
@@ -125,6 +127,7 @@ export async function login(credentials: LoginCredentials): Promise<void> {
 
 export function logout(): void {
   clearToken();
+  endTelemetrySession();
 }
 
 /** Registra el usuario (con perfil opcional embebido si se dio `name`) y
@@ -158,7 +161,9 @@ export async function getCurrentUser(): Promise<User> {
     "No se pudo obtener la sesión.",
     translateIssue
   );
-  return toUser((await response.json()) as UserDto);
+  const user = toUser((await response.json()) as UserDto);
+  markTelemetryAuthReady();
+  return user;
 }
 
 export interface ProfileInput {

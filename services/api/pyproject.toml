@@ -54,6 +54,7 @@ py-modules = [
     "inventory_models",
     "inventory_schemas",
     "telemetry_schemas",
+    "telemetry_core",
     "inventory_database",
     "seed_inventory",
 ]

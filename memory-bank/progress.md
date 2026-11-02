@@ -2,6 +2,13 @@
 
 ## Funciona
 
+- **Captura de telemetría, fase 2 (02/11/2026)** — servicio frontend con cola
+  acotada, 20 eventos/10 segundos, Beacon JSON y tres intentos totales con
+  backoff. Puente HMAC de servidor y consulta opcional sin redirigir ni cerrar
+  sesiones; sin UUID personales en eventos. API 435 passed / 1 skipped;
+  backoffice 163 Jest, TypeScript/lint/build/textos correctos. Disparadores
+  pendientes de fase 3. Credenciales y configuración real fuera de Git.
+
 - **Captura de telemetría, fase 1 (02/11/2026)** — stub de lote sin persistencia,
   envelope completo y configuración `TELEMETRY_ENDPOINT`. Pruebas de validez,
   límites, campos, privacidad de logs y JSON/Beacon: API 432 passed / 1 skipped.

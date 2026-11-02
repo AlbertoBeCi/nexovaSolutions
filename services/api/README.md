@@ -77,6 +77,10 @@ for Beacon, does not persist or forward events, and logs only counts and types.
 `TELEMETRY_ENDPOINT` reserves future configuration. See
 [capture documentation](../../docs/telemetry/capture.md).
 
+`GET /telemetry/context` requires the existing JWT and returns a server-generated
+user pseudonym. Configure the private `TELEMETRY_HMAC_KEY_P1` independently of
+`SECRET_KEY`; without it, only this optional endpoint returns 503.
+
 ## Requirements
 
 - Python 3.10+

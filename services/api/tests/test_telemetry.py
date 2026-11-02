@@ -66,3 +66,21 @@ def test_json_beacon_preflight_accepts_backoffice(anon_client):
     response = anon_client.options("/telemetry/events", headers={"Origin": "http://localhost:3001", "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type"})
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:3001"
+
+
+def test_identity_bridge_is_verified_and_opaque(user_client, monkeypatch):
+    monkeypatch.setattr("telemetry_core.TELEMETRY_HMAC_KEY_P1", "isolated-telemetry-test-key")
+    response = user_client.get("/telemetry/context")
+    assert response.status_code == 200
+    identity = response.json()
+    assert identity["userId"].startswith("p1_") and len(identity["userId"]) == 67
+    assert set(identity) == {"userId", "keyVersion", "schemaVersion"}
+    assert user_client.get("/telemetry/context").json() == identity
+    monkeypatch.setattr("telemetry_core.TELEMETRY_HMAC_KEY_P1", "another-isolated-test-key")
+    assert user_client.get("/telemetry/context").json()["userId"] != identity["userId"]
+
+
+def test_identity_bridge_missing_key_does_not_break_auth(user_client, monkeypatch):
+    monkeypatch.setattr("telemetry_core.TELEMETRY_HMAC_KEY_P1", None)
+    assert user_client.get("/telemetry/context").status_code == 503
+    assert user_client.get("/auth/me").status_code == 200

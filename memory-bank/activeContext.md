@@ -9,8 +9,13 @@ Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrad
 - Fase 1: stub público `/telemetry/events`, envelope tipado, lote vacío como
   operación válida y logs sin propiedades. Sin persistencia ni allowlists de
   payload en el colector temporal. API: 432 passed / 1 skipped (68,68 s).
-- Pendientes: servicio frontend y puente HMAC, después instrumentación y entrega.
-  Se mantienen los contratos y las cuatro métricas bloqueadas por metadatos.
+- Fase 2: servicio de cola/lotes/Beacon y tres intentos totales; puente HMAC
+  autenticado y consulta pasiva. Sesión por pestaña, contratos del cliente
+  derivados del JSON aprobado. API 435 passed / 1 skipped; backoffice 163 Jest,
+  TypeScript, lint, build y revisión de textos correctos.
+- Pendientes: instrumentación y entrega. Se mantienen los contratos y las
+  cuatro métricas bloqueadas por metadatos. Clave HMAC y URLs locales configuradas
+  solo en los archivos privados.
 
 ## Anterior — Docker con Supabase y autenticación compartida
 
