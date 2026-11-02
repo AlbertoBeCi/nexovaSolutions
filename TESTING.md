@@ -37,11 +37,11 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest`* | 405 | ✅ 404 · ❌ 0 · ⏭ 1 | 78,7 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 433 | ✅ 432 · ❌ 0 · ⏭ 1 | 68,68 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
 | 🟦 `uis/backoffice` | `npm test -- --runInBand` | 151 | ✅ 151 · ❌ 0 | 3,72 s | — |
-| 🏁 **Total documentado** | | **915** | ✅ **915** · ❌ **0** · ⏭ 1 | | |
+| 🏁 **Total documentado** | | **943** | ✅ **943** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite

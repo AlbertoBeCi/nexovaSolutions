@@ -2,6 +2,11 @@
 
 ## Funciona
 
+- **Captura de telemetría, fase 1 (02/11/2026)** — stub de lote sin persistencia,
+  envelope completo y configuración `TELEMETRY_ENDPOINT`. Pruebas de validez,
+  límites, campos, privacidad de logs y JSON/Beacon: API 432 passed / 1 skipped.
+  Servicio frontend e instrumentación pendientes; contratos de negocio intactos.
+
 - **Docker con Supabase y autenticación compartida (02/11/2026)** — rama
   `feature/docker-supabase`: Compose define API/UI, exige la conexión Supabase
   de `.env` y reutiliza los secretos del backend. El archivo de usuarios del

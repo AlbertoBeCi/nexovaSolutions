@@ -2,7 +2,17 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — Docker con Supabase y autenticación compartida
+## Ahora — captura de telemetría
+
+Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrado.
+
+- Fase 1: stub público `/telemetry/events`, envelope tipado, lote vacío como
+  operación válida y logs sin propiedades. Sin persistencia ni allowlists de
+  payload en el colector temporal. API: 432 passed / 1 skipped (68,68 s).
+- Pendientes: servicio frontend y puente HMAC, después instrumentación y entrega.
+  Se mantienen los contratos y las cuatro métricas bloqueadas por metadatos.
+
+## Anterior — Docker con Supabase y autenticación compartida
 
 Rama: `feature/docker-supabase`, desde `origin/main`.
 

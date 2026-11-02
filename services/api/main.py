@@ -23,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from inventory_database import init_inventory_db
-from routes import auth, incidents, inventory, profiles, suppliers, users
+from routes import auth, incidents, inventory, profiles, suppliers, telemetry, users
 
 # Sin este basicConfig, logger.info (p. ej. el token de reset que loguea
 # routes/auth.py a falta de un proveedor de email) no se ve en la consola de
@@ -78,6 +78,7 @@ app.include_router(suppliers.router)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(profiles.router)
+app.include_router(telemetry.router)
 
 
 @app.middleware("http")

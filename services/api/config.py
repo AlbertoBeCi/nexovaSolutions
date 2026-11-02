@@ -54,3 +54,6 @@ RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "Nexova <onboarding@resend.dev>")
 # Base para construir el link de /reset-password?token=... en el email.
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3001")
+
+# Collector destination reserved for future delivery; the stub never forwards.
+TELEMETRY_ENDPOINT = os.environ.get("TELEMETRY_ENDPOINT")

@@ -69,6 +69,14 @@ Nexova's single FastAPI backend, with one router per domain:
 
 All `/inventory` routes require an active authenticated user. Products are+listed with `GET /inventory/products` and fetched individually with+`GET /inventory/products/{asset_id}`. Register movements with+`POST /inventory/orders/inbound` (`asset_id`, `quantity`, `supplier`, `office`)+or `POST /inventory/orders/outbound` (`asset_id`, `quantity`, `exit_type`,+`assigned_to`, `office`). `GET /inventory/orders` returns both movement types,+including the current product summary, `user_uuid`, and `creator_name` (profile+name, falling back to email; `null` if the account is unavailable). Stock is+derived from entries and exits; outbound creation validates it transactionally.
 
+### Telemetry verification stub
+
+`POST /telemetry/events` accepts the eight-field telemetry envelope in a batch
+and returns `200 {"received": N}`, including zero for an empty batch. It is public
+for Beacon, does not persist or forward events, and logs only counts and types.
+`TELEMETRY_ENDPOINT` reserves future configuration. See
+[capture documentation](../../docs/telemetry/capture.md).
+
 ## Requirements
 
 - Python 3.10+
