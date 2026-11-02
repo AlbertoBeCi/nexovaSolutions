@@ -58,3 +58,4 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3001")
 # Collector destination reserved for future delivery; the stub never forwards.
 TELEMETRY_ENDPOINT = os.environ.get("TELEMETRY_ENDPOINT")
 TELEMETRY_HMAC_KEY_P1 = os.environ.get("TELEMETRY_HMAC_KEY_P1")
+TELEMETRY_INVENTORY_METADATA_PATH = os.environ.get("TELEMETRY_INVENTORY_METADATA_PATH")

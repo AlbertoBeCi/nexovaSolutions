@@ -24,10 +24,24 @@ Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrad
   archivo de usuarios intacto. Sin escrituras de negocio, seeds ni migraciones.
 - Entrega y guía: `docs/telemetry/capture.md`; borrador de PR con tabla y marcador
   de captura Network: `docs/telemetry/capture-pr.md`. Sin publicar PR/push.
-- Pendientes: cuatro métricas obligatorias bloqueadas por metadatos (entradas,
-  salidas, umbrales y variación de coste); solo rechazo de stock está capturado.
-  Persistencia/outbox/pipeline y otros frontends pertenecen a tareas posteriores.
-  Clave HMAC y URLs locales solo en archivos privados.
+- Cierre de obligatorios: 22 tipos (10 navegador / 12 servidor), incluidos los
+  cinco obligatorios y diagnóstico de metadatos. Evaluación bajo bloqueo y
+  publicación tras commit, cruces sin repetición y costes ponderados exactos.
+  API 476 passed / 1 skipped (75,28 s); backoffice 176 pruebas / 19 suites,
+  tipos/lint/build/textos y 9.450 checks de contrato correctos.
+- El usuario autorizó veinte entradas sintéticas: creadas mediante API junto a
+  seis productos DEMO nuevos, tres programas y ambas oficinas. No se modifica la
+  clasificación de activos originales. Registro privado de metadatos DEMO,
+  snapshots de coste y manifiesto de procedencia en `services/api/data/`.
+  Totales actuales 12 activos / 24 entradas / 3 salidas; originales y usuarios
+  idénticos por firma. Backup de public restaurado antes de escribir; rerun cero
+  filas nuevas. Entradas y dos variaciones de coste observadas en logs del stub.
+  Guía pública: `docs/telemetry/demo-data.md`; no tratar precios DEMO como reales.
+- Pendiente visual: Computer Use detecta Chrome pero se detiene al verificar URL,
+  incluso tras maximizar por indicación del usuario. No eludir esa comprobación.
+  Crear PR en borrador con esta limitación; no hacer merge sin aprobación.
+- Persistencia/outbox/pipeline y otros frontends son tareas posteriores. Sin
+  cambios de esquema, persistencia de eventos ni secretos en Git.
 
 ## Anterior — Docker con Supabase y autenticación compartida
 

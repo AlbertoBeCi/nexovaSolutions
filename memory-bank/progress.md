@@ -2,6 +2,19 @@
 
 ## Funciona
 
+- **Cierre de captura obligatoria y dataset DEMO (02/11/2026)** — implementados
+  los cinco productores obligatorios y `inventory_metadata_missing`, con
+  evaluación transaccional, publicación tras commit, cruces de umbral y referencia
+  ponderada de 90 días/mínimo tres órdenes. API 476 passed / 1 skipped (75,28 s),
+  backoffice 176 pruebas / 19 suites; build/tipos/lint/textos y 9.450 checks
+  correctos. Por autorización expresa: seis productos DEMO y veinte entradas
+  sintéticas en Supabase, sin salidas nuevas; totales 12/24/3. Backup de public
+  restaurado antes de la carga, firmas originales/usuarios intactas y rerun sin
+  filas nuevas. Veinte entradas y dos anomalías en logs. Procedencia, IDs y
+  sustitución futura en `docs/telemetry/demo-data.md`. Sin migraciones ni
+  persistencia de eventos. Captura DevTools bloqueada por verificación de URL
+  de Computer Use, también con Chrome maximizado; PR debe seguir en borrador.
+
 - **Captura de telemetría, fase 3 (02/11/2026)** — 17 tipos del contrato en
   backoffice/API, con autoridad diferenciada, HMAC, correlación y observación
   central de navegación, Web Vitals, errores y sesiones verificadas. Flujos de

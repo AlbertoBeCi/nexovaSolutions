@@ -30,8 +30,10 @@ Los productores del servidor comparten `telemetry_capture.track()` y el receptor
 interno: autenticación, rechazo verificado de sesión, rechazo de acceso/edición
 de stock y conteos del análisis CSV. Las peticiones reciben `X-Request-ID`
 validado o generado. Sin escrituras de negocio, nuevos metadatos ni auto-HTTP.
-Cuatro eventos obligatorios de inventario esperan metadatos de negocio; la guía
-de captura detalla el alcance y la verificación con datos aislados.
+Los cinco productores obligatorios están implementados. Un registro privado
+aporta metadatos explícitamente sintéticos para seis productos y veinte entradas
+DEMO autorizadas. Si faltan datos se emite un diagnóstico, no un hecho incompleto.
+Ver [procedencia y límites](../../docs/telemetry/demo-data.md).
 
 ### Autenticación
 

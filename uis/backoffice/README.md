@@ -120,8 +120,10 @@ El puente autenticado `/telemetry/context` proporciona un seudónimo HMAC del
 servidor, sin exponer el UUID original. Ver
 [captura y límites](../../docs/telemetry/capture.md). El observador del layout
 registra navegación, errores y Web Vitals; autenticación, cliente HTTP y
-formularios de inventario utilizan el mismo servicio. Las métricas autoritativas
-de movimientos, umbrales y costes esperan los metadatos de negocio pendientes.
+formularios de inventario utilizan el mismo servicio. La API captura los cinco
+obligatorios con metadatos explícitos; existe un dataset sintético de seis
+productos y veinte entradas, separado del inventario original. Ver
+[datos de demostración](../../docs/telemetry/demo-data.md).
 
 - La UI va en **español**; nunca se muestran valores crudos de la API (se traducen
   con `statusLabels` / `stageLabels`).

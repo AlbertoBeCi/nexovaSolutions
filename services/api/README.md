@@ -85,8 +85,10 @@ Server producers share `telemetry_capture.track()` and the in-process stub sink:
 authentication, verified session rejection, inventory access/stock-edit rejection
 and aggregate CSV analysis. Requests receive a validated/generated `X-Request-ID`.
 No business writes, new inventory metadata or self-HTTP calls are introduced.
-Four mandatory inventory events remain blocked by missing business metadata;
-see the capture document for the exact scope and isolated verification steps.
+All five mandatory producers are implemented. An explicitly synthetic sidecar
+supplies metadata for the authorized six-product/twenty-entry demo dataset.
+Unknown metadata produces a diagnostic instead of an incomplete business event.
+See [demo provenance and limitations](../../docs/telemetry/demo-data.md).
 
 ## Requirements
 

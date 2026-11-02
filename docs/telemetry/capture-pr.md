@@ -7,8 +7,9 @@ ni escribir en inventario. Se añade el stub de lotes, un servicio frontend con
 cola acotada y productores de navegación, flujos, autenticación y diagnóstico.
 El receptor responde `200 {"received": N}` y solo registra cantidad y tipos.
 
-Los cambios se dividen en tres commits: stub, servicio/identidad e instrumentación.
-Este documento es el borrador solicitado; todavía no se ha abierto un PR.
+Los commits separan stub, servicio/identidad, instrumentación y cierre de métricas
+obligatorias con datos de demostración. La captura visual sigue pendiente por un
+bloqueo técnico de la integración del navegador.
 
 ## Eventos instrumentados
 
@@ -17,7 +18,12 @@ los de servidor por `telemetry_capture.track()` y el mismo receptor interno.
 
 | Evento | Origen en el plan | Autoridad | Componente/hook o productor |
 | --- | --- | --- | --- |
+| `inbound_order_created` | Obligatorio | Servidor | `create_inbound_order` y `telemetry_inventory`, después de commit. |
+| `outbound_order_created` | Obligatorio | Servidor | `create_outbound_order`, operación confirmada bajo bloqueo. |
+| `stock_threshold_triggered` | Obligatorio | Servidor | Evaluador de cruce antes/después de la salida, sin caché. |
+| `kit_cost_variance_detected` | Obligatorio | Servidor | Evaluador de referencia ponderada comparable de 90 días y mínimo tres entradas. |
 | `direct_stock_edit_rejected` | Obligatorio | Servidor | `TelemetryRequestMiddleware`, rechazo 422/405 de campos raíz de stock en rutas conocidas. |
+| `inventory_metadata_missing` | Oportunidad | Servidor | Enriquecimiento ausente o histórico insuficiente; obligatorio incompleto no se emite. |
 | `login_succeeded` | Oportunidad | Servidor | `routes/auth.py`, credenciales verificadas. |
 | `login_failed` | Oportunidad | Servidor | `routes/auth.py`, credenciales rechazadas. |
 | `session_expired` | Oportunidad | Servidor | `security.py`, access token firmado cuya expiración se verifica. |
@@ -35,19 +41,19 @@ los de servidor por `telemetry_capture.track()` y el mismo receptor interno.
 | `flow_completed` | Oportunidad | Cliente | Mismo hook, creación confirmada por API. |
 | `inventory_validation_failed` | Oportunidad | Cliente | Mismo hook, códigos de validación local. |
 
-## Métricas obligatorias pendientes
+## Cobertura y datos de demostración
 
-| Evento | Prerrequisito y ubicación futura |
-| --- | --- |
-| `inbound_order_created` | Programa, categoría analítica, proveedor estable y coste; transacción de entrada en API. |
-| `outbound_order_created` | Programa y categoría analítica; transacción de salida en API. |
-| `stock_threshold_triggered` | Umbral/versionado y dimensiones de producto; evaluador de cruces tras movimientos. |
-| `kit_cost_variance_detected` | Costes, moneda, proveedor y comparables históricos; evaluador de variación. |
+Los cinco productores obligatorios están implementados y se verifican juntos
+contra el contrato aprobado mediante rutas reales en SQLite aislado. Preparan
+los eventos dentro de la transacción y los publican solo después de commit;
+un rollback no produce creación ni alerta. ±10% no dispara, una caída que sigue
+bajo mínimo no repite y una recuperación rearma el siguiente cruce.
 
-La base real carece de esos metadatos. No se inventan valores ni se transforman
-lecturas de UI en eventos autoritativos. **Queda completado uno de los cinco
-eventos obligatorios.** `direct_stock_edit_rejected` utiliza la resolución nula
-permitida por el contrato cuando no se resuelve el producto.
+Por autorización expresa se crearon seis productos `[DEMO]` y veinte entradas
+sintéticas, con tres programas y ambas oficinas. Las filas originales y usuarios
+permanecen idénticos. Backup restaurado antes de cargar; repetición idempotente
+con cero filas nuevas. Los veinte eventos de entrada y dos anomalías llegaron
+al receptor. [Procedencia, IDs y sustitución futura](./demo-data.md).
 
 ## Web Vitals, autenticación y privacidad
 
@@ -71,8 +77,9 @@ nombres, contraseñas, UUID de usuario original ni contenido CSV/formularios.
   `session_expired.reason_code: token_expired`, conforme al contrato vigente.
 - Backend y frontend comparten receptor, pero el productor del servidor no
   realiza auto-HTTP. El endpoint configurado en backend reserva el patrón futuro.
-- Cuatro métricas obligatorias siguen bloqueadas. Candidatos requiere un puente
-  de identidad del sujeto; website/application quedan fuera de esta captura.
+- Los metadatos DEMO son sintéticos y están separados del inventario original.
+  Una falta de enriquecimiento genera el diagnóstico aprobado. Candidatos requiere
+  un puente de identidad del sujeto; website/application quedan fuera de esta captura.
 - Stub público sin persistencia, allowlists por evento ni verificación de
   procedencia. Los productores se comprueban contra el JSON aprobado en pruebas.
   Sin outbox, deduplicación distribuida ni entrega exactamente una vez.
@@ -81,15 +88,16 @@ nombres, contraseñas, UUID de usuario original ni contenido CSV/formularios.
 
 ## Validación
 
-- API: **452 passed / 1 skipped**, 70,19 s, con almacenes temporales y conexiones
+- API: **476 passed / 1 skipped**, 75,28 s, con almacenes temporales y conexiones
   remotas desactivadas; omisión existente de concurrencia PostgreSQL aislada.
 - Backoffice: **176 pruebas / 19 suites**; TypeScript, lint, build y revisión de
   textos correctos. Sin nuevas dependencias.
 - Contrato: **9.450 comprobaciones** de los 66 contratos aprobados.
 - Docker: login y contexto HMAC 200; lote sintético de dos eventos por el proxy
   200/received 2, lote vacío 200/received 0; request ID conservado. Lecturas reales
-  con 6 productos / 7 órdenes y filtros 4 Valencia / 2 Miami. Usuarios intactos;
-  sin crear movimientos, ejecutar seeds o aplicar migraciones.
+  iniciales con 6 productos / 7 órdenes. Después de la carga DEMO autorizada:
+  12 productos / 24 entradas / 3 salidas; originales y usuarios intactos.
+  Sin cambios de esquema ni persistencia de eventos.
 
 ## Comprobación local y captura
 
@@ -104,3 +112,8 @@ limitaciones: [capture.md](./capture.md#verificación-local).
 > **CAPTURA PENDIENTE:** pegar aquí la captura de DevTools (Network) que muestre
 > el lote enviado al stub y la respuesta HTTP 200. Ocultar tokens y datos de
 > cuenta que puedan aparecer en otras peticiones.
+>
+> La integración detecta Chrome con Nexova, pero se detiene al no poder verificar
+> la URL de la ventana. Se ha reproducido incluso con Chrome maximizado y la
+> barra visible. La prueba HTTP del proxy está verificada; no se presenta como
+> una captura visual del navegador. Mantener el PR en borrador hasta adjuntarla.

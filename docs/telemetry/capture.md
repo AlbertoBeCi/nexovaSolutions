@@ -57,7 +57,7 @@ Para desarrollo fuera de Docker, configurar el endpoint en
 
 ## Fase 3 — disparadores implementados
 
-Los diez tipos del navegador pasan por `track()` del servicio. Los siete tipos
+Los diez tipos del navegador pasan por `track()` del servicio. Los doce tipos
 del servidor pasan por `telemetry_capture.track()` y el mismo receptor interno,
 sin peticiones HTTP a sí mismo. La autoridad del navegador es siempre
 `client_observed`; los productores internos usan `server`. El stub público no
@@ -65,7 +65,12 @@ autentica esa declaración y no debe usarse como fuente contable.
 
 | Evento | Prioridad del plan | Punto de captura |
 | --- | --- | --- |
+| `inbound_order_created` | Obligatorio | Transacción de entrada: prepara dimensiones y costes bajo bloqueo; publica después de commit. |
+| `outbound_order_created` | Obligatorio | Transacción de salida confirmada, con el stock validado. |
+| `stock_threshold_triggered` | Obligatorio | Misma transacción: `stock_before >= threshold` y `stock_after < threshold`; las lecturas no disparan. |
+| `kit_cost_variance_detected` | Obligatorio | Entrada confirmada; referencia ponderada de 90 días, mínimo tres antecedentes comparables y variación absoluta estrictamente mayor que 10%. |
 | `direct_stock_edit_rejected` | Obligatorio | `TelemetryRequestMiddleware`: raíz JSON con `stock`, `current_stock` o `currentStock`, ruta conocida de inventario y respuesta 422/405. |
+| `inventory_metadata_missing` | Oportunidad | Productor de inventario: datos de enriquecimiento o referencia insuficientes, sin emitir un obligatorio incompleto. |
 | `login_succeeded` | Oportunidad | Router de autenticación, tras verificar credenciales. |
 | `login_failed` | Oportunidad | Router de autenticación, credenciales rechazadas. |
 | `session_expired` | Oportunidad | Dependencia central de seguridad, access token con firma válida y expiración comprobada. |
@@ -134,7 +139,8 @@ resolver producto, envía las dimensiones nulas admitidas por el contrato y
   website y application no se instrumentan aquí. Los eventos de candidatos
   requieren un puente de identidad del sujeto antes de capturarse sin PII.
 - Sin persistencia, outbox, pipeline, tablas nuevas, migraciones ni cambios de
-  stock. El stub acepta el envelope, pero todavía no aplica allowlists por tipo
+  stock directo desde la captura. La carga DEMO autorizada crea órdenes de negocio
+  separadas y se documenta en [demo-data.md](./demo-data.md). El stub acepta el envelope, pero todavía no aplica allowlists por tipo
   ni verifica productores. No hay entrega exactamente una vez.
 
 ## Verificación local
@@ -203,7 +209,7 @@ CORS incluye localhost/127.0.0.1 en 3000 y 3001, permite JSON y expone
 
 ### Resultados de esta entrega (02/11/2026)
 
-- API: 452 passed / 1 skipped, 70,19 s, dotenv y conexiones remotas desactivados,
+- API: 476 passed / 1 skipped, dotenv y conexiones remotas desactivados,
   almacenes temporales. La omisión es concurrencia PostgreSQL aislada.
 - Backoffice: 176 pruebas / 19 suites; tipos, lint, build y revisión de textos
   correctos. Sin dependencias nuevas; la API no tiene linter ni type-checker
@@ -216,12 +222,38 @@ CORS incluye localhost/127.0.0.1 en 3000 y 3001, permite JSON y expone
   Lecturas reales: 6 productos, 7 órdenes; filtros 4 Valencia / 2 Miami; archivo
   de usuarios idéntico. Sin escrituras de negocio, seeds ni migraciones.
 
-## Dependencias de negocio pendientes
+Verificación inicial anterior al dataset. Después, por autorización expresa, se
+crearon seis productos `[DEMO]` y veinte entradas: totales 12 activos, 24 entradas
+y 3 salidas. Firmas de todas las filas originales y del fichero de usuarios
+idénticas. Backup de `public` restaurado correctamente en PostgreSQL aislado antes
+de cargar. La repetición del seed creó cero filas. Se observaron 20 eventos de
+entrada y dos anomalías de coste en los logs del receptor. Los cinco tipos
+obligatorios se verifican conjuntamente con rutas reales sobre SQLite aislado.
 
-La base real tiene `Asset`, `AssetEntry` y `AssetExit`, pero no programa,
-categoría analítica, proveedor estable, costes ni mínimos versionados. Por ello
-`inbound_order_created`, `outbound_order_created`, `stock_threshold_triggered`
-y `kit_cost_variance_detected` no se emitirán incompletos. Requieren una tarea
-de metadatos y evaluadores transaccionales; no se inventan correspondencias.
-Los cinco eventos obligatorios no pueden darse por completados: solo
-`direct_stock_edit_rejected` está instrumentado en esta entrega.
+## Metadatos y alcance de los cinco obligatorios
+
+Los cinco productores están implementados. `TELEMETRY_INVENTORY_METADATA_PATH`
+apunta a un registro privado de metadatos de demostración, con programas
+controlados, clasificación por producto, mínimo/versionado, costes históricos
+por entrada y cotizaciones explícitamente sintéticas. No se infiere ninguna
+clasificación de los seis activos originales. Un proveedor libre no registrado
+no recibe un ID inventado.
+
+Los costes DEMO provienen de la cotización configurada para ese producto,
+oficina y etiqueta exacta `DEMO TELEMETRIA - PROVEEDOR 01`; no son precios reales.
+El seed conserva los veinte snapshots de costes en el registro. Para operaciones
+posteriores, la API conserva hasta 10.000 snapshots en memoria; si al reiniciar
+falta historial completo, registra el diagnóstico y omite la anomalía. Esto
+evita reconstruir precios pasados con cotizaciones nuevas.
+
+La captura se prepara bajo el bloqueo del activo, no usa cachés de listados y
+solo se publica después del commit. Un rollback no emite creación ni alerta.
+La multiplicación y comparación de costes usan enteros exactos; ±10% no dispara,
+0 puede ser un coste DEMO explícito y una referencia cero no genera anomalía.
+Se excluyen otros productos, oficinas, proveedores y monedas.
+
+La entrega de captura sigue siendo de mejor esfuerzo, sin outbox durable. El
+registro privado no almacena eventos y no sustituye las futuras tablas de datos
+reales de negocio. Para sustituir la demostración habrá que conectar los
+metadatos reales aprobados conservando estos contratos y disparadores. Fuera del
+dataset, una dimensión ausente continúa generando `inventory_metadata_missing`.

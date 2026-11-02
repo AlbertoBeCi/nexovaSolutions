@@ -37,11 +37,11 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest`* | 453 | ✅ 452 · ❌ 0 · ⏭ 1 | 70,19 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 477 | ✅ 476 · ❌ 0 · ⏭ 1 | 75,28 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
-| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 176 | ✅ 176 · ❌ 0 | 4,84 s | — |
-| 🏁 **Total documentado** | | **989** | ✅ **988** · ❌ **0** · ⏭ 1 | | |
+| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 176 | ✅ 176 · ❌ 0 | 5,98 s | — |
+| 🏁 **Total documentado** | | **1013** | ✅ **1012** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
@@ -68,7 +68,7 @@ Los componentes comprueban que solo una respuesta correcta completa el flujo y
 que filtros fallidos no inventan resultados; errores y Web Vitals usan códigos
 y métricas del contrato.
 
-Resultado actual: API 452 passed / 1 skipped y backoffice 176 pruebas en 19
+Resultado actual: API 476 passed / 1 skipped y backoffice 176 pruebas en 19
 suites. TypeScript, lint, build y revisión de textos correctos; 9.450 checks del
 contrato en verde. La API no configura un linter ni type-checker independiente.
 Las pruebas desactivan dotenv y conexiones remotas, usan TinyDB temporal y
@@ -78,6 +78,22 @@ eventos 200/received 2 y vacío 200/received 0, contexto HMAC 200 y request ID
 conservado. Inventario de solo lectura 6 productos/7 órdenes, usuarios idénticos.
 La captura visual de DevTools queda como marcador en
 [`capture-pr.md`](docs/telemetry/capture-pr.md).
+
+El cierre añade `test_telemetry_inventory.py` (19 casos) y
+`test_telemetry_demo_seed.py` (5 casos). Los cinco obligatorios se capturan desde
+rutas reales en SQLite y validan contra el JSON aprobado. Se comprueban rollback
+sin publicación, cruce/rearme, comparación estricta ±10%, referencia ponderada,
+ventana de 90 días, separación de proveedor/oficina/moneda y ausencia de metadatos.
+El seed prueba veinte entradas, separación de originales, idempotencia y rechazo
+de URL remota antes de leer credenciales. Sin dependencias nuevas.
+
+La carga DEMO real fue una acción autorizada independiente de pytest: seis
+productos y veinte entradas con procedencia sintética; backup de public
+restaurado en PostgreSQL aislado antes de escribir, originales y usuarios
+idénticos por firma. Repetición cero filas nuevas; veinte eventos de entrada y
+dos variaciones de coste en el stub. [Detalle](docs/telemetry/demo-data.md).
+No se simula una captura DevTools: Computer Use se detuvo al verificar la URL de
+Chrome, incluso con la ventana maximizada. El marcador visual continúa pendiente.
 
 ### Integración manual de Docker y Supabase — 02/11/2026
 
