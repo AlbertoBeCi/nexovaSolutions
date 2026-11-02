@@ -13,9 +13,21 @@ Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrad
   autenticado y consulta pasiva. Sesión por pestaña, contratos del cliente
   derivados del JSON aprobado. API 435 passed / 1 skipped; backoffice 163 Jest,
   TypeScript, lint, build y revisión de textos correctos.
-- Pendientes: instrumentación y entrega. Se mantienen los contratos y las
-  cuatro métricas bloqueadas por metadatos. Clave HMAC y URLs locales configuradas
-  solo en los archivos privados.
+- Fase 3: 17 tipos instrumentados (10 navegador / 7 servidor): navegación,
+  rendimiento, errores, autenticación, rechazo de stock/acceso, análisis agregado,
+  filtros y flujos de inventario. API 452 passed / 1 skipped (70,19 s);
+  backoffice 176 pruebas / 19 suites, tipos/lint/build/textos correctos;
+  9.450 comprobaciones del contrato correctas.
+- Docker recargado con clave HMAC y URLs privadas: login/contexto 200, lote
+  sintético de dos eventos por proxy 200/received 2 y vacío 200/received 0;
+  request ID conservado. Lecturas reales 6 productos / 7 órdenes, filtros 4/2;
+  archivo de usuarios intacto. Sin escrituras de negocio, seeds ni migraciones.
+- Entrega y guía: `docs/telemetry/capture.md`; borrador de PR con tabla y marcador
+  de captura Network: `docs/telemetry/capture-pr.md`. Sin publicar PR/push.
+- Pendientes: cuatro métricas obligatorias bloqueadas por metadatos (entradas,
+  salidas, umbrales y variación de coste); solo rechazo de stock está capturado.
+  Persistencia/outbox/pipeline y otros frontends pertenecen a tareas posteriores.
+  Clave HMAC y URLs locales solo en archivos privados.
 
 ## Anterior — Docker con Supabase y autenticación compartida
 

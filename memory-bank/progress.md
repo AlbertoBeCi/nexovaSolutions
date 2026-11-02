@@ -2,6 +2,19 @@
 
 ## Funciona
 
+- **Captura de telemetría, fase 3 (02/11/2026)** — 17 tipos del contrato en
+  backoffice/API, con autoridad diferenciada, HMAC, correlación y observación
+  central de navegación, Web Vitals, errores y sesiones verificadas. Flujos de
+  inventario solo se completan tras respuesta correcta; filtros tras resultados.
+  Rechazo de stock sin nueva ruta editable ni consulta de resolución adicional.
+  API 452 passed / 1 skipped (70,19 s); backoffice 176 pruebas / 19 suites,
+  tipos/lint/build/textos correctos; contrato 9.450 checks. Docker: login/contexto
+  y lote por proxy 200, dos eventos recibidos; inventario leído 6/7 y usuarios
+  idénticos. Sin escrituras de negocio ni persistencia de eventos. Guía y borrador
+  de PR en `docs/telemetry/capture*.md`, con marcador de captura DevTools.
+  Cuatro obligatorios esperan metadatos; solo `direct_stock_edit_rejected` está
+  instrumentado. Sin push/PR de esta rama.
+
 - **Captura de telemetría, fase 2 (02/11/2026)** — servicio frontend con cola
   acotada, 20 eventos/10 segundos, Beacon JSON y tres intentos totales con
   backoff. Puente HMAC de servidor y consulta opcional sin redirigir ni cerrar

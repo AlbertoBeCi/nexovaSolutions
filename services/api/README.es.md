@@ -26,6 +26,13 @@ no persiste ni reenvía eventos y solo registra cantidad y tipos.
 usuario generado en servidor. Configura `TELEMETRY_HMAC_KEY_P1` de forma privada
 e independiente de `SECRET_KEY`; si falta, solo este endpoint opcional da 503.
 
+Los productores del servidor comparten `telemetry_capture.track()` y el receptor
+interno: autenticación, rechazo verificado de sesión, rechazo de acceso/edición
+de stock y conteos del análisis CSV. Las peticiones reciben `X-Request-ID`
+validado o generado. Sin escrituras de negocio, nuevos metadatos ni auto-HTTP.
+Cuatro eventos obligatorios de inventario esperan metadatos de negocio; la guía
+de captura detalla el alcance y la verificación con datos aislados.
+
 ### Autenticación
 
 - `User` (email, hash de contraseña, `is_active`, `role`) y `Profile` (name,

@@ -9,7 +9,8 @@
 import { API_URL, apiRequest, genericTranslateIssue, jsonInit, type ValidationIssue } from "./api-client";
 import { clearToken, getToken, setToken } from "./auth-storage";
 import type { LoginCredentials, RegisterInput, User, UserProfile, UserRole } from "../types/auth";
-import { beginTelemetrySession, endTelemetrySession, markTelemetryAuthReady } from "../services/telemetry-context";
+import { beginTelemetrySession, endTelemetrySession, requestHeaders, uuid, withTelemetryRequest } from "../services/telemetry-context";
+import { track } from "../services/telemetry";
 
 // ─── DTOs de la API (snake_case, ver services/api/models.py) ──────────
 
@@ -103,16 +104,21 @@ async function withPolishedErrors<T>(run: () => Promise<T>): Promise<T> {
 /** Inicia sesion y guarda el access token. Lanza si las credenciales son invalidas. */
 export async function login(credentials: LoginCredentials): Promise<void> {
   beginTelemetrySession();
+  const id = uuid();
+  const startedAt = Date.now();
+  const measure = (status: number, outcome: string) => withTelemetryRequest(id, () => track("client_request_completed", { route_template: "/auth/login", method: "POST", status_code: status, duration_ms: Math.min(3600000, Math.max(0, Date.now() - startedAt)), outcome, dependency: "nexova_api" }));
   let response: Response;
   try {
     response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: { "Content-Type": "application/x-www-form-urlencoded", ...requestHeaders(id) },
       body: new URLSearchParams({ username: credentials.email, password: credentials.password }),
     });
   } catch {
+    measure(0, "network_error");
     throw new Error("No se pudo conectar con el servidor. Comprueba que la API está en marcha.");
   }
+  measure(response.status, "response");
 
   // 401 en login siempre es "credenciales invalidas": se ignora el detail
   // crudo de la API (routes/auth.py no lleva tildes) y se muestra la frase
@@ -126,6 +132,7 @@ export async function login(credentials: LoginCredentials): Promise<void> {
 }
 
 export function logout(): void {
+  if (getToken()) track("session_logged_out", { app: "backoffice", reason_code: "user_requested" });
   clearToken();
   endTelemetrySession();
 }
@@ -162,7 +169,6 @@ export async function getCurrentUser(): Promise<User> {
     translateIssue
   );
   const user = toUser((await response.json()) as UserDto);
-  markTelemetryAuthReady();
   return user;
 }
 

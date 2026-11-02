@@ -14,6 +14,7 @@ original para ser un reemplazo directo.
 from __future__ import annotations
 
 import hashlib
+from time import time
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 
@@ -31,6 +32,7 @@ from config import (
 )
 from models import RoleEnum, UserInDB
 from users_db import UsersTable, ensure_user_uuid
+from telemetry_capture import bind_actor, record_session_rejection
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -86,6 +88,13 @@ def get_current_user(
         payload = decode_access_token(token)
         email = payload.get("sub")
     except JWTError:
+        # Classification is internal; keep the public 401 unchanged.
+        try:
+            expired = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False})
+            if expired.get("type") == "access" and isinstance(expired.get("exp"), (int, float)) and expired["exp"] <= time():
+                record_session_rejection(token, "token_expired")
+        except JWTError:
+            pass
         raise CREDENTIALS_ERROR
     # Un token de reset de password (type="password_reset") nunca sirve como
     # access token, aunque tambien lleve `sub`/`exp` validos.
@@ -94,16 +103,20 @@ def get_current_user(
 
     doc = get_user_by_email(table, email)
     if doc is None or not doc.get("is_active", False):
+        record_session_rejection(token, "account_deleted" if doc is None else "account_inactive")
         raise CREDENTIALS_ERROR
     # Si la contrasena cambio despues de emitir este token (reset o
     # change-password), su `pwd_fp` ya no coincide: la sesion queda
     # invalidada sin necesitar una tabla de tokens revocados.
     if payload.get("pwd_fp") != password_fingerprint(doc["hashed_password"]):
+        record_session_rejection(token, "password_changed")
         raise CREDENTIALS_ERROR
 
     ensure_user_uuid(table, doc.doc_id)
     doc = table.get(doc_id=doc.doc_id)
-    return UserInDB(id=doc.doc_id, **doc)
+    user = UserInDB(id=doc.doc_id, **doc)
+    bind_actor(user.uuid)
+    return user
 
 
 def password_fingerprint(hashed_password: str) -> str:

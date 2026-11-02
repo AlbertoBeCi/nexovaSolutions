@@ -6,8 +6,9 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { ApiRequestError } from "../../lib/api-client";
 import { getLoginHref } from "../../lib/auth-navigation";
-import { getCurrentUser, logout } from "../../lib/auth-api";
-import { getToken, subscribeToken } from "../../lib/auth-storage";
+import { getCurrentUser } from "../../lib/auth-api";
+import { clearToken, getToken, subscribeToken } from "../../lib/auth-storage";
+import { markTelemetryAuthReady } from "../../services/telemetry-context";
 import type { User } from "../../types/auth";
 
 type AuthResult =
@@ -40,7 +41,7 @@ export function RequireAuth({
       .catch((error: unknown) => {
         if (cancelled) return;
         if (error instanceof ApiRequestError && error.status === 401) {
-          logout();
+          clearToken();
           router.replace(getLoginHref(`${pathname}${window.location.search}`));
           return;
         }
@@ -58,6 +59,11 @@ export function RequireAuth({
       cancelled = true;
     };
   }, [pathname, retryKey, router, token]);
+
+  useEffect(() => {
+    if (authResult?.status === "ready" && authResult.token === token) markTelemetryAuthReady(pathname);
+    return () => markTelemetryAuthReady(false);
+  }, [authResult, pathname, token]);
 
   if (!token || !authResult || authResult.token !== token) {
     return (

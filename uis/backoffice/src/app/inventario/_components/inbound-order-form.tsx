@@ -7,6 +7,8 @@ import { createInboundOrder } from "../../../services/inventory-api";
 import { INVENTORY_FIELD_CLASS, INVENTORY_LABEL_CLASS, INVENTORY_BUTTON_CLASS, INVENTORY_ERROR_CLASS, INVENTORY_SUCCESS_CLASS, OfficeSelect, ProductSelect } from "./inventory-fields";
 import { useInventoryProducts } from "../_hooks/use-inventory-products";
 import type { InventoryOffice } from "../../../types/inventory";
+import { useInventoryTelemetry } from "../_hooks/use-inventory-telemetry";
+import { withTelemetryRequest } from "../../../services/telemetry-context";
 
 export function InboundOrderForm({ initialProductId }: { initialProductId: string }) {
   const { loading: productsLoading, products, error: productsError, retry: retryProducts } = useInventoryProducts();
@@ -23,6 +25,7 @@ export function InboundOrderForm({ initialProductId }: { initialProductId: strin
     [products, selectedId]
   );
   const office = officeOverride ?? product?.office ?? "Valencia";
+  const telemetry = useInventoryTelemetry("inbound", product?.id ?? null, office);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,31 +33,36 @@ export function InboundOrderForm({ initialProductId }: { initialProductId: strin
     setSuccessMessage(null);
     const amount = Number(quantity);
     if (!product) {
+      telemetry.invalid("product_id", "required");
       setErrorMessage("Selecciona un producto del inventario.");
       return;
     }
     if (!Number.isSafeInteger(amount) || amount <= 0) {
+      telemetry.invalid("quantity", Number.isSafeInteger(amount) ? "out_of_range" : "invalid_type");
       setErrorMessage("La cantidad debe ser un número entero mayor que cero.");
       return;
     }
     if (!supplier.trim()) {
+      telemetry.invalid("supplier", "required");
       setErrorMessage("Indica el proveedor de la entrega.");
       return;
     }
     if (supplier.trim().length > 160) {
+      telemetry.invalid("supplier", "out_of_range");
       setErrorMessage("El proveedor no puede superar los 160 caracteres.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const created = await createInboundOrder({
+      const created = await withTelemetryRequest(telemetry.submitted(), () => createInboundOrder({
         assetId: product.id,
         quantity: amount,
         supplier: supplier.trim(),
         office,
-      });
+      }));
       setSuccessMessage(`Entrada de ${created.quantity} unidades de «${product.name}» registrada correctamente.`);
+      telemetry.completed();
       setQuantity("");
       setSupplier("");
     } catch (error) {
@@ -84,7 +92,7 @@ export function InboundOrderForm({ initialProductId }: { initialProductId: strin
       )}
 
       {!productsLoading && !productsError && products.length > 0 && (
-        <form onSubmit={handleSubmit} noValidate className="flex max-w-2xl flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+        <form onChangeCapture={telemetry.interact} onSubmit={handleSubmit} noValidate className="flex max-w-2xl flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
           <ProductSelect products={products} value={product ? selectedId : ""} disabled={submitting} onChange={(value) => { setSelectedId(value); setOfficeOverride(null); setErrorMessage(null); setSuccessMessage(null); }} />
           <label className={INVENTORY_LABEL_CLASS}>
             Cantidad recibida

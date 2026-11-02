@@ -6,7 +6,7 @@ const SESSION_KEY = "nexova_telemetry_session";
 const IDLE_MS = 30 * 60 * 1000;
 let session: { id: string; lastActivity: number } | null = null;
 let requestId: string | null = null;
-let authReady = false;
+let authReady: string | null = null;
 const listeners = new Set<() => void>();
 
 export function uuid(): string {
@@ -62,10 +62,10 @@ export function requestHeaders(id: string): Record<string, string> {
   return { "X-Request-ID": id, "X-Nexova-App": "backoffice", ...(sessionId ? { "X-Telemetry-Session-ID": sessionId } : {}) };
 }
 
-export function withTelemetryRequest(id: string, run: () => void): void {
+export function withTelemetryRequest<T>(id: string, run: () => T): T {
   const previous = requestId;
   requestId = isUuid(id) ? id : null;
-  try { run(); } finally { requestId = previous; }
+  try { return run(); } finally { requestId = previous; }
 }
 
 export function currentRequestId(): string { return requestId ?? uuid(); }
@@ -85,7 +85,8 @@ export function normalizeRoute(path: string): string {
   return "unmatched";
 }
 
-export function markTelemetryAuthReady(ready = true): void {
+export function markTelemetryAuthReady(route: string | false): void {
+  const ready = route || null;
   if (authReady === ready) return;
   authReady = ready;
   for (const listener of listeners) { try { listener(); } catch { /* observer isolation */ } }
@@ -94,4 +95,4 @@ export function subscribeTelemetryAuth(listener: () => void): () => void {
   listeners.add(listener);
   return () => { listeners.delete(listener); };
 }
-export function telemetryAuthReady(): boolean { return authReady; }
+export function telemetryAuthReady(): string | null { return authReady; }

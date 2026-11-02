@@ -39,6 +39,7 @@ from security import (
     verify_password,
 )
 from users_db import ProfilesTable, UsersTable, users_db_lock
+from telemetry_capture import bind_actor, record_login
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger("auth")
@@ -85,10 +86,15 @@ def login(
 ) -> Token:
     doc = get_user_by_email(users, form_data.username)
     if doc is None or not doc.get("is_active", False):
+        record_login(False)
         raise INVALID_CREDENTIALS
     if not verify_password(form_data.password, doc["hashed_password"]):
+        record_login(False)
         raise INVALID_CREDENTIALS
 
+    if doc.get("uuid"):
+        bind_actor(doc["uuid"])
+    record_login(True)
     return Token(access_token=create_access_token(doc["email"], doc["hashed_password"]))
 
 

@@ -37,11 +37,11 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest`* | 436 | ✅ 435 · ❌ 0 · ⏭ 1 | 71,97 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 453 | ✅ 452 · ❌ 0 · ⏭ 1 | 70,19 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
-| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 163 | ✅ 163 · ❌ 0 | 2,73 s | — |
-| 🏁 **Total documentado** | | **958** | ✅ **958** · ❌ **0** · ⏭ 1 | | |
+| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 176 | ✅ 176 · ❌ 0 | 4,84 s | — |
+| 🏁 **Total documentado** | | **989** | ✅ **988** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
@@ -53,13 +53,31 @@ con `services/api/.venv/Scripts/python.exe -m pytest -p no:cacheprovider`.
 | `npm run build` | — | ✅ |
 | 🔤 Verificador `revision-textos-ui` | ✅ PASS | ✅ PASS |
 
-### Captura de telemetría — fase 2
+### Captura de telemetría — fases 1, 2 y 3 (02/11/2026)
 
-La captura añade `test_telemetry.py` (envelope, lotes y puente HMAC) y
-`telemetry.test.ts` (12 casos: lotes, reloj, Beacon, reintentos, descarte,
-concurrencia, identidad opcional, privacidad, límites, correlación y sesión).
-Fase 2: Jest, TypeScript, lint, build y revisión de textos correctos. Las pruebas
-de transporte usan mocks; el puente utiliza las fixtures TinyDB aisladas.
+La captura añade `test_telemetry.py` (envelope, lotes y puente HMAC),
+`test_telemetry_capture.py` (17 casos de productores, expiración verificada,
+rechazo de stock/acceso, privacidad, correlación y fallo del receptor), pruebas
+del servicio, observador, hook de flujos y componentes de catálogo/entrada.
+Los eventos capturados se validan contra el JSON aprobado con Ajv existente.
+La prueba de contrato del servidor invoca Node: ejecutar `npm ci` en
+`uis/backoffice` antes de esa suite para disponer del Ajv del tooling.
+El servicio comprueba 20 eventos/10 segundos, Beacon, reintentos, descarte,
+concurrencia, identidad opcional, privacidad, límites, correlación y sesión.
+Los componentes comprueban que solo una respuesta correcta completa el flujo y
+que filtros fallidos no inventan resultados; errores y Web Vitals usan códigos
+y métricas del contrato.
+
+Resultado actual: API 452 passed / 1 skipped y backoffice 176 pruebas en 19
+suites. TypeScript, lint, build y revisión de textos correctos; 9.450 checks del
+contrato en verde. La API no configura un linter ni type-checker independiente.
+Las pruebas desactivan dotenv y conexiones remotas, usan TinyDB temporal y
+fixtures SQLite; no disparan escrituras en Supabase real. El transporte frontend
+se simula. Prueba real adicional: proxy Docker → stub, lote sintético de dos
+eventos 200/received 2 y vacío 200/received 0, contexto HMAC 200 y request ID
+conservado. Inventario de solo lectura 6 productos/7 órdenes, usuarios idénticos.
+La captura visual de DevTools queda como marcador en
+[`capture-pr.md`](docs/telemetry/capture-pr.md).
 
 ### Integración manual de Docker y Supabase — 02/11/2026
 

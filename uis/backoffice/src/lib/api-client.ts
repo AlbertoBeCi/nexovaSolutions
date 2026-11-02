@@ -16,6 +16,8 @@
 
 import { clearToken, getToken } from "./auth-storage";
 import { getLoginHref } from "./auth-navigation";
+import { track } from "../services/telemetry";
+import { currentRequestId, isUuid, normalizeRoute, requestHeaders, withTelemetryRequest } from "../services/telemetry-context";
 
 export const API_URL = process.env.NEXT_PUBLIC_INCIDENTS_API_URL ?? "http://localhost:8000";
 
@@ -91,16 +93,27 @@ export async function apiRequest(
   const token = getToken();
   const headers = new Headers(init.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
+  const id = currentRequestId();
+  for (const [key, value] of Object.entries(requestHeaders(id))) headers.set(key, value);
+  const startedAt = Date.now();
+  const measure = (status: number, outcome: string, effectiveId = id) => {
+    if (path.startsWith("/telemetry/")) return;
+    withTelemetryRequest(effectiveId, () => track("client_request_completed", { route_template: normalizeRoute(path), method: init.method ?? "GET", status_code: status, duration_ms: Math.min(3600000, Math.max(0, Date.now() - startedAt)), outcome, dependency: "nexova_api" }));
+  };
 
   let response: Response;
   try {
     response = await fetch(`${API_URL}${path}`, { ...init, headers });
-  } catch {
+  } catch (error) {
+    measure(0, error instanceof Error && error.name === "AbortError" ? "aborted" : "network_error");
     throw new ApiRequestError(
       "No se pudo conectar con el servidor. Comprueba que la API está en marcha.",
       null
     );
   }
+
+  const effectiveId = response.headers.get("X-Request-ID");
+  measure(response.status, "response", isUuid(effectiveId) ? effectiveId : id);
 
   if (response.status === 401 && token && options.redirectOnUnauthorized !== false) {
     clearToken();

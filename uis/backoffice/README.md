@@ -118,8 +118,10 @@ temporal, los lotes y los reintentos. Configura `NEXT_PUBLIC_TELEMETRY_ENDPOINT`
 en `.env.local` (ver `.env.example`); Docker utiliza el proxy `/_nexova-api`.
 El puente autenticado `/telemetry/context` proporciona un seudónimo HMAC del
 servidor, sin exponer el UUID original. Ver
-[captura y límites](../../docs/telemetry/capture.md). La integración del layout
-y los disparadores se incorporan en la fase de instrumentación.
+[captura y límites](../../docs/telemetry/capture.md). El observador del layout
+registra navegación, errores y Web Vitals; autenticación, cliente HTTP y
+formularios de inventario utilizan el mismo servicio. Las métricas autoritativas
+de movimientos, umbrales y costes esperan los metadatos de negocio pendientes.
 
 - La UI va en **español**; nunca se muestran valores crudos de la API (se traducen
   con `statusLabels` / `stageLabels`).

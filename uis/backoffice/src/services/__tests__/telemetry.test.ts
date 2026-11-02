@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import contract from "../telemetry-contract.json";
+import Ajv from "ajv";
 
 let telemetry: typeof import("../telemetry");
 let context: typeof import("../telemetry-context");
@@ -133,4 +134,39 @@ test("client contracts retain the approved event names, fields and version", () 
     const payload = event.properties.properties;
     expect(Object.keys(spec.properties).sort()).toEqual(Object.keys(payload.properties).filter((key) => !["source", "environment", "actor_type", "authority", "key_version"].includes(key)).sort());
   }
+});
+
+test("actual client envelopes validate against the complete approved JSON Schema", async () => {
+  const primary = JSON.parse(readFileSync(path.resolve(process.cwd(), "../../docs/telemetry/event-schemas.json"), "utf8"));
+  const validate = new Ajv({ allErrors: true }).compile(primary);
+  for (const name of Object.keys(contract.events)) {
+    const properties = { ...primary.definitions[name].examples[0].properties };
+    for (const key of ["source", "environment", "actor_type", "authority", "key_version"]) delete properties[key];
+    if ("programme_id" in properties) properties.programme_id = null;
+    telemetry.track(name, properties);
+  }
+  await jest.advanceTimersByTimeAsync(10000);
+  expect(events()).toHaveLength(Object.keys(contract.events).length);
+  for (const event of events()) { expect(validate(event)).toBe(true); }
+});
+
+test("API metrics use the effective response request ID and exclude telemetry traffic", async () => {
+  const effective = context.uuid();
+  (global.fetch as jest.Mock).mockImplementation((url: string) => url === endpoint ? response() : Promise.resolve(new Response("[]", { headers: { "X-Request-ID": effective } })));
+  const api = await import("../../lib/api-client");
+  await api.apiRequest("/inventory/products?office=Miami", { method: "GET" }, "fallback", api.genericTranslateIssue);
+  await api.apiRequest("/telemetry/context", { method: "GET" }, "", api.genericTranslateIssue, { redirectOnUnauthorized: false });
+  await jest.advanceTimersByTimeAsync(10000);
+  expect(events()).toHaveLength(1);
+  expect(events()[0].requestId).toBe(effective);
+  expect(events()[0].properties).toEqual(expect.objectContaining({ route_template: "/inventory/products", outcome: "response", dependency: "nexova_api" }));
+});
+
+test("network errors are measured without copying exception messages", async () => {
+  (global.fetch as jest.Mock).mockImplementation((url: string) => url === endpoint ? response() : Promise.reject(new Error("private-network-secret")));
+  const api = await import("../../lib/api-client");
+  await expect(api.apiRequest("/inventory/products", { method: "GET" }, "fallback", api.genericTranslateIssue)).rejects.toMatchObject({ status: null });
+  await jest.advanceTimersByTimeAsync(10000);
+  expect(events()[0].properties.outcome).toBe("network_error");
+  expect(JSON.stringify(events())).not.toContain("private-network-secret");
 });

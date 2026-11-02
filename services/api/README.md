@@ -81,6 +81,13 @@ for Beacon, does not persist or forward events, and logs only counts and types.
 user pseudonym. Configure the private `TELEMETRY_HMAC_KEY_P1` independently of
 `SECRET_KEY`; without it, only this optional endpoint returns 503.
 
+Server producers share `telemetry_capture.track()` and the in-process stub sink:
+authentication, verified session rejection, inventory access/stock-edit rejection
+and aggregate CSV analysis. Requests receive a validated/generated `X-Request-ID`.
+No business writes, new inventory metadata or self-HTTP calls are introduced.
+Four mandatory inventory events remain blocked by missing business metadata;
+see the capture document for the exact scope and isolated verification steps.
+
 ## Requirements
 
 - Python 3.10+
