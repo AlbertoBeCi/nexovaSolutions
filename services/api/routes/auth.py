@@ -12,9 +12,11 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
+from starlette.background import BackgroundTask
+from starlette.responses import JSONResponse
 
 from config import ENVIRONMENT, FRONTEND_URL
 from mailer import send_password_reset_email
@@ -82,20 +84,30 @@ RESET_REQUESTED_MESSAGE = (
     description="`username` debe ser el email del usuario (formulario OAuth2 estandar).",
 )
 def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], users: UsersTable
-) -> Token:
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    users: UsersTable,
+    background_tasks: BackgroundTasks,
+) -> Token | JSONResponse:
     doc = get_user_by_email(users, form_data.username)
     if doc is None or not doc.get("is_active", False):
-        record_login(False)
-        raise INVALID_CREDENTIALS
+        return _invalid_login_response()
     if not verify_password(form_data.password, doc["hashed_password"]):
-        record_login(False)
-        raise INVALID_CREDENTIALS
+        return _invalid_login_response()
 
     if doc.get("uuid"):
         bind_actor(doc["uuid"])
-    record_login(True)
+    background_tasks.add_task(record_login, True)
     return Token(access_token=create_access_token(doc["email"], doc["hashed_password"]))
+
+
+def _invalid_login_response() -> JSONResponse:
+    """Return the same 401 body while persisting telemetry after sending it."""
+    return JSONResponse(
+        status_code=INVALID_CREDENTIALS.status_code,
+        content={"detail": INVALID_CREDENTIALS.detail},
+        headers=INVALID_CREDENTIALS.headers,
+        background=BackgroundTask(record_login, False),
+    )
 
 
 @router.get(

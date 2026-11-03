@@ -25,7 +25,7 @@ from fastapi.responses import JSONResponse
 from inventory_database import get_database_url, get_engine, init_inventory_db
 from telemetry_storage import init_telemetry_db
 from telemetry_capture import TelemetryRequestMiddleware
-from routes import auth, incidents, inventory, profiles, suppliers, telemetry, users
+from routes import auth, incidents, inventory, profiles, suppliers, telemetry, telemetry_report, users
 
 # Sin este basicConfig, logger.info (p. ej. el token de reset que loguea
 # routes/auth.py a falta de un proveedor de email) no se ve en la consola de
@@ -34,11 +34,12 @@ logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(name)s: %(mess
 
 logger = logging.getLogger("main")
 
-# Frontends de desarrollo: uis/backoffice (3000) y uis/application (3001).
+# Frontends de desarrollo: website (3000), backoffice (3001), application (3002).
 # En produccion, definir CORS_ORIGINS con los origenes reales separados por comas.
 DEFAULT_CORS_ORIGINS = (
     "http://localhost:3000,http://127.0.0.1:3000,"
-    "http://localhost:3001,http://127.0.0.1:3001"
+    "http://localhost:3001,http://127.0.0.1:3001,"
+    "http://localhost:3002,http://127.0.0.1:3002"
 )
 
 @asynccontextmanager
@@ -88,6 +89,7 @@ app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(profiles.router)
 app.include_router(telemetry.router)
+app.include_router(telemetry_report.router)
 
 
 @app.middleware("http")

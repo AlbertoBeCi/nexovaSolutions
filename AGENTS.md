@@ -145,11 +145,20 @@ No hagas `git commit` hasta haber completado estos pasos:
    mantenlo así. Nunca metas claves, tokens ni `.env` reales en un commit.
 
 6. **Stagea explícitamente** los archivos que quieres (`git add <rutas>`), no
-   `git add .` a ciegas. Vuelve a mirar `git diff --staged`.
+   `git add .` a ciegas. Vuelve a mirar `git diff --staged`. Divide el trabajo
+   en commits revisables por hitos funcionales importantes; antes de cada uno,
+   comprueba que el diff preparado contiene solo los archivos de ese hito.
 
 7. **Escribe el mensaje de commit** siguiendo la sección 5.
 
 8. **No hagas `push` ni abras PR salvo que el usuario lo pida.**
+
+9. **Antes de abrir un PR**, revisa si el cambio deja un aprendizaje útil para
+   [`APRENDIENDO/`](./APRENDIENDO/). Añádelo a la guía `aprendiendo*.md` más
+   cercana al tema o crea una si no existe una adecuada. En PR pequeños,
+   corrige la guía existente solo si hay una explicación desactualizada o un
+   aprendizaje que merezca conservarse; no añadas texto de relleno. Incluye
+   esta revisión junto con las comprobaciones finales del PR.
 
 ---
 
