@@ -37,11 +37,11 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest`* | 477 | ✅ 476 · ❌ 0 · ⏭ 1 | 75,28 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 491 | ✅ 490 · ❌ 0 · ⏭ 1 | 75,09 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
 | 🟦 `uis/backoffice` | `npm test -- --runInBand` | 176 | ✅ 176 · ❌ 0 | 5,98 s | — |
-| 🏁 **Total documentado** | | **1013** | ✅ **1012** · ❌ **0** · ⏭ 1 | | |
+| 🏁 **Total documentado** | | **1038** | ✅ **1037** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
@@ -86,6 +86,28 @@ sin publicación, cruce/rearme, comparación estricta ±10%, referencia ponderad
 ventana de 90 días, separación de proveedor/oficina/moneda y ausencia de metadatos.
 El seed prueba veinte entradas, separación de originales, idempotencia y rechazo
 de URL remota antes de leer credenciales. Sin dependencias nuevas.
+
+### Almacenamiento de eventos de telemetría (03/11/2026)
+
+`test_telemetry_storage.py` comprueba las ocho columnas, índices, allowlist de
+`tags`, rechazo individual de inválidos, persistencia y que un lote genera una
+sola sentencia `INSERT`. También verifica que un fallo de base de datos devuelva
+503 en lugar de confirmar eventos no persistidos. Resultado: API 490 passed /
+1 skipped; cliente de telemetría del backoffice 15/15 y verificador de contrato
+9.450/9.450.
+
+La migración remota se aplicó tras autorización explícita. La tabla quedó con
+las ocho columnas, los índices de `timestamp`, `event_type` y GIN de `tags`, RLS
+activa y sin permisos para `PUBLIC`, `anon`, `authenticated` ni `service_role`.
+Las cuatro filas anteriores se conservaron y sus dimensiones permitidas se
+trasladaron a `tags`.
+
+Verificación real: el backoffice registró una entrada y una salida de una unidad
+del producto DEMO `DEMO-TEL-001`, y almacenó eventos técnicos de los flujos.
+La consulta directa a Supabase confirmó `event_type`, `timestamp` y `tags` para
+eventos técnicos y de negocio. El lote mixto con un evento válido y otro inválido
+respondió `{"received":2,"stored":1,"rejected":1}`. La captura de cinco filas
+se adjunta a la descripción del PR. No hubo cambios bajo `uis/`.
 
 La carga DEMO real fue una acción autorizada independiente de pytest: seis
 productos y veinte entradas con procedencia sintética; backup de public

@@ -14,13 +14,30 @@ Backend FastAPI único de Nexova, con un router por dominio:
 - **inventory** (/inventory): activos y órdenes persistidos en PostgreSQL de
   Supabase mediante SQLModel. TinyDB y la autenticación existentes no cambian.
 
-### Stub de verificación de telemetría
+### Almacenamiento de telemetría
 
-`POST /telemetry/events` recibe el envelope de ocho campos en un lote y devuelve
-`200 {"received": N}`, incluido cero para un lote vacío. Es público para Beacon,
-no persiste ni reenvía eventos y solo registra cantidad y tipos.
-`TELEMETRY_ENDPOINT` reserva la configuración futura. Ver
-[documentación de captura](../../docs/telemetry/capture.md).
+`POST /telemetry/events` es público para Beacon y recibe el envelope de ocho
+campos dentro de un lote parseado de forma laxa. Valida cada elemento con
+`TelemetryEvent.model_validate()`, persiste los eventos válidos con una sola
+inserción masiva y devuelve `{"received": N, "stored": M, "rejected": R}`.
+Un evento inválido no cancela los válidos del mismo lote. El endpoint mantiene
+la compatibilidad con el frontend, que solo comprueba el estado HTTP.
+
+Supabase almacena los eventos en `telemetry_events`, una tabla append-only de
+ocho columnas (`event_id`, `timestamp`, `session_id`, `user_id`, `event_type`,
+`schema_version`, `request_id`, `tags`), índices en `timestamp` y `event_type`
+y un índice GIN en `tags`. `tags` conserva únicamente las dimensiones de la
+allowlist del plan de telemetría. La API no ofrece operaciones de actualización
+ni borrado de eventos. RLS está activo y los roles de la API de Supabase no
+tienen permisos sobre la tabla; los eventos solo se escriben con la conexión
+de base de datos del backend. Al arrancar, crea la tabla y los índices si faltan. Para
+actualizar la versión anterior de once columnas sin perder filas y trasladar a
+`tags` las propiedades permitidas, aplica una vez
+[`migrations/001_telemetry_events_eight_columns.sql`](migrations/001_telemetry_events_eight_columns.sql)
+en la base Supabase configurada.
+
+Ver la [documentación de captura](../../docs/telemetry/capture.md) y el
+[plan de telemetría](../../docs/telemetry/telemetry-plan.md).
 
 `GET /telemetry/context` exige el JWT existente y devuelve el seudónimo del
 usuario generado en servidor. Configura `TELEMETRY_HMAC_KEY_P1` de forma privada

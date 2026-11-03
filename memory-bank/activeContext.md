@@ -2,7 +2,29 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — captura de telemetría
+## Ahora - almacenamiento de telemetria en Supabase
+
+Rama: `feature/telemetry-event-storage`, desde `origin/main`.
+
+- Implementacion: tabla objetivo de ocho columnas y tres indices; endpoint laxo,
+  validacion individual, rechazo parcial y una sentencia bulk INSERT. El
+  frontend permanece intacto y el cliente solo depende del estado HTTP.
+- Suite API: 490 passed / 1 skipped (75.09 s). Prueba del cliente de telemetria
+  del backoffice: 15/15. Contrato: 9,450 comprobaciones. Se anadieron pruebas
+  para el fallo de almacenamiento (503) y un solo INSERT SQL por lote.
+- Supabase real migrado tras autorizacion: ocho columnas, indices de timestamp y
+  event_type, GIN en tags, RLS activa y sin permisos de API. Las cuatro filas
+  previas se conservaron; las dimensiones permitidas quedaron en tags.
+- E2E verificado: el backoffice registro una entrada y una salida de una unidad
+  del DEMO `DEMO-TEL-001`; sus eventos de flujo y eventos tecnicos aparecen en la
+  tabla. Un lote mixto de prueba respondio received=2, stored=1, rejected=1.
+  Consulta SQL directa confirmo event_type, timestamp y tags; captura guardada en
+  `docs/telemetry/telemetry-events-evidence.png`.
+- Suite: API 490 passed / 1 skipped, telemetria backoffice 15/15, contrato 9.450
+  comprobaciones. No se modifico ningun archivo de `uis/`.
+- Entrega pendiente: revisar, commitear y abrir el PR solicitado.
+
+## Anterior — captura de telemetría
 
 Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrado.
 

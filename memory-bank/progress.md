@@ -2,6 +2,18 @@
 
 ## Funciona
 
+- **Almacenamiento de telemetria (03/11/2026)** - implementacion en
+  `feature/telemetry-event-storage`: modelo de ocho columnas, tres indices,
+  endpoint con validacion por evento, rechazo parcial y bulk INSERT unico; fallo
+  de persistencia devuelve 503. API 490 passed / 1 skipped; cliente backoffice
+  15/15; contrato 9,450 PASS. Migracion remota autorizada y aplicada: ocho
+  columnas, tres indices, RLS activa, sin permisos de API, cuatro filas previas
+  conservadas y dimensiones permitidas trasladadas a tags. E2E real desde el
+  backoffice: entrada y salida de una unidad del DEMO `DEMO-TEL-001`; eventos de
+  flujo y tecnicos aparecen en Supabase. Lote mixto: received=2, stored=1,
+  rejected=1. Captura directa de consulta SQL en
+  `docs/telemetry/telemetry-events-evidence.png`. Frontend sin cambios.
+
 - **Cierre de captura obligatoria y dataset DEMO (02/11/2026)** — implementados
   los cinco productores obligatorios y `inventory_metadata_missing`, con
   evaluación transaccional, publicación tras commit, cruces de umbral y referencia

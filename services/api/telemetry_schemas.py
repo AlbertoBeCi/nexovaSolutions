@@ -1,4 +1,4 @@
-"""Stable wire envelope for the temporary, non-persistent telemetry collector."""
+"""Stable wire envelope for the telemetry collector and persistent storage."""
 from datetime import datetime, timezone
 from typing import Annotated, Any, Literal
 from uuid import UUID
@@ -41,3 +41,5 @@ class TelemetryBatch(BaseModel):
 
 class TelemetryReceipt(BaseModel):
     received: int
+    stored: int = 0
+    rejected: int = 0

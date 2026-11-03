@@ -112,6 +112,8 @@ def anon_client(suppliers_table, users_table, profiles_table):
     app.dependency_overrides[get_suppliers_table] = lambda: suppliers_table
     app.dependency_overrides[get_users_table] = lambda: users_table
     app.dependency_overrides[get_profiles_table] = lambda: profiles_table
+    from routes.telemetry import get_telemetry_session
+    app.dependency_overrides[get_telemetry_session] = lambda: None
     yield TestClient(app)
     app.dependency_overrides.clear()
 
