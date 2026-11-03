@@ -26,6 +26,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Pipeline" },
   { href: "/candidates/new", label: "Registrar candidato" },
   { href: "/incidencias", label: "Incidencias" },
+  { href: "/telemetry", label: "Telemetría" },
   { href: "/backoffice/inventory/products", label: "Inventario" },
 ] as const;
 
