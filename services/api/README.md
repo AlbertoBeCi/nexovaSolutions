@@ -108,6 +108,20 @@ See [capture documentation](../../docs/telemetry/capture.md) and the
 user pseudonym. Configure the private `TELEMETRY_HMAC_KEY_P1` independently of
 `SECRET_KEY`; without it, only this optional endpoint returns 503.
 
+`GET /telemetry/report` is an administrator-only technical report. Optional
+`start_date` and `end_date` query parameters must be timezone-aware ISO 8601
+timestamps; the default window is the last seven days ending now, in UTC. The
+range is half-open (`timestamp >= start` and `timestamp < end`). The response
+contains the resolved period and four grouped metrics: event counts by UTC day
+and type, client-observed request error rates by day and route, request latency
+mean/p95 by day and route, and daily failed-login rates. SQL loads only the
+requested window and event types; Pandas parses timestamps as UTC before
+grouping. The assembled JSON is cached in memory for 60 seconds per requested
+window. Server-side `login_succeeded` and `login_failed` events are best-effort:
+a telemetry storage error does not change the authentication result.
+The learning guide is in
+[`APRENDIENDO/aprendiendoTelemetria.md`](../../APRENDIENDO/aprendiendoTelemetria.md).
+
 Server producers share `telemetry_capture.track()` and the in-process stub sink:
 authentication, verified session rejection, inventory access/stock-edit rejection
 and aggregate CSV analysis. Requests receive a validated/generated `X-Request-ID`.

@@ -2,7 +2,27 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora - almacenamiento de telemetria en Supabase
+## Ahora - reporte tecnico de telemetria
+
+Rama: `feature/telemetry-report-endpoint`, creada desde `origin/main`.
+
+- Pipeline Pandas en `services/telemetry/analysis.py`: volumen diario, tasa de
+  errores de requests, latencia por ruta y tasa de fallos de login. Las consultas
+  SQL acotan rango y tipos; los timestamps se convierten a UTC antes de agrupar.
+- API `GET /telemetry/report`, protegida para administradores, con ventana UTC
+  predeterminada de siete dias y cache de 60 segundos. Los eventos de login se
+  persisten como mejor esfuerzo en una sesion independiente.
+- Dashboard `/telemetry` en backoffice con periodo visible, tablas en espanol y
+  estados de carga, vacio, error y reintento.
+- Commits separados por hito: regla permanente de hitos/APRENDIENDO, pipeline,
+  API, UI y esta actualización documental. Falta cerrar evidencia de acceso real
+  al dashboard.
+- Verificaciones: API 507 passed / 1 skipped (84.26 s); backoffice 182 Jest en 21
+  suites, lint, build y revision de textos correctos.
+- E2E real de login/reporte y captura del dashboard aun no confirmados en esta
+  rama; la lectura de credenciales desde la consola fue rechazada por auto-review.
+
+## Anterior - almacenamiento de telemetria en Supabase
 
 Rama: `feature/telemetry-event-storage`, desde `origin/main`.
 
