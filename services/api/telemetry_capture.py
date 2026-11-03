@@ -1,18 +1,22 @@
-"""Server producers and bounded request observation; no persistence or self-HTTP."""
+"""Server producers and bounded request observation without self-HTTP calls."""
 from collections import OrderedDict
 from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
+import logging
 import re
 from time import perf_counter
 from threading import Lock
 from uuid import UUID, uuid4
 
 from config import ENVIRONMENT
+from inventory_database import get_database_url, get_engine
+from sqlmodel import Session
 from telemetry_core import pseudonymize_user, receive_events
 from telemetry_schemas import SCHEMA_VERSION, TelemetryBatch, TelemetryEvent
+from telemetry_storage import insert_telemetry_events
 
 
 @dataclass
@@ -29,6 +33,8 @@ _context: ContextVar[CaptureContext | None] = ContextVar("telemetry_context", de
 _seen: OrderedDict[tuple[str, str], float] = OrderedDict()
 _seen_lock = Lock()
 diagnostics = {"capture_failures": 0}
+logger = logging.getLogger("telemetry.capture")
+_PERSISTED_AUTH_EVENTS = {"login_failed", "login_succeeded"}
 _routes = {
     "/auth/login", "/auth/me", "/auth/change-password", "/auth/forgot-password", "/auth/reset-password",
     "/inventory/products", "/inventory/products/{asset_id}", "/inventory/orders", "/inventory/orders/inbound", "/inventory/orders/outbound",
@@ -72,9 +78,19 @@ def track(event_type: str, properties: dict) -> None:
             userId=user_id, event_type=event_type, schemaVersion=SCHEMA_VERSION, requestId=context.request_id,
             properties={**properties, "source": "api", "environment": ENVIRONMENT if ENVIRONMENT in {"development", "test", "production"} else "development", "authority": "server", "actor_type": "user" if user_id else "anonymous", "key_version": "p1" if user_id else None},
         )
+        if event_type in _PERSISTED_AUTH_EVENTS and get_database_url():
+            with Session(get_engine()) as session:
+                insert_telemetry_events(session, [event])
         receive_events(TelemetryBatch(events=[event]))
-    except Exception:
+    except Exception as exc:
         diagnostics["capture_failures"] += 1
+        # Authentication and telemetry persistence are independent: storage
+        # failures must never change the HTTP result of a login attempt.
+        logger.warning(
+            "telemetry_capture_failed event_type=%s error_type=%s",
+            event_type,
+            type(exc).__name__,
+        )
 
 
 def record_login(succeeded: bool) -> None:
