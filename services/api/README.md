@@ -79,13 +79,30 @@ All `/inventory` routes require an active authenticated user. Products are
 +name, falling back to email; `null` if the account is unavailable). Stock is
 +derived from entries and exits; outbound creation validates it transactionally.
 
-### Telemetry verification stub
+### Telemetry storage
 
-`POST /telemetry/events` accepts the eight-field telemetry envelope in a batch
-and returns `200 {"received": N}`, including zero for an empty batch. It is public
-for Beacon, does not persist or forward events, and logs only counts and types.
-`TELEMETRY_ENDPOINT` reserves future configuration. See
-[capture documentation](../../docs/telemetry/capture.md).
+`POST /telemetry/events` is public for Beacon and accepts the eight-field event
+envelope in a loosely parsed batch. It validates each item with
+`TelemetryEvent.model_validate()`, persists the valid events in one bulk insert,
+and returns `{"received": N, "stored": M, "rejected": R}`. Invalid events do
+not cancel valid items in the same batch. The endpoint remains compatible with
+the frontend, which checks the HTTP status only.
+
+Supabase stores events in the append-only `telemetry_events` table: eight
+columns (`event_id`, `timestamp`, `session_id`, `user_id`, `event_type`,
+`schema_version`, `request_id`, `tags`), indexes on `timestamp` and `event_type`,
+and a GIN index on `tags`. `tags` keeps only the allowlisted dimensions from the
+telemetry plan. The API has no update or delete operation for stored events.
+Row-level security is enabled and the Supabase API roles have no table
+privileges; only the backend's database connection writes events. Startup
+creates the table and indexes when they are absent. To upgrade the
+earlier eleven-column version while preserving existing rows and moving their
+allowlisted `properties` into `tags`, apply
+[`migrations/001_telemetry_events_eight_columns.sql`](migrations/001_telemetry_events_eight_columns.sql)
+once to the configured Supabase database.
+
+See [capture documentation](../../docs/telemetry/capture.md) and the
+[telemetry plan](../../docs/telemetry/telemetry-plan.md).
 
 `GET /telemetry/context` requires the existing JWT and returns a server-generated
 user pseudonym. Configure the private `TELEMETRY_HMAC_KEY_P1` independently of

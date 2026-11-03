@@ -16,7 +16,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Column, DateTime, MetaData, Text, text
+from sqlalchemy import Column, DateTime, MetaData, Text, insert, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.types import JSON
 from sqlmodel import Field, Session, SQLModel
@@ -143,6 +143,24 @@ def init_telemetry_db(engine: Any) -> None:
                     "ON telemetry_events USING gin (tags)"
                 )
             )
+            conn.execute(text("ALTER TABLE telemetry_events ENABLE ROW LEVEL SECURITY"))
+            conn.execute(text("REVOKE ALL PRIVILEGES ON TABLE telemetry_events FROM PUBLIC"))
+            conn.execute(text(
+                """DO $$
+                DECLARE
+                    role_name text;
+                BEGIN
+                    FOREACH role_name IN ARRAY ARRAY['anon', 'authenticated', 'service_role']
+                    LOOP
+                        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = role_name) THEN
+                            EXECUTE format(
+                                'REVOKE ALL PRIVILEGES ON TABLE public.telemetry_events FROM %I',
+                                role_name
+                            );
+                        END IF;
+                    END LOOP;
+                END $$"""
+            ))
         conn.commit()
 
 
@@ -168,6 +186,10 @@ def insert_telemetry_events(session: Session, events: list[TelemetryEvent]) -> i
     if not events:
         return 0
     rows = [_event_to_row(evt) for evt in events]
-    session.add_all(rows)
+    values = [
+        {column.name: getattr(row, column.name) for column in TelemetryEventRow.__table__.columns}
+        for row in rows
+    ]
+    session.exec(insert(TelemetryEventRow).values(values))
     session.commit()
     return len(rows)

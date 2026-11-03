@@ -76,8 +76,11 @@ def capture_events(
                 rejected,
             )
         except Exception as exc:
-            logger.error("telemetry_storage_error reason=%s — falling back to stub", exc)
-            stored = 0
+            logger.error("telemetry_storage_error error_type=%s", type(exc).__name__)
+            raise HTTPException(
+                status_code=503,
+                detail="El almacenamiento de telemetria no esta disponible.",
+            ) from exc
 
     if session is None and valid_events:
         receive_events(TelemetryBatch(events=valid_events))

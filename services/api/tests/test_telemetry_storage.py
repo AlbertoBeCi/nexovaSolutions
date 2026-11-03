@@ -179,6 +179,35 @@ def test_all_five_mandatory_event_types_store_ok(db_session):
     assert stored_types == set(event_types)
 
 
+def test_batch_is_sent_as_one_insert_statement(db_session, engine):
+    """A batch produces one SQL INSERT rather than one per event."""
+    from sqlalchemy import event as sqlalchemy_event
+
+    statements: list[str] = []
+
+    def record_insert(_conn, _cursor, statement, _parameters, _context, _many):
+        if statement.lstrip().upper().startswith("INSERT INTO TELEMETRY_EVENTS"):
+            statements.append(statement)
+
+    sqlalchemy_event.listen(engine, "before_cursor_execute", record_insert)
+    try:
+        events = [
+            _make_business_event(event_type)
+            for event_type in [
+                "inbound_order_created",
+                "outbound_order_created",
+                "stock_threshold_triggered",
+                "direct_stock_edit_rejected",
+                "kit_cost_variance_detected",
+            ]
+        ]
+        assert insert_telemetry_events(db_session, events) == 5
+    finally:
+        sqlalchemy_event.remove(engine, "before_cursor_execute", record_insert)
+
+    assert len(statements) == 1
+
+
 def test_insert_empty_list_returns_zero(db_session):
     assert insert_telemetry_events(db_session, []) == 0
 
@@ -256,6 +285,32 @@ def test_endpoint_mixed_valid_and_invalid_events(anon_client, schema, engine):
             assert rows[0].event_id == valid_evt["eventId"]
     finally:
         app.dependency_overrides[get_telemetry_session] = lambda: None
+
+
+def test_endpoint_reports_storage_failure_as_service_unavailable(anon_client, schema, engine, monkeypatch):
+    """A failed insert must not be acknowledged as successfully processed."""
+    from main import app
+    import routes.telemetry as telemetry_route
+
+    def _test_session():
+        with Session(engine) as session:
+            yield session
+
+    def _failed_insert(_session, _events):
+        raise RuntimeError("simulated insert failure")
+
+    app.dependency_overrides[get_telemetry_session] = _test_session
+    monkeypatch.setattr(telemetry_route, "insert_telemetry_events", _failed_insert)
+    try:
+        response = anon_client.post(
+            "/telemetry/events",
+            json={"events": [_evt(schema, "page_viewed")]},
+        )
+    finally:
+        app.dependency_overrides[get_telemetry_session] = lambda: None
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "El almacenamiento de telemetria no esta disponible."
 
 
 def test_endpoint_empty_batch(anon_client):

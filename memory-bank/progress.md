@@ -2,14 +2,17 @@
 
 ## Funciona
 
-- **Almacenamiento de telemetría en Supabase (03/11/2026)** — tabla 	elemetry_events
-  con 8 columnas exactas, 3 índices (	imestamp, event_type, GIN en 	ags) e inmutable
-  (sin UPDATE/DELETE). Endpoint real POST /telemetry/events con validación laxa y rechazo
-  individual sin cancelar el lote ni lanzar 422, persistencia en bulk insert en una sola
-  operación y respuesta { "received": N, "stored": M, "rejected": R }. Suite de API
-  con 487 passed / 1 skipped en 73,57 s (14 pruebas nuevas en 	est_telemetry_storage.py).
-  Script seed_telemetry_events.py con 32 eventos sintéticos cubriendo las 5 métricas
-  obligatorias del BRIEFING y eventos técnicos. Frontends 100% compatibles sin tocar.
+- **Almacenamiento de telemetria (03/11/2026)** - implementacion en
+  `feature/telemetry-event-storage`: modelo de ocho columnas, tres indices,
+  endpoint con validacion por evento, rechazo parcial y bulk INSERT unico; fallo
+  de persistencia devuelve 503. API 490 passed / 1 skipped; cliente backoffice
+  15/15; contrato 9,450 PASS. Migracion remota autorizada y aplicada: ocho
+  columnas, tres indices, RLS activa, sin permisos de API, cuatro filas previas
+  conservadas y dimensiones permitidas trasladadas a tags. E2E real desde el
+  backoffice: entrada y salida de una unidad del DEMO `DEMO-TEL-001`; eventos de
+  flujo y tecnicos aparecen en Supabase. Lote mixto: received=2, stored=1,
+  rejected=1. Captura directa de consulta SQL en
+  `docs/telemetry/telemetry-events-evidence.png`. Frontend sin cambios.
 
 - **Cierre de captura obligatoria y dataset DEMO (02/11/2026)** — implementados
   los cinco productores obligatorios y `inventory_metadata_missing`, con
