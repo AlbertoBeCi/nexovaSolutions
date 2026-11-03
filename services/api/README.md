@@ -118,7 +118,8 @@ mean/p95 by day and route, and daily failed-login rates. SQL loads only the
 requested window and event types; Pandas parses timestamps as UTC before
 grouping. The assembled JSON is cached in memory for 60 seconds per requested
 window. Server-side `login_succeeded` and `login_failed` events are best-effort:
-a telemetry storage error does not change the authentication result.
+a telemetry storage error does not change the authentication result. The write
+runs after the HTTP response is sent so it does not hold up login.
 The learning guide is in
 [`APRENDIENDO/aprendiendoTelemetria.md`](../../APRENDIENDO/aprendiendoTelemetria.md).
 

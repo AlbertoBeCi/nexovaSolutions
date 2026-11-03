@@ -1,10 +1,14 @@
 """Tests de registro (POST /users), login (POST /auth/login) y GET /auth/me."""
 from __future__ import annotations
 
+import asyncio
+from threading import Event
+
 import pytest
 from fastapi.testclient import TestClient
 
 from main import app
+from routes import auth
 from users_db import get_profiles_table, get_users_table
 
 VALID_REGISTRATION = {"email": "nuevo@nexova.com", "password": "supersecreto123"}
@@ -105,6 +109,37 @@ def test_login_rejects_unknown_email_with_401(client):
     )
 
     assert response.status_code == 401
+
+
+def test_failed_login_telemetry_runs_after_401_response_body(monkeypatch):
+    response_sent = Event()
+    telemetry_calls = []
+
+    def record_login(succeeded):
+        assert response_sent.is_set()
+        telemetry_calls.append(succeeded)
+
+    monkeypatch.setattr(auth, "record_login", record_login)
+    response = auth._invalid_login_response()
+
+    async def send(message):
+        if message["type"] == "http.response.body":
+            response_sent.set()
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    scope = {
+        "type": "http", "asgi": {"version": "3.0", "spec_version": "2.3"},
+        "http_version": "1.1", "method": "POST", "scheme": "http",
+        "path": "/auth/login", "raw_path": b"/auth/login", "query_string": b"",
+        "headers": [], "client": ("testclient", 123), "server": ("testserver", 80),
+        "root_path": "",
+    }
+
+    asyncio.run(response(scope, receive, send))
+
+    assert telemetry_calls == [False]
 
 
 # ─── GET /auth/me ───────────────────────────────────────────────────────

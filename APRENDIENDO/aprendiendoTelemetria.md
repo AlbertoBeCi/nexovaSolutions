@@ -70,6 +70,12 @@ sola ventana y la pasa a las cuatro funciones. Solo administradores pueden
 consultar el endpoint. El pipeline vive fuera de la ruta y el resultado se
 cachea en memoria durante 60 segundos por ventana solicitada.
 
+La captura de `login_succeeded` y `login_failed` también es best-effort y se
+ejecuta después de enviar la respuesta HTTP. Una escritura lenta o fallida en
+Supabase no debe retrasar ni cambiar el resultado del inicio de sesión. FastAPI
+permite programar este trabajo con `BackgroundTasks`; el 401 usa una respuesta
+JSON con la tarea asociada para conservar el mismo contrato de error.
+
 Ejemplo de respuesta (valores ilustrativos, forma del contrato real):
 
 ```json

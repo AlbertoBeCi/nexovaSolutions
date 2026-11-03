@@ -54,7 +54,8 @@ de login. SQL carga solo el período y los tipos necesarios; Pandas convierte
 los timestamps a UTC antes de agrupar. El JSON se guarda en caché en memoria
 durante 60 segundos por ventana solicitada. Los eventos de servidor
 `login_succeeded` y `login_failed` se guardan como mejor esfuerzo: un fallo de
-telemetría no altera el resultado de autenticación.
+telemetría no altera el resultado de autenticación ni bloquea la respuesta HTTP;
+la escritura se ejecuta después de enviar la respuesta.
 La guía de aprendizaje está en
 [`APRENDIENDO/aprendiendoTelemetria.md`](../../APRENDIENDO/aprendiendoTelemetria.md).
 

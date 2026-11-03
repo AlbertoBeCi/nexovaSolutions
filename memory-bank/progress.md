@@ -5,10 +5,11 @@
 - **Reporte tecnico de telemetria** - implementados pipeline Pandas con cuatro
   metricas operacionales, endpoint de administrador con cache TTL de 60 segundos,
   captura best-effort de login y dashboard `/telemetry` en backoffice. Los cambios
-  estan en `feature/telemetry-report-endpoint` en cuatro commits por hito. Suite
-  API: 507 passed / 1 skipped; backoffice: 182 Jest, lint, build y revision de
-  textos correctos. Sigue pendiente validar con una sesion real autenticada y
-  generar la captura del dashboard antes del PR.
+  estan en `feature/telemetry-report-endpoint` en commits por hito. La persistencia
+  del login se ejecuta despues de enviar la respuesta. Suite API: 508 passed / 1
+  skipped; backoffice: 182 Jest, lint, build y revision de textos correctos.
+  Sigue pendiente validar con una sesion real autenticada y generar la captura
+  del dashboard antes del PR.
 
 - **Almacenamiento de telemetria (03/11/2026)** - implementacion en
   `feature/telemetry-event-storage`: modelo de ocho columnas, tres indices,
