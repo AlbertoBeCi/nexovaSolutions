@@ -2,7 +2,32 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora — captura de telemetría
+## Ahora — almacenamiento de telemetría en Supabase
+
+Rama: eature/telemetry-event-storage, desde origin/main con PR #32 integrado.
+
+- Fase 1: Tabla 	elemetry_events en Supabase con exactamente 8 columnas (event_id,
+  	imestamp, session_id, user_id, event_type, schema_version, 
+equest_id,
+  	ags), 3 índices (	imestamp, event_type, GIN en 	ags JSONB) y sin lógica de
+  UPDATE/DELETE (inmutable). Metadatos aislados (	elemetry_metadata) para no contaminar
+  el catálogo de tablas de inventario en SQLModel.metadata.
+- Fase 2: Endpoint real en FastAPI POST /telemetry/events: acepta envelope { "events": [...] }
+  laxo (events: list[Any]), valida cada evento individualmente con TelemetryEvent.model_validate,
+  rechaza individualmente los eventos que no cumplan el contrato sin cancelar el lote ni
+  devolver 422, inserta los válidos en 	elemetry_events en una única operación de bulk
+  insert y devuelve { "received": N, "stored": M, "rejected": R }. Compatible 100%
+  con el frontend (TelemetryService solo verifica HTTP 200).
+- Fase 3 / Semilla: Script services/api/seed_telemetry_events.py que genera 32 eventos
+  cubriendo los 5 tipos obligatorios del BRIEFING (inbound_order_created,
+  outbound_order_created, stock_threshold_triggered, direct_stock_edit_rejected,
+  kit_cost_variance_detected) y técnicos (page_viewed, login_failed) sobre 8 productos,
+  3 categorías (	raining_kit, certification, onboarding_equipment), 3 programas
+  y ambas oficinas (Valencia en EUR, Miami en USD).
+- Verificación: API 487 passed / 1 skipped en 73,57 s (14 pruebas nuevas en
+  	est_telemetry_storage.py y suite completa en verde). Frontends sin modificar.
+
+## Anterior — captura de telemetría
 
 Rama: `feature/telemetry-event-capture`, desde `origin/main` con PR #30 integrado.
 

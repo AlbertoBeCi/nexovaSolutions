@@ -22,7 +22,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from inventory_database import init_inventory_db
+from inventory_database import get_database_url, get_engine, init_inventory_db
+from telemetry_storage import init_telemetry_db
 from telemetry_capture import TelemetryRequestMiddleware
 from routes import auth, incidents, inventory, profiles, suppliers, telemetry, users
 
@@ -45,6 +46,11 @@ async def lifespan(app: FastAPI):
     # Inventory is optional in a clean checkout: existing TinyDB routes stay
     # available without a Supabase URL. When configured, create the ORM tables.
     init_inventory_db()
+    if get_database_url():
+        try:
+            init_telemetry_db(get_engine())
+        except Exception as exc:
+            logger.warning("telemetry_db_init_failed reason=%s", exc)
     yield
 
 

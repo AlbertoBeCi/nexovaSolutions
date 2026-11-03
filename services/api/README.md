@@ -12,6 +12,8 @@ Nexova's single FastAPI backend, with one router per domain:
   profiles, persisted in their own TinyDB file. See "Authentication" below.
 - **inventory** (/inventory): assets and orders persisted in Supabase
   PostgreSQL through SQLModel. Existing TinyDB authentication stays in place.
+- **telemetry** (/telemetry): collector and persistence of telemetry events
+  in Supabase PostgreSQL (telemetry_events table) with individual validation.
 
 ### Authentication
 
@@ -67,7 +69,15 @@ Nexova's single FastAPI backend, with one router per domain:
 
 ### Inventory API
 
-All `/inventory` routes require an active authenticated user. Products are+listed with `GET /inventory/products` and fetched individually with+`GET /inventory/products/{asset_id}`. Register movements with+`POST /inventory/orders/inbound` (`asset_id`, `quantity`, `supplier`, `office`)+or `POST /inventory/orders/outbound` (`asset_id`, `quantity`, `exit_type`,+`assigned_to`, `office`). `GET /inventory/orders` returns both movement types,+including the current product summary, `user_uuid`, and `creator_name` (profile+name, falling back to email; `null` if the account is unavailable). Stock is+derived from entries and exits; outbound creation validates it transactionally.
+All `/inventory` routes require an active authenticated user. Products are
++listed with `GET /inventory/products` and fetched individually with
++`GET /inventory/products/{asset_id}`. Register movements with
++`POST /inventory/orders/inbound` (`asset_id`, `quantity`, `supplier`, `office`)
++or `POST /inventory/orders/outbound` (`asset_id`, `quantity`, `exit_type`,
++`assigned_to`, `office`). `GET /inventory/orders` returns both movement types,
++including the current product summary, `user_uuid`, and `creator_name` (profile
++name, falling back to email; `null` if the account is unavailable). Stock is
++derived from entries and exits; outbound creation validates it transactionally.
 
 ### Telemetry verification stub
 

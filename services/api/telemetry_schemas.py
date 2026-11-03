@@ -41,3 +41,5 @@ class TelemetryBatch(BaseModel):
 
 class TelemetryReceipt(BaseModel):
     received: int
+    stored: int = 0
+    rejected: int = 0

@@ -57,6 +57,7 @@ py-modules = [
     "telemetry_core",
     "telemetry_capture",
     "telemetry_inventory",
+    "telemetry_storage",
     "inventory_database",
     "seed_inventory",
 ]

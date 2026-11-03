@@ -2,6 +2,15 @@
 
 ## Funciona
 
+- **Almacenamiento de telemetría en Supabase (03/11/2026)** — tabla 	elemetry_events
+  con 8 columnas exactas, 3 índices (	imestamp, event_type, GIN en 	ags) e inmutable
+  (sin UPDATE/DELETE). Endpoint real POST /telemetry/events con validación laxa y rechazo
+  individual sin cancelar el lote ni lanzar 422, persistencia en bulk insert en una sola
+  operación y respuesta { "received": N, "stored": M, "rejected": R }. Suite de API
+  con 487 passed / 1 skipped en 73,57 s (14 pruebas nuevas en 	est_telemetry_storage.py).
+  Script seed_telemetry_events.py con 32 eventos sintéticos cubriendo las 5 métricas
+  obligatorias del BRIEFING y eventos técnicos. Frontends 100% compatibles sin tocar.
+
 - **Cierre de captura obligatoria y dataset DEMO (02/11/2026)** — implementados
   los cinco productores obligatorios y `inventory_metadata_missing`, con
   evaluación transaccional, publicación tras commit, cruces de umbral y referencia

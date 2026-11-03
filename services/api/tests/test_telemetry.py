@@ -1,4 +1,12 @@
-"""Collector tests use synthetic contracts and the existing isolated fixtures."""
+"""Collector tests use synthetic contracts and the existing isolated fixtures.
+
+Updated for Phase 2:
+- Replaced stub behavior with individual validation and receipt containing
+  received, stored, and rejected counts.
+- Malformed batches (missing events list, extra keys) still reject with 422.
+- Individual invalid events within a batch are rejected with status 200 without
+  cancelling the batch or raising 422.
+"""
 import copy
 import json
 import logging
@@ -6,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from telemetry_schemas import SCHEMA_VERSION, TelemetryEvent
 
@@ -21,7 +30,10 @@ def test_batch_returns_count_without_logging_properties(anon_client, caplog):
     with caplog.at_level(logging.INFO, logger="telemetry"):
         response = anon_client.post("/telemetry/events", json={"events": [event, event]})
     assert response.status_code == 200
-    assert response.json() == {"received": 2}
+    body = response.json()
+    assert body["received"] == 2
+    assert body["stored"] == 0
+    assert body["rejected"] == 0
     assert "page_viewed" in caplog.text
     assert "received=2" in caplog.text
     assert "private-sentinel" not in caplog.text
@@ -29,26 +41,58 @@ def test_batch_returns_count_without_logging_properties(anon_client, caplog):
 
 
 def test_empty_batch_is_a_successful_noop(anon_client):
-    assert anon_client.post("/telemetry/events", json={"events": []}).json() == {"received": 0}
+    assert anon_client.post("/telemetry/events", json={"events": []}).json() == {
+        "received": 0,
+        "stored": 0,
+        "rejected": 0,
+    }
 
 
-@pytest.mark.parametrize("body", [{}, {"events": None}, {"events": {}}, {"events": [None]}, {"events": [{}]}, {"events": [], "extra": 1}])
+@pytest.mark.parametrize("body", [{}, {"events": None}, {"events": {}}, {"events": [], "extra": 1}])
 def test_invalid_batches_are_rejected(anon_client, body):
     assert anon_client.post("/telemetry/events", json=body).status_code == 422
 
 
-@pytest.mark.parametrize("field,value", [("eventId", "bad"), ("requestId", "bad"), ("sessionId", "bad"), ("userId", "raw-user-id"), ("schemaVersion", "2.0.0"), ("timestamp", "2026-11-02T12:00:00"), ("timestamp", 123), ("properties", []), ("event_type", "unsafe\nlog")])
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("eventId", "bad"),
+        ("requestId", "bad"),
+        ("sessionId", "bad"),
+        ("userId", "raw-user-id"),
+        ("schemaVersion", "2.0.0"),
+        ("timestamp", "2026-11-02T12:00:00"),
+        ("timestamp", 123),
+        ("properties", []),
+        ("event_type", "unsafe\nlog"),
+    ],
+)
 def test_envelope_has_stable_types(anon_client, field, value):
     event = example()
     event[field] = value
-    assert anon_client.post("/telemetry/events", json={"events": [event]}).status_code == 422
+    # Model validation directly rejects
+    with pytest.raises(ValidationError):
+        TelemetryEvent.model_validate(event)
+    # Endpoint handles invalid event by rejecting it individually (not 422)
+    response = anon_client.post("/telemetry/events", json={"events": [event]})
+    assert response.status_code == 200
+    assert response.json() == {"received": 1, "stored": 0, "rejected": 1}
 
 
-@pytest.mark.parametrize("field", ["eventId", "timestamp", "sessionId", "userId", "event_type", "schemaVersion", "requestId", "properties"])
+@pytest.mark.parametrize(
+    "field",
+    ["eventId", "timestamp", "sessionId", "userId", "event_type", "schemaVersion", "requestId", "properties"],
+)
 def test_every_envelope_key_is_required(anon_client, field):
     event = example()
     del event[field]
-    assert anon_client.post("/telemetry/events", json={"events": [event]}).status_code == 422
+    # Model validation directly rejects missing keys
+    with pytest.raises(ValidationError):
+        TelemetryEvent.model_validate(event)
+    # Endpoint rejects the event individually without cancelling the batch
+    response = anon_client.post("/telemetry/events", json={"events": [event]})
+    assert response.status_code == 200
+    assert response.json() == {"received": 1, "stored": 0, "rejected": 1}
 
 
 def test_nullable_identity_and_wire_aliases():
@@ -63,7 +107,14 @@ def test_nullable_identity_and_wire_aliases():
 
 
 def test_json_beacon_preflight_accepts_backoffice(anon_client):
-    response = anon_client.options("/telemetry/events", headers={"Origin": "http://localhost:3001", "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type"})
+    response = anon_client.options(
+        "/telemetry/events",
+        headers={
+            "Origin": "http://localhost:3001",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:3001"
 

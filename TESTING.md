@@ -41,7 +41,7 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
 | 🟦 `uis/backoffice` | `npm test -- --runInBand` | 176 | ✅ 176 · ❌ 0 | 5,98 s | — |
-| 🏁 **Total documentado** | | **1013** | ✅ **1012** · ❌ **0** · ⏭ 1 | | |
+| 🏁 **Total documentado** | | **1024** | ✅ **1023** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
