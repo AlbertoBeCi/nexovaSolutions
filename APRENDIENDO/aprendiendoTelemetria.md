@@ -76,6 +76,11 @@ Supabase no debe retrasar ni cambiar el resultado del inicio de sesión. FastAPI
 permite programar este trabajo con `BackgroundTasks`; el 401 usa una respuesta
 JSON con la tarea asociada para conservar el mismo contrato de error.
 
+En desarrollo, si la pantalla de recuperación está en un origen distinto al
+backoffice, FastAPI debe permitir ese origen en CORS. En este monorepo la app
+de operaciones puede usar `localhost:3002`; incluir `localhost:3001` para el
+backoffice no autoriza automáticamente el puerto 3002.
+
 Ejemplo de respuesta (valores ilustrativos, forma del contrato real):
 
 ```json

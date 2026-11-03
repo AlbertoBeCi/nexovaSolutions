@@ -18,7 +18,7 @@
 🚫 No prueban la serialización HTTP (CORS, cabeceras, JSON mal formado). La auditoría
 añade cinco pruebas del selector React accesible y tres de las URLs de precarga.
 
-> Integración del 03/11/2026 (`feature/telemetry-report-endpoint`): API **508 passed / 1 skipped** (77,90 s; 509 recopiladas). Backoffice **182 pruebas en 21 suites**. Lint, build y revisión de textos del backoffice en verde.
+> Integración del 03/11/2026 (`feature/telemetry-report-endpoint`): API **509 passed / 1 skipped** (78,09 s; 510 recopiladas). Backoffice **182 pruebas en 21 suites**. Lint, build y revisión de textos del backoffice en verde.
 
 ## 📌 Índice
 
@@ -39,11 +39,11 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest`* | 509 | ✅ 508 · ❌ 0 · ⏭ 1 | 77,90 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 510 | ✅ 509 · ❌ 0 · ⏭ 1 | 78,09 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
 | 🟦 `uis/backoffice` | `npm test -- --runInBand` | 182 | ✅ 182 · ❌ 0 | | — |
-| 🏁 **Total documentado** | | **1051** | ✅ **1050** · ❌ **0** · ⏭ 1 | | |
+| 🏁 **Total documentado** | | **1052** | ✅ **1051** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite

@@ -119,6 +119,19 @@ def test_json_beacon_preflight_accepts_backoffice(anon_client):
     assert response.headers["access-control-allow-origin"] == "http://localhost:3001"
 
 
+def test_auth_preflight_accepts_application_origin(anon_client):
+    response = anon_client.options(
+        "/auth/forgot-password",
+        headers={
+            "Origin": "http://localhost:3002",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3002"
+
+
 def test_identity_bridge_is_verified_and_opaque(user_client, monkeypatch):
     monkeypatch.setattr("telemetry_core.TELEMETRY_HMAC_KEY_P1", "isolated-telemetry-test-key")
     response = user_client.get("/telemetry/context")

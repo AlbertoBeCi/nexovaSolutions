@@ -34,11 +34,12 @@ logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(name)s: %(mess
 
 logger = logging.getLogger("main")
 
-# Frontends de desarrollo: uis/backoffice (3000) y uis/application (3001).
+# Frontends de desarrollo: website (3000), backoffice (3001), application (3002).
 # En produccion, definir CORS_ORIGINS con los origenes reales separados por comas.
 DEFAULT_CORS_ORIGINS = (
     "http://localhost:3000,http://127.0.0.1:3000,"
-    "http://localhost:3001,http://127.0.0.1:3001"
+    "http://localhost:3001,http://127.0.0.1:3001,"
+    "http://localhost:3002,http://127.0.0.1:3002"
 )
 
 @asynccontextmanager

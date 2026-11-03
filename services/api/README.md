@@ -172,7 +172,7 @@ Swagger: `POST /auth/login`, copy `access_token`, click "Authorize" and enter
 | --- | --- | --- |
 | `SUPPLIERS_DB_PATH` | `services/api/data/suppliers.json` | TinyDB file for suppliers (git-ignored). |
 | `USERS_DB_PATH` | `services/api/data/users.json` | TinyDB file for users/profiles (git-ignored). |
-| `CORS_ORIGINS` | `localhost`/`127.0.0.1` on ports 3000 and 3001 | Allowed origins, comma-separated. |
+| `CORS_ORIGINS` | `localhost`/`127.0.0.1` on ports 3000, 3001 and 3002 | Allowed origins, comma-separated. |
 | `SECRET_KEY` | dev-only fallback (logs a warning) | JWT signing key. **Must** be set explicitly in production. |
 | `ALGORITHM` | `HS256` | JWT signing algorithm. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Access token lifetime, in minutes. |

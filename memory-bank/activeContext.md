@@ -17,8 +17,10 @@ Rama: `feature/telemetry-report-endpoint`, creada desde `origin/main`.
 - Commits separados por hito: regla permanente de hitos/APRENDIENDO, pipeline,
   API, UI, documentación y corrección de latencia del login. Falta cerrar
   evidencia de acceso real al dashboard.
-- Verificaciones: API 508 passed / 1 skipped (77.90 s); backoffice 182 Jest en 21
+- Verificaciones: API 509 passed / 1 skipped (78.09 s); backoffice 182 Jest en 21
   suites, lint, build y revision de textos correctos.
+- CORS local ahora acepta localhost:3002 para el flujo de recuperacion; se recreo
+  el contenedor API con el paquete telemetry y esta healthy.
 - E2E real de login/reporte y captura del dashboard aun no confirmados en esta
   rama; la lectura de credenciales desde la consola fue rechazada por auto-review.
 

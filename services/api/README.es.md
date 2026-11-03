@@ -164,7 +164,7 @@ en "Authorize" e ingresa `Bearer <token>`.
 | --- | --- | --- |
 | `SUPPLIERS_DB_PATH` | `services/api/data/suppliers.json` | Archivo TinyDB de proveedores (ignorado por git). |
 | `USERS_DB_PATH` | `services/api/data/users.json` | Archivo TinyDB de usuarios/perfiles (ignorado por git). |
-| `CORS_ORIGINS` | `localhost`/`127.0.0.1` en los puertos 3000 y 3001 | Orígenes permitidos, separados por comas. |
+| `CORS_ORIGINS` | `localhost`/`127.0.0.1` en los puertos 3000, 3001 y 3002 | Orígenes permitidos, separados por comas. |
 | `SECRET_KEY` | valor de desarrollo (loguea un warning) | Clave de firma del JWT. **Obligatoria** en producción. |
 | `ALGORITHM` | `HS256` | Algoritmo de firma del JWT. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Minutos de validez del access token. |
