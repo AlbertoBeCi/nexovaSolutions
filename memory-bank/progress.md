@@ -10,7 +10,7 @@
   admin en `services/reporting/`; reporte tecnico sin cambios. API: 528 passed / 1
   skipped (83,83 s); pipeline: 16 passed, incluyendo dos corridas CLI con una
   base SQLite desechable y backup verificado. PostgreSQL/Docker no disponibles.
-  Falta revision final, push y PR.
+  PR #36 abierto contra `main`.
 
 - **Reporte tecnico de telemetria** - implementados pipeline Pandas con cuatro
   metricas operacionales, endpoint de administrador con cache TTL de 60 segundos,

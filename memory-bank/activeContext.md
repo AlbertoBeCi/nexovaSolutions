@@ -16,8 +16,8 @@ Rama: `feature/resilient-business-performance-pipeline`, desde `origin/main`.
 - Verificacion: API 528 passed / 1 skipped; pipeline 16 passed, incluida corrida
   CLI completa repetida sobre SQLite aislado. Docker daemon y PostgreSQL local no
   disponibles; queda documentada esa limitacion de integracion.
-- Pendiente: revisar diff final, actualizar guia de pruebas/aprendizaje, commit de
-  API/documentacion, push y PR contra `main`.
+- Diff revisado, guia de pruebas/aprendizaje actualizada, rama publicada y PR #36
+  abierto contra `main`: https://github.com/AlbertoBeCi/nexovaSolutions/pull/36.
 
 ## Anterior - reporte tecnico de telemetria
 

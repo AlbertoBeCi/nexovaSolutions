@@ -10,7 +10,7 @@
 - [x] 6. CLI programado y documentación operativa.
 - [x] 7. Endpoints de reporting y pruebas de auth/contrato.
 - [x] 8. Empaquetado y validación local sintética; PostgreSQL real no disponible en este entorno.
-- [ ] 9. Documentación final, commits, push y PR.
+- [x] 9. Documentación final, commits, push y PR #36 contra `main`.
 
 ## Objetivo y límites
 
