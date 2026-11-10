@@ -26,6 +26,7 @@ from inventory_database import get_database_url, get_engine, init_inventory_db
 from telemetry_storage import init_telemetry_db
 from telemetry_capture import TelemetryRequestMiddleware
 from routes import auth, incidents, inventory, profiles, suppliers, telemetry, telemetry_report, users
+from reporting_adapter import router as reporting_router
 
 # Sin este basicConfig, logger.info (p. ej. el token de reset que loguea
 # routes/auth.py a falta de un proveedor de email) no se ve en la consola de
@@ -90,6 +91,7 @@ app.include_router(auth.router)
 app.include_router(profiles.router)
 app.include_router(telemetry.router)
 app.include_router(telemetry_report.router)
+app.include_router(reporting_router)
 
 
 @app.middleware("http")
