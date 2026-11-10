@@ -16,4 +16,6 @@ __pycache__/
 *.pyc
 services/api/data/
 services/incident-manager-api/data/
+/data/raw/business-performance/
+/data/eval/business-performance/
 *.egg-info/
