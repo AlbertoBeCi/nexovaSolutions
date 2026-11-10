@@ -39,6 +39,7 @@ CREATE TABLE reporting.pipeline_runs (
     events_valid integer NOT NULL DEFAULT 0 CHECK (events_valid >= 0),
     events_duplicate integer NOT NULL DEFAULT 0 CHECK (events_duplicate >= 0),
     events_rejected integer NOT NULL DEFAULT 0 CHECK (events_rejected >= 0),
+    events_pending integer NOT NULL DEFAULT 0 CHECK (events_pending >= 0),
     rows_written integer NOT NULL DEFAULT 0 CHECK (rows_written >= 0),
     input_digest text,
     output_digest text,
