@@ -123,3 +123,25 @@ uv run pytest tests/test_telemetry_analysis.py tests/test_telemetry_report.py
 ```
 
 No se necesita escribir en Supabase para ejecutar estas pruebas.
+
+## Reporting de negocio sobre telemetría
+
+El reporte de negocio debe consumir el contrato de cada evento y volver a
+validar sus dimensiones; la allowlist JSONB de `tags` es parte del contrato de
+almacenamiento. Si se incorpora un KPI nuevo, comprueba en una prueba de ida y
+vuelta que todos sus campos requeridos sobreviven la persistencia, sin añadir
+columnas al envelope ni modificar el reporte técnico.
+
+Para evitar que una reejecución cambie una semana ya publicada, reemplaza la
+partición desde un staging completo dentro de una transacción y actualiza solo
+las claves cuyo valor cambió. Deduplica por `event_id`; un identificador con
+payload contradictorio debe fallar con auditoría, no escoger un valor al azar.
+Una transformación determinista puede usar caché Prefect con una clave derivada
+del digest canónico de eventos, la semana y la versión de transformación; deja
+sin caché la extracción y la publicación.
+
+Si la fuente no tiene señal de actividad/heartbeat, un extracto vacío no prueba
+que la actividad de negocio sea cero. Conserva la partición anterior y deja la
+corrida en estado fallido para reconciliar la ingestión en vez de borrar datos.
+Mientras `telemetry_events` no conserve `received_at` y `ingestion_id`, repara
+semanas con backfill manual y no declares detección automática de eventos tardíos.

@@ -5,10 +5,17 @@ import os
 import shutil
 import sqlite3
 import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT))
+from data.pipelines.pipeline import (  # noqa: E402
+    get_latest_pipeline_run,
+    get_weekly_office_program_performance,
+)
+
 SCHEMA_PATH = REPO_ROOT / "docs/telemetry/event-schemas.json"
 PIPELINE_PATH = REPO_ROOT / "data/pipelines/pipeline.py"
 PYTHON = REPO_ROOT / "services/api/.venv/Scripts/python.exe"
@@ -131,7 +138,7 @@ def _run_cli(tmp_path: Path, source: Path, reporting: Path) -> subprocess.Comple
     )
 
 
-def test_cli_runs_full_pipeline_twice_without_duplicate_or_changed_rows(tmp_path):
+def test_cli_runs_full_pipeline_twice_without_duplicate_or_changed_rows(tmp_path, monkeypatch):
     source = tmp_path / "telemetry.sqlite"
     reporting = tmp_path / "reporting.sqlite"
     _seed_source(source)
@@ -171,3 +178,16 @@ def test_cli_runs_full_pipeline_twice_without_duplicate_or_changed_rows(tmp_path
         ).fetchall()
     assert second_rows == first_rows
     assert runs == [("Completed", 4, 4, 1), ("Completed", 4, 4, 1)]
+
+    monkeypatch.setenv(
+        "REPORTING_DATABASE_URL",
+        f"sqlite:///{(tmp_path / 'reporting-main.db').as_posix()}",
+    )
+    monkeypatch.setenv("PIPELINE_SQLITE_REPORTING_SCHEMA_PATH", str(reporting))
+    latest = get_latest_pipeline_run()
+    report = get_weekly_office_program_performance(WEEK_START)
+    assert latest is not None
+    assert latest["status"] == "Completed"
+    assert latest["events_read"] == 4
+    assert report["week_start"] == WEEK_START
+    assert report["entries"][0]["total_material_cost"] == 125.5

@@ -39,6 +39,8 @@ DEPLOYMENT_NAME = "weekly-office-program-performance"
 TRANSFORM_VERSION = "v1"
 BATCH_SIZE = 1000
 LEASE_MINUTES = 60
+# Three bounded retries (2/5/10 seconds, with 20% jitter) give transient
+# database/network faults a chance to clear without holding a production run open.
 RETRY_DELAYS_SECONDS = [2, 5, 10]
 ARTIFACT_ROOT = REPO_ROOT / "data"
 RAW_ROOT = ARTIFACT_ROOT / "raw" / "business-performance"
@@ -645,7 +647,7 @@ def get_latest_pipeline_run() -> dict[str, Any] | None:
         with engine.connect() as connection:
             row = connection.execute(
                 text("""SELECT run_id, pipeline_name, trigger, status, started_at, finished_at,
-                    requested_by, week_start, source_window_end, phase, checkpoint,
+                    requested_by, week_start, source_window_end, phase, checkpoint, source_watermark,
                     events_read, events_valid, events_duplicate, events_rejected, events_pending,
                     rows_written, input_digest, output_digest, prefect_flow_run_id,
                     error_code, error_summary
@@ -653,7 +655,11 @@ def get_latest_pipeline_run() -> dict[str, Any] | None:
                     ORDER BY started_at DESC LIMIT 1"""),
                 {"pipeline_name": PIPELINE_NAME},
             ).mappings().first()
-            return dict(row) if row else None
+            if row is None:
+                return None
+            result = dict(row)
+            result["run_id"] = str(result["run_id"])
+            return result
     finally:
         engine.dispose()
 

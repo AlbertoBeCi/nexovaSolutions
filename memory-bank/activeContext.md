@@ -2,27 +2,24 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora - reporte tecnico de telemetria
+## Ahora - pipeline de desempeno de negocio
 
-Rama: `feature/telemetry-report-endpoint`, creada desde `origin/main`.
+Rama: `feature/resilient-business-performance-pipeline`, desde `origin/main`.
 
-- Pipeline Pandas en `services/telemetry/analysis.py`: volumen diario, tasa de
-  errores de requests, latencia por ruta y tasa de fallos de login. Las consultas
-  SQL acotan rango y tipos; los timestamps se convierten a UTC antes de agrupar.
-- API `GET /telemetry/report`, protegida para administradores, con ventana UTC
-  predeterminada de siete dias y cache de 60 segundos. Los eventos de login se
-  guardan como tarea posterior a la respuesta para no retrasar la autenticacion.
-- Dashboard `/telemetry` en backoffice con periodo visible, tablas en espanol y
-  estados de carga, vacio, error y reintento.
-- Commits separados por hito: regla permanente de hitos/APRENDIENDO, pipeline,
-  API, UI, documentación y corrección de latencia del login. Falta cerrar
-  evidencia de acceso real al dashboard.
-- Verificaciones: API 509 passed / 1 skipped (78.09 s); backoffice 182 Jest en 21
-  suites, lint, build y revision de textos correctos.
-- CORS local ahora acepta localhost:3002 para el flujo de recuperacion; se recreo
-  el contenedor API con el paquete telemetry y esta healthy.
-- E2E real de login/reporte y captura del dashboard aun no confirmados en esta
-  rama; la lectura de credenciales desde la consola fue rechazada por auto-review.
+- Implementado `weekly_office_program_performance_flow`: lectura read-only,
+  validacion/dedupe, cuatro KPI aprobados, caché Prefect por digest de una hora,
+  retries limitados, staging, lock por semana, carga idempotente y auditoria.
+- `services/reporting/` expone los tres endpoints de negocio con autorizacion
+  admin; el reporte tecnico y `services/telemetry/analysis.py` siguen intactos.
+- Prefect 3.9.2, migracion `002_weekly_business_reporting.sql`, CLI y cron lunes
+  06:00 UTC documentados. `plan.md` registra las nueve etapas.
+- Verificacion: API 528 passed / 1 skipped; pipeline 16 passed, incluida corrida
+  CLI completa repetida sobre SQLite aislado. Docker daemon y PostgreSQL local no
+  disponibles; queda documentada esa limitacion de integracion.
+- Pendiente: revisar diff final, actualizar guia de pruebas/aprendizaje, commit de
+  API/documentacion, push y PR contra `main`.
+
+## Anterior - reporte tecnico de telemetria
 
 ## Anterior - almacenamiento de telemetria en Supabase
 
