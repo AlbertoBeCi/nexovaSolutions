@@ -318,25 +318,47 @@ El GET del reporte devuelve `week_start` y `entries` con `office`,
 `programme_id`, los cuatro campos KPI y `currency`, tal como define el contrato
 del briefing. No lee ni escribe `telemetry_events` desde el handler.
 
-## 10. Alcance y prerrequisitos de implementación
+## 10. Alcance de la implementación v1
 
-Este entregable es de diseño. No implementa código de orquestación, tablas,
-migraciones, endpoints ni cambios de telemetría. Antes de implementar el
-pipeline se deben resolver y probar estos contratos upstream:
+La implementación mantiene el contrato de ocho columnas de `telemetry_events`
+y conserva en `tags` los campos de negocio de los cuatro esquemas KPI. La
+extracción ejecuta una transacción de solo lectura y publica exclusivamente en
+`reporting.weekly_office_program_performance`. El análisis técnico y
+`GET /telemetry/report` permanecen independientes.
 
-1. Hacer idempotente el almacenamiento por `eventId`, con no-op para payload
-   repetido y conflicto observable para payload distinto.
-2. Conservar en el almacenamiento el campo obligatorio `total_cost_minor`.
-   El esquema de eventos lo define, pero el allowlist actual de
-   `services/api/telemetry_storage.py` no lo incluye, así que hoy se perdería al
-   persistir `tags`.
-3. Persistir `received_at` e `ingestion_id` asociados con `eventId` para
-   detectar y auditar eventos tardíos. El envelope permanece inmutable; esos
-   datos son metadatos de recepción.
-4. Definir y validar el catálogo/control efectivo de `programme_id`, `office`,
-   `currency` y las dimensiones necesarias para excluir eventos incompletos sin
-   inventar datos.
+La v1 deduplica por `event_id` durante la corrida y registra un ID repetido con
+payload distinto como conflicto de validación. La idempotencia de la ingesta
+`POST /telemetry/events` no forma parte de este cambio. La telemetría todavía no
+persiste `received_at` ni `ingestion_id`, por lo que la detección automática de
+llegadas tardías queda aplazada; una semana se corrige con backfill manual.
+Oficinas y moneda se validan contra Valencia/EUR y Miami/USD. No existe aún un
+catálogo de programas conectado a la telemetría; identificadores que no cumplan
+el formato slug o eventos con dimensiones ausentes se contabilizan como
+pendientes y no se convierten en valores inventados.
 
-La v1 no convierte monedas, no cambia el reporte técnico, no escribe en
-`telemetry_events`, no añade KPIs distintos de los cuatro definidos ni
-incorpora eventos fuera del conjunto necesario.
+La v1 no convierte monedas, no escribe en `telemetry_events`, no añade KPIs
+distintos de los cuatro definidos ni incorpora eventos fuera del conjunto
+necesario.
+
+## 11. Operación y ejecución
+
+- **Frecuencia prevista:** cada lunes a las 06:00 UTC, para la última semana ISO
+  completa. El proceso `--serve` registra el deployment de Prefect con esta
+  programación; debe ejecutarse como proceso de servicio persistente conectado
+  al API de Prefect.
+- **Ejecución manual de la última semana completa:**
+  `python data/pipelines/pipeline.py`.
+- **Backfill de una semana:**
+  `python data/pipelines/pipeline.py --week-start 2026-11-02 --trigger backfill`.
+- **Arrancar el servidor del deployment:**
+  `python data/pipelines/pipeline.py --serve`.
+- **Entorno de proyecto sin activar el virtualenv:** desde la raíz se puede
+  anteponer `uv run --project services/api` a cualquiera de esos comandos.
+- Configura `TELEMETRY_READONLY_DATABASE_URL` con un usuario PostgreSQL de solo
+  lectura y `REPORTING_DATABASE_URL` con permisos limitados al esquema
+  `reporting`. `SUPABASE_DATABASE_URL` sirve como fallback local; el despliegue
+  debe usar las dos credenciales con privilegios separados. Aplica antes la
+  migración `services/api/migrations/002_weekly_business_reporting.sql`.
+- `data/raw/business-performance/` contiene las extracciones temporales y
+  `data/eval/business-performance/` los resúmenes de evaluación; sus artefactos
+  runtime están excluidos de Git.

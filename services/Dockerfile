@@ -10,6 +10,11 @@ RUN uv venv /opt/venv \
 
 COPY api/ ./
 COPY telemetry/ /workspace/services/telemetry/
+COPY --from=monorepo services/reporting/ /workspace/services/reporting/
+COPY --from=monorepo data/pipelines/pipeline.py /workspace/data/pipelines/pipeline.py
+COPY --from=monorepo data/pipelines/__init__.py /workspace/data/pipelines/__init__.py
+COPY --from=monorepo data/process/business_performance.py /workspace/data/process/business_performance.py
+COPY --from=monorepo data/process/__init__.py /workspace/data/process/__init__.py
 COPY --from=monorepo shared/incidents_analysis.py /workspace/shared/incidents_analysis.py
 COPY --from=monorepo packages/shared/nexova_shared /workspace/packages/shared/nexova_shared
 

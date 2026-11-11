@@ -16,6 +16,7 @@ dependencies = [
     "resend>=2.48.0",
     "sqlmodel>=0.0.48",
     "psycopg2-binary>=2.9.13",
+    "prefect>=3",
 ]
 
 [project.scripts]
@@ -60,6 +61,7 @@ py-modules = [
     "telemetry_storage",
     "inventory_database",
     "seed_inventory",
+    "reporting_adapter",
 ]
 packages = ["routes"]
 

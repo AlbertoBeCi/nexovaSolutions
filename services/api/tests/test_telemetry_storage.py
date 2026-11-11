@@ -157,6 +157,32 @@ def test_tags_preserve_business_dimensions(db_session):
     assert row.tags["currency"] == "EUR"
 
 
+@pytest.mark.parametrize(
+    "event_type",
+    [
+        "inbound_order_created",
+        "outbound_order_created",
+        "stock_threshold_triggered",
+        "kit_cost_variance_detected",
+    ],
+)
+def test_required_business_contract_fields_round_trip_in_tags(db_session, schema, event_type):
+    """The reporting fields required by each contract survive the storage allowlist."""
+    payload = _evt(schema, event_type)
+    event = TelemetryEvent.model_validate(payload)
+    required = {
+        name
+        for name, definition in schema["definitions"][event_type]["properties"]["properties"]["properties"].items()
+        if definition.get("x-required") is True
+    }
+
+    assert insert_telemetry_events(db_session, [event]) == 1
+    row = db_session.exec(select(TelemetryEventRow)).first()
+
+    assert row is not None
+    assert required <= row.tags.keys()
+
+
 # ---------------------------------------------------------------------------
 # Bulk insert & All 5 mandatory business metrics
 # ---------------------------------------------------------------------------

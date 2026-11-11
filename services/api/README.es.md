@@ -391,6 +391,7 @@ services/api/
 ├── seed.py                 # carga idempotente de proveedores
 ├── seed_users.py              # creacion idempotente del admin inicial
 ├── response_cache.py       # caché TTL local por proceso y de tamaño acotado
+├── reporting_adapter.py    # monta el router separado de reporting de negocio
 ├── benchmark_response_cache.py # benchmark aislado con SQLite en memoria
 ├── fixtures/suppliers.json # datos iniciales del seeder
 ├── tests/
@@ -403,8 +404,26 @@ services/api/
 │   ├── test_password_reset.py
 │   ├── test_inventory.py
 │   ├── test_response_cache.py
+│   ├── test_reporting.py
 │   └── test_request_timing.py
 └── data/                   # TinyDB local (ignorado por git)
 ```
 
 > _English version: [README.md](./README.md)._
+
+### Pipeline de reporting de negocio
+
+`/reporting` es un dominio separado de la telemetría técnica `/telemetry`.
+Sus rutas, solo para administradores, exponen la última auditoría, solicitan
+una corrida Prefect y consultan `reporting.weekly_office_program_performance`
+para el dashboard. El router delega en `data/pipelines/` y no duplica la lógica
+ETL.
+
+Aplica explícitamente
+[`migrations/002_weekly_business_reporting.sql`](migrations/002_weekly_business_reporting.sql)
+antes de habilitar las rutas. Configura `TELEMETRY_READONLY_DATABASE_URL` con
+permisos de solo lectura y `REPORTING_DATABASE_URL` con permisos acotados;
+`SUPABASE_DATABASE_URL` es solo un fallback local. Arranca el deployment
+semanal con `uv run --project services/api python data/pipelines/pipeline.py --serve`
+desde la raíz. El comando manual y la programación de lunes a las 06:00 UTC
+están en [`data/pipelines/PIPELINE_DESIGN.md`](../../data/pipelines/PIPELINE_DESIGN.md).

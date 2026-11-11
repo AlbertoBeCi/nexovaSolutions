@@ -398,6 +398,7 @@ services/api/
 ├── seed.py                 # idempotent supplier loader
 ├── seed_users.py              # idempotent admin bootstrap
 ├── response_cache.py       # bounded process-local TTL cache
+├── reporting_adapter.py    # mounts the business reporting domain router
 ├── benchmark_response_cache.py # isolated in-memory SQLite benchmark
 ├── fixtures/suppliers.json # seeder input data
 ├── tests/
@@ -410,8 +411,24 @@ services/api/
 │   ├── test_password_reset.py
 │   ├── test_inventory.py
 │   ├── test_response_cache.py
+│   ├── test_reporting.py
 │   └── test_request_timing.py
 └── data/                   # local TinyDB (git-ignored)
 ```
 
 > _Spanish version: [README.es.md](./README.es.md)._
+
+### Business reporting pipeline
+
+`/reporting` is separate from technical `/telemetry`. Its admin-only endpoints
+expose the latest run audit, submit a Prefect run, and read
+`reporting.weekly_office_program_performance` for the dashboard. The router
+delegates to `data/pipelines/`; it does not contain ETL logic.
+
+Apply [`migrations/002_weekly_business_reporting.sql`](migrations/002_weekly_business_reporting.sql)
+explicitly before enabling the routes. Configure a read-only
+`TELEMETRY_READONLY_DATABASE_URL` and a restricted `REPORTING_DATABASE_URL`;
+`SUPABASE_DATABASE_URL` is only a local fallback. Start the weekly Prefect
+deployment with `uv run --project services/api python data/pipelines/pipeline.py --serve`
+from the monorepo root. The detailed commands and Monday 06:00 UTC schedule
+are in [`data/pipelines/PIPELINE_DESIGN.md`](../../data/pipelines/PIPELINE_DESIGN.md).

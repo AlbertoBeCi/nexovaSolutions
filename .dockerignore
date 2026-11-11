@@ -13,4 +13,11 @@
 **/.pytest_cache
 **/.uv-cache
 **/data
+!data/
+!data/pipelines/
+!data/pipelines/pipeline.py
+!data/pipelines/__init__.py
+!data/process/
+!data/process/business_performance.py
+!data/process/__init__.py
 **/*.tsbuildinfo

@@ -20,6 +20,8 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 > Integración del 03/11/2026 (`feature/telemetry-report-endpoint`): API **509 passed / 1 skipped** (78,09 s; 510 recopiladas). Backoffice **182 pruebas en 21 suites**. Lint, build y revisión de textos del backoffice en verde.
 
+> Integración del 10/11/2026 (`feature/resilient-business-performance-pipeline`): API **528 passed / 1 skipped** (83,83 s; 529 recopiladas) con `PYTHON_DOTENV_DISABLED=1`. Pipeline **16 passed**, incluida la ejecución del CLI dos veces sobre SQLite sintético y aislado. PostgreSQL real no estuvo disponible en el entorno local.
+
 ## 📌 Índice
 
 1. [🏆 Resumen](#-resumen)
@@ -39,11 +41,12 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
-| 🐍 `services/api` | `uv run pytest`* | 510 | ✅ 509 · ❌ 0 · ⏭ 1 | 78,09 s | — |
+| 🐍 `services/api` | `uv run pytest`* | 529 | ✅ 528 · ❌ 0 · ⏭ 1 | 83,83 s | — |
+| 🐍 `data/pipelines` | `uv run pytest ../../data/pipelines/tests`* | 16 | ✅ 16 · ❌ 0 | 27,30 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
 | 🟦 `uis/backoffice` | `npm test -- --runInBand` | 182 | ✅ 182 · ❌ 0 | | — |
-| 🏁 **Total documentado** | | **1052** | ✅ **1051** · ❌ **0** · ⏭ 1 | | |
+| 🏁 **Total documentado** | | **1087** | ✅ **1086** · ❌ **0** · ⏭ 1 | | |
 
 \* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
@@ -217,14 +220,15 @@ exigidos. La IA ayudó a generar el boilerplate y a sugerir casos límite.
 Cada tabla indica **qué se comprueba**, **qué significa que pase** y **qué
 significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 
-### 🐍 `services/api` — 404 pruebas aprobadas + 1 omitida condicionada
+### 🐍 `services/api` — inventario de suites (resultado actual: 528 aprobadas + 1 omitida)
 
 | 📄 Archivo | 🔢 | 🧪 Qué comprueba | ✅ Si pasa | ❌ Si falla | 🚦 |
 | --- | ---: | --- | --- | --- | :---: |
 | 🏭 `test_suppliers.py` | 27 | Proveedores: casos base y seed. | El directorio funciona. | Se rompió un flujo básico. | ✅ |
 | 🏭 `test_suppliers_rules.py` | 95 | Reglas país↔moneda, límites de tarifa y fechas, filtros, borrado, protección. | El directorio respeta sus reglas. | Se aceptan datos inválidos (p. ej. España con USD) o se rechazan válidos. | ✅ |
 | 📊 `test_incidents_analyze.py` | 58 | 7 reglas de invalidez del analizador CSV y sus límites, agregados, errores de archivo y exportación (**protegida con login**). | El resumen es correcto y nunca expone filas ni emails. | Un ticket inválido cuenta como válido y los porcentajes salen mal. | ✅ |
-| 👤 `test_accounts_rules.py` | 95 | Registro, login, permisos propio/admin, perfiles, rutas protegidas vs. públicas. | Cada usuario solo accede a lo suyo. | Alguien leería/borraría datos ajenos o una ruta quedaría abierta. | ✅ |
+| 👤 `test_accounts_rules.py` | 98 | Registro, login, permisos propio/admin, perfiles, rutas protegidas vs. públicas (incluye reporting). | Cada usuario solo accede a lo suyo. | Alguien leería/borraría datos ajenos o una ruta quedaría abierta. | ✅ |
+| 📈 `test_reporting.py` | 12 | Autorización admin, contrato KPI, semana ISO, errores seguros y delegación a Prefect. | Dashboard y operaciones usan el contrato aprobado. | Lectura/ejecución no autorizada o respuesta incompatible. | ✅ |
 | 🔐 `test_security_logic.py` | 36 | Política de contraseñas, hash, JWT (expiración, firma, tipo, huella), `get_current_user`. | Tokens falsos o caducados se rechazan. | Se aceptaría un token falso o una contraseña débil. | ✅ |
 | 🔑 `test_password_reset.py` | 25 | Olvidé / restablecer / cambiar contraseña; token de un solo uso. | El reset es seguro y no revela qué emails existen. | Un token se podría reutilizar o se filtrarían emails. | ✅ |
 | 🔓 `test_auth.py` | 13 | Registro y login base. | Los flujos principales funcionan. | Se rompió un flujo básico. | ✅ |
@@ -236,6 +240,14 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 | 📦 `test_inventory.py` | 29 + 1 omitida | Caché de productos y órdenes, filtros, invalidación tras escrituras, autorización en aciertos y pruebas aisladas con SQLite. | Las lecturas repetidas se reutilizan y reflejan cambios confirmados; una sesión sigue siendo obligatoria. | Una variante colisiona, una escritura deja datos obsoletos o un acierto evita el login. | ✅ |
 | ⏱️ `test_request_timing.py` | 2 | Registra método, ruta, estado y duración sin query string; permite desactivarlo por entorno. | El log contiene tiempos sin valores de parámetros. | Faltan mediciones o se filtra la query. | ✅ |
 | 🧠 `test_response_cache.py` | 4 | TTL controlable, claves independientes, invalidación, barrera ante cargas obsoletas, copia de valores, errores y límite LRU. | La caché caduca, invalida y mantiene memoria acotada. | Se reutiliza un valor vencido o crece sin límite. | ✅ |
+
+### 🐍 `data/pipelines/tests` — 16 pruebas
+
+| 📄 Archivo | 🔢 | 🧪 Qué comprueba | ✅ Si pasa | ❌ Si falla | 🚦 |
+| --- | ---: | --- | --- | --- | :---: |
+| `test_business_performance.py` | 11 | Contratos KPI, deduplicación, monedas, ventanas ISO UTC, costes y conteos. | Se calculan únicamente los cuatro KPI aprobados. | Se inventan datos o se suma una métrica de forma incorrecta. | ✅ |
+| `test_pipeline_orchestration.py` | 4 | Retries, caché por digest, fallo opcional y registro de fallos críticos. | Prefect continúa ante fallos opcionales y deja checkpoints seguros. | Una task falla silenciosamente o repite trabajo costoso. | ✅ |
+| `test_pipeline_cli_integration.py` | 1 | Ejecuta el CLI completo dos veces y comprueba upsert estable, auditoría y respaldo verificado. | La segunda corrida conserva la fila KPI sin duplicarla ni cambiarla. | Repetir una semana altera o duplica el reporte. | ✅ |
 
 ### 🐍 `services/incident-manager-api` — 217 pruebas
 

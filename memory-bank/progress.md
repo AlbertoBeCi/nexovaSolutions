@@ -2,6 +2,16 @@
 
 ## Funciona
 
+- **Pipeline resiliente de desempeno de negocio (10/11/2026)** - implementado en
+  `feature/resilient-business-performance-pipeline`: Prefect 3.9.2, lectura
+  read-only desde `telemetry_events`, transformacion KPI conforme a los cuatro
+  nombres aprobados, esquema `reporting`, cache por digest (1 h), retries,
+  checkpoints/auditoria, lease, staging y carga idempotente por semana. Endpoints
+  admin en `services/reporting/`; reporte tecnico sin cambios. API: 528 passed / 1
+  skipped (83,83 s); pipeline: 16 passed, incluyendo dos corridas CLI con una
+  base SQLite desechable y backup verificado. PostgreSQL/Docker no disponibles.
+  PR #36 abierto contra `main`.
+
 - **Reporte tecnico de telemetria** - implementados pipeline Pandas con cuatro
   metricas operacionales, endpoint de administrador con cache TTL de 60 segundos,
   captura best-effort de login y dashboard `/telemetry` en backoffice. Los cambios
