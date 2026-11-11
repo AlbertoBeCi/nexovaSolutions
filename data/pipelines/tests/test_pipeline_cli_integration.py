@@ -18,7 +18,7 @@ from data.pipelines.pipeline import (  # noqa: E402
 
 SCHEMA_PATH = REPO_ROOT / "docs/telemetry/event-schemas.json"
 PIPELINE_PATH = REPO_ROOT / "data/pipelines/pipeline.py"
-PYTHON = REPO_ROOT / "services/api/.venv/Scripts/python.exe"
+PYTHON = sys.executable
 today_utc = datetime.now(timezone.utc).date()
 current_monday = today_utc - timedelta(days=today_utc.weekday())
 week_start_date = current_monday - timedelta(days=7)
@@ -152,8 +152,17 @@ def test_cli_runs_full_pipeline_twice_without_duplicate_or_changed_rows(tmp_path
     with sqlite3.connect(backup) as connection:
         assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
 
+    source_before = source.read_bytes()
+    restored = tmp_path / "restored-reporting.sqlite"
+    shutil.copy2(backup, restored)
+    with sqlite3.connect(restored) as connection:
+        assert connection.execute("SELECT count(*) FROM weekly_office_program_performance").fetchone()[0] == 0
+
     first = _run_cli(tmp_path, source, reporting)
     assert first.returncode == 0, first.stdout + first.stderr
+    assert "An error was encountered while committing transaction" not in first.stderr
+    cache_files = list((tmp_path / "prefect-home" / "storage").iterdir())
+    assert any(item.is_file() and len(item.name) == 64 and item.stat().st_size > 0 for item in cache_files)
     with sqlite3.connect(reporting) as connection:
         first_rows = connection.execute(
             """SELECT id, office, programme_id, week_start, total_material_cost,
@@ -176,6 +185,7 @@ def test_cli_runs_full_pipeline_twice_without_duplicate_or_changed_rows(tmp_path
         runs = connection.execute(
             "SELECT status, events_read, events_valid, rows_written FROM pipeline_runs ORDER BY started_at"
         ).fetchall()
+    assert source.read_bytes() == source_before
     assert second_rows == first_rows
     assert runs == [("Completed", 4, 4, 1), ("Completed", 4, 4, 1)]
 

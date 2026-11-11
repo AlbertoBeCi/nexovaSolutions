@@ -35,3 +35,15 @@ def test_suite_passes(suite: str):
 
     # Si falla, se muestra la salida de la suite (los FAILED con su assert).
     assert result.returncode == 0, f"\n{result.stdout[-4000:]}\n{result.stderr[-1500:]}"
+
+
+def test_business_performance_pipeline_suites_pass():
+    """Use the API environment: the root runner intentionally has only pytest."""
+    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}
+    env["PYTHON_DOTENV_DISABLED"] = "1"
+    result = subprocess.run(
+        ["uv", "run", "--project", str(ROOT / "services/api"), "python", "-m", "pytest",
+         str(ROOT / "tests/pipelines"), str(ROOT / "data/pipelines/tests"), "-q", "-p", "no:cacheprovider"],
+        cwd=ROOT, capture_output=True, text=True, env=env,
+    )
+    assert result.returncode == 0, f"\n{result.stdout[-4000:]}\n{result.stderr[-1500:]}"

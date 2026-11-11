@@ -262,7 +262,7 @@ def record_extraction_checkpoint(run_id: str, events_read: int) -> None:
         engine.dispose()
 
 
-@task(name="validate_and_deduplicate_events")
+@task(name="validate_weekly_office_program_kpi_events")
 def validate_and_deduplicate_events_task(rows: list[dict[str, Any]], week_start: date) -> ValidatedEvents:
     return validate_and_deduplicate_events(rows, week_start)
 
@@ -297,11 +297,16 @@ def _aggregate_cache_key(_context: TaskRunContext, parameters: dict[str, Any]) -
     week_start: date = parameters["week_start"]
     # Result is reusable for one hour only when week, transform version, and
     # complete canonical input digest match; extraction and loading are uncached.
-    return f"{TRANSFORM_VERSION}:{week_start.isoformat()}:{validated.input_digest}"
+    # The key is also a local result filename: hash it to avoid Windows-invalid colons.
+    return canonical_digest({
+        "version": TRANSFORM_VERSION,
+        "week_start": week_start,
+        "input_digest": validated.input_digest,
+    })
 
 
 @task(
-    name="aggregate_weekly_performance",
+    name="calculate_material_cost_kits_shortage_and_cost_variance",
     cache_key_fn=_aggregate_cache_key,
     cache_expiration=timedelta(hours=1),
     persist_result=True,
@@ -310,7 +315,7 @@ def aggregate_weekly_performance(validated: ValidatedEvents, week_start: date) -
     return aggregate_events(validated, week_start)
 
 
-@task(name="validate_weekly_aggregates")
+@task(name="validate_weekly_office_program_kpis")
 def validate_weekly_aggregates_task(
     aggregates: list[dict[str, Any]], week_start: date, validated: ValidatedEvents
 ) -> tuple[list[dict[str, Any]], str]:
@@ -540,6 +545,65 @@ def write_pipeline_eval_snapshot(
     return str(path)
 
 
+@flow(name="extract_weekly_office_program_events_flow")
+def extract_weekly_office_program_events_flow(week_start: date, run_id: str) -> list[dict[str, Any]]:
+    """Extract KPI events; run_id must identify an acquired, audited week lease."""
+    rows = extract_telemetry_events(week_start, run_id)
+    record_extraction_checkpoint(run_id, len(rows))
+    if not rows:
+        raise NoPublishableBusinessEvents(
+            "La semana no tiene eventos de negocio de producción; no se sustituye la partición sin señal de ingesta."
+        )
+    return rows
+
+
+@flow(name="validate_weekly_office_program_events_flow")
+def validate_weekly_office_program_events_flow(
+    rows: list[dict[str, Any]], week_start: date, run_id: str
+) -> ValidatedEvents:
+    """Validate KPI input and checkpoint the existing audit record for run_id."""
+    validated = validate_and_deduplicate_events_task(rows, week_start)
+    record_validation_checkpoint(run_id, validated)
+    return validated
+
+
+@flow(name="calculate_weekly_office_program_kpis_flow")
+def calculate_weekly_office_program_kpis_flow(
+    validated: ValidatedEvents, week_start: date
+) -> tuple[list[dict[str, Any]], str]:
+    """Calculate material cost, kits delivered, shortage and cost variance KPIs."""
+    aggregates = aggregate_weekly_performance(validated, week_start)
+    if not aggregates:
+        raise NoPublishableBusinessEvents(
+            "No quedan eventos KPI válidos; se conserva la partición publicada hasta reconciliar la fuente."
+        )
+    return validate_weekly_aggregates_task(aggregates, week_start, validated)
+
+
+@flow(name="stage_weekly_office_program_kpis_flow")
+def stage_weekly_office_program_kpis_flow(
+    aggregates: list[dict[str, Any]], validated: ValidatedEvents,
+    output_digest: str, week_start: date, run_id: str
+) -> int:
+    """Stage validated KPIs and lineage under an existing audited, leased run_id."""
+    return stage_weekly_aggregates(run_id, week_start, validated, aggregates, output_digest)
+
+
+@flow(name="publish_weekly_office_program_kpis_flow")
+def publish_weekly_office_program_kpis_flow(week_start: date, output_digest: str, run_id: str) -> int:
+    """Publish the staged week for run_id; its audit record and lease must exist."""
+    return replace_reporting_partition(run_id, week_start, output_digest)
+
+
+@flow(name="evaluate_weekly_office_program_kpis_flow")
+def evaluate_weekly_office_program_kpis_flow(
+    run_id: str, week_start: date, validated: ValidatedEvents,
+    rows_written: int, output_digest: str
+) -> str:
+    """Write optional KPI evidence after publication; no database writes."""
+    return write_pipeline_eval_snapshot(run_id, week_start, validated, rows_written, output_digest)
+
+
 @flow(name=PIPELINE_NAME, log_prints=True)
 def weekly_office_program_performance_flow(
     week_start: date | str | None = None,
@@ -573,33 +637,20 @@ def weekly_office_program_performance_flow(
     output_digest: str | None = None
     checkpoint = "extract"
     try:
-        source_rows = extract_telemetry_events(resolved_week, run_id)
-        record_extraction_checkpoint(run_id, len(source_rows))
-        if not source_rows:
-            raise NoPublishableBusinessEvents(
-                "La semana no tiene eventos de negocio de producción; no se sustituye la partición sin señal de ingesta."
-            )
+        source_rows = extract_weekly_office_program_events_flow(resolved_week, run_id)
         checkpoint = "validate"
-        validated = validate_and_deduplicate_events_task(source_rows, resolved_week)
-        record_validation_checkpoint(run_id, validated)
+        validated = validate_weekly_office_program_events_flow(source_rows, resolved_week, run_id)
         checkpoint = "transform"
-        aggregates = aggregate_weekly_performance(validated, resolved_week)
-        if not aggregates:
-            raise NoPublishableBusinessEvents(
-                "No quedan eventos KPI válidos; se conserva la partición publicada hasta reconciliar la fuente."
-            )
-        aggregates, output_digest = validate_weekly_aggregates_task(
-            aggregates, resolved_week, validated
-        )
+        aggregates, output_digest = calculate_weekly_office_program_kpis_flow(validated, resolved_week)
         checkpoint = "stage"
-        stage_weekly_aggregates(run_id, resolved_week, validated, aggregates, output_digest)
+        stage_weekly_office_program_kpis_flow(aggregates, validated, output_digest, resolved_week, run_id)
         checkpoint = "load"
-        rows_written = replace_reporting_partition(run_id, resolved_week, output_digest)
+        rows_written = publish_weekly_office_program_kpis_flow(resolved_week, output_digest, run_id)
         checkpoint = "verify"
         finalize_pipeline_run(run_id, resolved_week, "Completed", checkpoint, rows_written)
 
         # Optional validation snapshot must not fail the published report.
-        state = write_pipeline_eval_snapshot(
+        state = evaluate_weekly_office_program_kpis_flow(
             run_id, resolved_week, validated, rows_written, output_digest, return_state=True
         )
         if state.is_failed():

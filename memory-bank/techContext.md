@@ -215,7 +215,7 @@ verdad de esa validacion para `scripts/` y `services/*`.
 
 ## Pruebas
 
-- `uv run pytest` desde la **raíz** del repo ejecuta las 3 suites Python (`tests/test_suites.py`,
+- `uv run pytest` desde la **raíz** del repo ejecuta cuatro grupos Python: las tres suites originales y los pipelines (`tests/test_suites.py`,
   cada una en su entorno: los servicios comparten nombres de módulo).
 - Backend: `pytest` (+ `pytest-cov`, informativo) en `services/api` (369) y
   `services/incident-manager-api` (217); `uv run pytest`.

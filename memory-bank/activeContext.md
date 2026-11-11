@@ -2,7 +2,25 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora - pipeline de desempeno de negocio
+## Ahora - Parte 3: subflows y dashboard semanal
+
+Rama: `feature/business-performance-subflows-dashboard`, desde `origin/main` con
+la Parte 2 integrada mediante PR #36.
+
+- Cinco subflows críticos y uno opcional de evaluación; CLI, auditoría, lock,
+  retries, staging e idempotencia conservados.
+- Dashboard admin `/reporting`: selector de lunes ISO en URL, cuatro KPI exactos,
+  fechas UTC, EUR/USD separados y estados de carga/error/vacío.
+- 44 pruebas de pipelines (17 de tasks aisladas), 207 Jest / 23 suites,
+  lint/build/textos correctos. Ejecutor raíz: cuatro grupos correctos.
+- Corrección de caché Windows: SHA-256 de semana/versión/digest, comprobado
+  mediante prueba de regresión y persistencia real del archivo.
+- Navegador: login y retorno, endpoint GET 200 con dos oficinas, selección de
+  semana vacía y vistas escritorio/móvil sin desbordamiento de página. Datos
+  sintéticos exclusivamente en SQLite temporal; ninguna escritura en Supabase.
+- Entrega verificada; publicación de rama y PR según la solicitud aprobada.
+
+## Anterior - pipeline de desempeno de negocio
 
 Rama: `feature/resilient-business-performance-pipeline`, desde `origin/main`.
 

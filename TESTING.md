@@ -22,6 +22,8 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 > Integración del 10/11/2026 (`feature/resilient-business-performance-pipeline`): API **528 passed / 1 skipped** (83,83 s; 529 recopiladas) con `PYTHON_DOTENV_DISABLED=1`. Pipeline **16 passed**, incluida la ejecución del CLI dos veces sobre SQLite sintético y aislado. PostgreSQL real no estuvo disponible en el entorno local.
 
+> Integración del 11/11/2026 (Parte 3): **44 pruebas de pipelines** correctas (45,59 s), incluyendo 17 de tasks aisladas y dos ejecuciones CLI reales. Backoffice **207 pruebas en 23 suites** (27,91 s), lint/build y revisión de textos correctos. El ejecutor de raíz completa sus **4 grupos** (143,98 s): API, incident-manager, shared y pipelines. Se conserva la omisión PostgreSQL preexistente; no se añade ningún skip.
+
 ## 📌 Índice
 
 1. [🏆 Resumen](#-resumen)
@@ -42,13 +44,13 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
 | 🐍 `services/api` | `uv run pytest`* | 529 | ✅ 528 · ❌ 0 · ⏭ 1 | 83,83 s | — |
-| 🐍 `data/pipelines` | `uv run pytest ../../data/pipelines/tests`* | 16 | ✅ 16 · ❌ 0 | 27,30 s | — |
+| 🐍 `data/pipelines` + `tests/pipelines` | `uv run --project services/api python -m pytest tests/pipelines data/pipelines/tests` | 44 | ✅ 44 · ❌ 0 | 45,59 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
-| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 182 | ✅ 182 · ❌ 0 | | — |
-| 🏁 **Total documentado** | | **1087** | ✅ **1086** · ❌ **0** · ⏭ 1 | | |
+| 🟦 `uis/backoffice` | `npm test -- --runInBand` | 207 | ✅ 207 · ❌ 0 | 27,91 s | — |
+| 🏁 **Total documentado** | | **1140** | ✅ **1139** · ❌ **0** · ⏭ 1 | | |
 
-\* En esta ejecución `uv` no pudo inicializar su caché global y tampoco pudo
+\* En la ejecución del 10/11/2026 `uv` no pudo inicializar su caché global y tampoco pudo
 resolver `setuptools` desde PyPI en la caché temporal; se ejecutó la misma suite
 con `services/api/.venv/Scripts/python.exe -m pytest -p no:cacheprovider`.
 
@@ -142,7 +144,7 @@ no crearon usuarios, perfiles ni movimientos. No se ejecutaron seeds ni migracio
 ## 🚀 Cómo ejecutarlas
 
 ```bash
-# 🏠 Todo el backend Python desde la raíz del repo (3 suites, cada una en su entorno)
+# 🏠 Todo el backend Python desde la raíz del repo (4 grupos, cada uno en su entorno)
 uv run pytest                                  # ⏱️ ~1,5 min
 
 # 🐍 Una suite concreta (Python)
@@ -241,13 +243,15 @@ significaría que falle**. Todas las pruebas de esta ejecución pasan (✅).
 | ⏱️ `test_request_timing.py` | 2 | Registra método, ruta, estado y duración sin query string; permite desactivarlo por entorno. | El log contiene tiempos sin valores de parámetros. | Faltan mediciones o se filtra la query. | ✅ |
 | 🧠 `test_response_cache.py` | 4 | TTL controlable, claves independientes, invalidación, barrera ante cargas obsoletas, copia de valores, errores y límite LRU. | La caché caduca, invalida y mantiene memoria acotada. | Se reutiliza un valor vencido o crece sin límite. | ✅ |
 
-### 🐍 `data/pipelines/tests` — 16 pruebas
+### 🐍 Pipelines — 44 pruebas
 
 | 📄 Archivo | 🔢 | 🧪 Qué comprueba | ✅ Si pasa | ❌ Si falla | 🚦 |
 | --- | ---: | --- | --- | --- | :---: |
 | `test_business_performance.py` | 11 | Contratos KPI, deduplicación, monedas, ventanas ISO UTC, costes y conteos. | Se calculan únicamente los cuatro KPI aprobados. | Se inventan datos o se suma una métrica de forma incorrecta. | ✅ |
-| `test_pipeline_orchestration.py` | 4 | Retries, caché por digest, fallo opcional y registro de fallos críticos. | Prefect continúa ante fallos opcionales y deja checkpoints seguros. | Una task falla silenciosamente o repite trabajo costoso. | ✅ |
-| `test_pipeline_cli_integration.py` | 1 | Ejecuta el CLI completo dos veces y comprueba upsert estable, auditoría y respaldo verificado. | La segunda corrida conserva la fila KPI sin duplicarla ni cambiarla. | Repetir una semana altera o duplica el reporte. | ✅ |
+| `test_pipeline_orchestration.py` | 15 | Retries, caché persistente con clave válida en Windows, seis subflows, orden y argumentos, fases de fallo, lock, fuente vacía y fallo opcional. | Prefect continúa ante fallos opcionales y deja checkpoints seguros. | Una task falla silenciosamente o repite trabajo costoso. | ✅ |
+| `test_pipeline_cli_integration.py` | 1 | Ejecuta el CLI real dos veces; comprueba caché persistida, upsert estable, fuente intacta, auditoría y backup restaurable. | La segunda corrida conserva la fila KPI sin duplicarla ni cambiarla. | Repetir una semana altera o duplica el reporte. | ✅ |
+
+| `tests/pipelines/test_pipeline.py` | 17 | Tres tasks mediante `.fn`: costo exacto, conteos, monedas, duplicados, datos inválidos y validación de los cuatro totales. | Las transformaciones se verifican en memoria sin BD ni APIs. | Un dato inválido altera el reporte o un KPI cambia de definición. | ✅ |
 
 ### 🐍 `services/incident-manager-api` — 217 pruebas
 
@@ -433,3 +437,40 @@ Desde la raíz: node scripts/validate-telemetry.cjs. Requiere Node y Ajv 6 del t
 Resultado: **PASS — 9.450 comprobaciones documentales y de contrato**, 66 esquemas/fichas, cinco obligatorios y 61 oportunidades en siete categorías. Comprueba Draft-07, ejemplos, formatos activos, allowlists, campos requeridos, versiones, oficina/moneda, identidad, autoridad de origen, tablas/metadata/ejemplos Markdown frente a JSON, categorías reales de incidencias y fixtures semánticos de costo/stock/zona horaria. Demuestra que un valor con forma válida necesita además registro/procedencia para ser seguro.
 
 Estas comprobaciones se contabilizan aparte de las suites de aplicación anteriores: no son nuevas pruebas Jest/pytest ni medición de cobertura de instrumentación. Rollback, concurrencia, entrega durable, correlador de abandono y sanitización desplegada están especificados para la fase posterior en el plan; no se afirman ejecutados aquí.
+
+## Parte 3: dashboard y ejecución de pruebas
+
+Desde la raíz, con el entorno API activado:
+
+```bash
+python -m pytest tests/pipelines/test_pipeline.py
+python -m pytest tests/pipelines data/pipelines/tests
+```
+
+La colección predeterminada de raíz apunta a `tests/test_suites.py`; este
+lanza las tres suites originales y un cuarto grupo de pipelines en el entorno
+de la API, que contiene Prefect/SQLAlchemy. La raíz conserva solo pytest.
+
+| Archivo nuevo de backoffice | Pruebas | Comportamiento |
+| --- | ---: | --- |
+| `services/__tests__/business-performance.test.ts` | 13 | Contrato, semana ISO, autenticación, ausencia de caché HTTP y errores traducidos, incluido 401. |
+| `app/reporting/__tests__/page.test.tsx` | 12 | Cuatro nombres de KPI, período UTC, EUR/USD, carga, vacío, reintento, selector, URL inválida, permisos y respuesta tardía. |
+
+Comportamientos fijados: Kits entregados cuenta eventos, no unidades;
+una semana sin filas publicadas no se representa con ceros; cada moneda
+conserva su oficina. La caché mantiene semana/versión/digest como identidad,
+pero usa su SHA-256 como nombre de archivo para funcionar en Windows.
+Se reprodujo el fallo de los dos puntos antes de corregirlo.
+
+Advertencias preexistentes: sqlite3 avisa de la futura retirada del adaptador
+de fechas predeterminado; la suite del dashboard técnico emite advertencias
+React `act`. Ambas suites pasan; no se cambió el reporte técnico.
+
+Revisión de navegador: build de producción en escritorio y 390 px, login con
+retorno a `/reporting`, GET 200 para dos oficinas, consulta semanal vacía,
+retorno a la última semana y actualización. La página móvil no desborda el
+viewport. La API real corrió con SQLite y cuentas temporales sintéticas; no
+se verificaron datos comerciales de Supabase. Capturas locales en
+`data/eval/business-performance/dashboard-{desktop,mobile}.png` (ignoradas).
+El contexto de telemetría del entorno QA devuelve 503 por carecer de clave
+HMAC; ese aviso del sistema técnico no impide consultar los KPI.
