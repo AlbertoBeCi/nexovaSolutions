@@ -314,3 +314,16 @@ Construir el "Gestor de Incidencias Centralizado" de Nexova dentro del monorepo 
 ## Prompt: responder al RFI con catálogo exhaustivo y esquemas
 
 Implementar el plan aprobado de telemetría de Nexova en docs/telemetry/telemetry-plan.md y event-schemas.json, sin instrumentar la aplicación. Crear primero feature/telemetry-design-plan desde la base de main. Diseñar 66 eventos (cinco obligatorios exactos del briefing y 61 oportunidades), siete categorías, allowlists cerradas, privacidad, entrega, hipótesis/decisiones individuales y matriz de los 23 checks. Adaptar el modelo Asset/AssetEntry/AssetExit sin migración; documentar metadatos faltantes. Decisiones confirmadas: mínimo configurable inicial 6; variación absoluta de costo >10% frente a media ponderada de 90 días con mínimo tres entradas comparables; no convertir EUR/USD. Validar ejemplos y coherencia Markdown/JSON, actualizar memoria y preparar commit/PR docs: telemetry design plan; merge condicionado a aprobación y comprobaciones satisfechas.
+
+# Telemetría y Data Pipelines — Parte 3 (11/11/2026)
+
+Implementar el plan aprobado sobre la Parte 2 integrada: conservar el flow
+principal y CLI, extraer cinco subflows Prefect secuenciales y un sexto de
+evaluación opcional, añadir tests aislados de tres tasks de transformación en
+`tests/pipelines/test_pipeline.py` e integrar ambas suites de pipelines en el
+ejecutor de raíz con el entorno de la API. Crear `/reporting` en backoffice,
+con administrador, selector semanal en URL, cuatro KPI exactos y monedas
+separadas. Conservar las mejoras de resiliencia existentes, sin alertas nuevas,
+migraciones ni cambios en el reporte técnico. Verificar CLI, suites Python,
+Jest, lint/build, textos y navegador; actualizar documentación y memoria;
+commitear con el mensaje solicitado y abrir un PR nuevo contra main.

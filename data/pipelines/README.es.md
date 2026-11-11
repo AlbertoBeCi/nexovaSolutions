@@ -28,3 +28,31 @@ semana ISO completa. Aplica primero
 [`services/api/migrations/002_weekly_business_reporting.sql`](../../services/api/migrations/002_weekly_business_reporting.sql).
 El diseño, sus límites de v1 y la operación están en
 [`PIPELINE_DESIGN.md`](./PIPELINE_DESIGN.md).
+
+## Subflows y verificación
+
+El principal coordina cinco subflows Prefect secuenciales: extracción,
+validación de eventos, cálculo de KPI, staging y publicación. Un sexto subflow
+escribe evidencia opcional con `return_state=True`; su fallo no invalida el
+reporte publicado. Los subflows con acceso a reporting requieren un `run_id`
+auditado y una lease adquirida para esa semana. Los argumentos y retornos
+transportan los datos intermedios; la lógica pura sigue en `data/process/`.
+
+Con el entorno virtual de la API activado, desde la raíz:
+
+```bash
+python -m pytest tests/pipelines/test_pipeline.py
+python -m pytest tests/pipelines data/pipelines/tests
+python data/pipelines/pipeline.py
+```
+
+También puedes anteponer `uv run --project services/api` a esos comandos.
+`uv run pytest` desde la raíz ejecuta ambas carpetas de pruebas de pipelines
+con el entorno de la API. La integración CLI usa SQLite desechable, verifica
+que el backup se pueda restaurar y comprueba que dos corridas conservan tanto
+la fuente como las filas publicadas.
+
+El dashboard de administradores `/reporting` consume el GET de reporting.
+Abre la última semana publicada y admite un lunes ISO mediante
+`?week_start=YYYY-MM-DD`. EUR y USD se presentan separados. La ausencia de
+filas significa que no hay datos publicados, no actividad de negocio cero.

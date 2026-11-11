@@ -30,3 +30,32 @@ week. Apply
 [`services/api/migrations/002_weekly_business_reporting.sql`](../../services/api/migrations/002_weekly_business_reporting.sql)
 first. See [PIPELINE_DESIGN.md](./PIPELINE_DESIGN.md) for v1 scope and operating
 details.
+
+## Subflows and verification
+
+The main flow coordinates extraction, event validation, KPI calculation,
+staging and publication through five sequential Prefect subflows. A sixth
+subflow writes optional evaluation evidence with `return_state=True`; its
+failure does not fail an already published report. Database subflows require
+an existing audited `run_id` and an acquired lease for their week; arguments
+and return values carry all intermediate data. Pure transformations remain in
+`data/process/business_performance.py`.
+
+Activate the API virtual environment and run from the repository root:
+
+```bash
+python -m pytest tests/pipelines/test_pipeline.py
+python -m pytest tests/pipelines data/pipelines/tests
+python data/pipelines/pipeline.py
+```
+
+Alternatively prefix commands with `uv run --project services/api`.
+`uv run pytest` at the root also runs both pipeline test directories in the
+API environment. The CLI integration test uses disposable SQLite databases,
+verifies a restorable backup, and checks unchanged source bytes and stable
+published rows across two runs.
+
+The admin-only backoffice page `/reporting` reads the existing reporting GET
+endpoint. It opens the latest published week and accepts a Monday ISO date in
+`?week_start=YYYY-MM-DD`. EUR and USD remain separate. No rows means no
+published data for the requested week, not zero business activity.

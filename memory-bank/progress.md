@@ -2,6 +2,17 @@
 
 ## Funciona
 
+- **Parte 3 del pipeline de negocio (11/11/2026)** - cinco subflows secuenciales
+  y evaluación opcional con estado Prefect; CLI preservada. Dashboard admin
+  `/reporting` con cuatro KPI exactos, selector semanal en URL, período UTC y
+  monedas separadas. 44 pruebas de pipelines, 207 Jest en 23 suites, lint/build
+  y revisión de textos correctos; los cuatro grupos Python de raíz pasan.
+  Caché persistente corregida para Windows mediante clave SHA-256. Revisión
+  visual de escritorio/móvil y GET real 200 sobre SQLite sintético aislado;
+  fuente inalterada, backup restaurable e idempotencia CLI verificados. Sin
+  migraciones ni escrituras de producción. Entrega verificada para publicación de rama y PR.
+
+
 - **Pipeline resiliente de desempeno de negocio (10/11/2026)** - implementado en
   `feature/resilient-business-performance-pipeline`: Prefect 3.9.2, lectura
   read-only desde `telemetry_events`, transformacion KPI conforme a los cuatro

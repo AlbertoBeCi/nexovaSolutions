@@ -145,3 +145,25 @@ etiqueta durante el guardado. No utiliza la API ni modifica candidatos reales.
 
 La ficha precarga sus dos respuestas JSON desde el HTML. Las tres pruebas del
 cliente HTTP comprueban que la lectura posterior utiliza exactamente esas URLs.
+
+## Reporte semanal de desempeño de negocio
+
+`/reporting` muestra el **Reporte Semanal de Desempeño por Oficina y Programa**
+para Laura (CEO) y Elena (Gerente de L&D), con acceso de administrador conforme
+a los permisos actuales. El enlace **Desempeño de negocio** aparece en el menú.
+Consume únicamente `GET /reporting/weekly-office-program-performance` de
+`services/reporting/`, montado en la API existente y accesible mediante la
+misma configuración del cliente autenticado.
+
+Abre la última semana publicada; el selector guarda el lunes ISO en
+`?week_start=YYYY-MM-DD`. Presenta el período de lunes a domingo UTC y cuatro
+tablas: **Costo de material por oficina/programa**, **Kits entregados**,
+**Frecuencia de escasez** y **Frecuencia de variación de costo**. Los programas
+se identifican por su identificador de origen, ya que no existe un catálogo de
+nombres. Los importes EUR/Valencia y USD/Miami nunca se suman entre sí.
+
+Incluye carga, acceso denegado, error con reintento y ausencia de datos
+publicados. **Actualizar reporte** vuelve a consultar; no ejecuta el pipeline.
+El contrato TypeScript vive en `packages/shared/types/business-performance.ts`.
+Las pruebas Jest cubren cliente autenticado, períodos, monedas, permisos,
+selección semanal y respuestas que llegan fuera de orden.

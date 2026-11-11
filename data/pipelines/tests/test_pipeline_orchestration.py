@@ -13,8 +13,27 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from data.pipelines import pipeline  # noqa: E402
 from data.process.business_performance import ValidatedEvents  # noqa: E402
-from prefect.states import Failed  # noqa: E402
+from prefect.states import Completed, Failed  # noqa: E402
 
+
+
+SUBFLOWS = (
+    "extract_weekly_office_program_events_flow",
+    "validate_weekly_office_program_events_flow",
+    "calculate_weekly_office_program_kpis_flow",
+    "stage_weekly_office_program_kpis_flow",
+    "publish_weekly_office_program_kpis_flow",
+)
+
+
+@pytest.fixture(autouse=True)
+def direct_subflows_without_prefect_server(monkeypatch):
+    # Exercise each subflow body in existing unit tests without orchestration I/O.
+    for name in SUBFLOWS:
+        monkeypatch.setattr(pipeline, name, getattr(pipeline, name).fn)
+    optional = pipeline.evaluate_weekly_office_program_kpis_flow.fn
+    monkeypatch.setattr(pipeline, "evaluate_weekly_office_program_kpis_flow",
+                        lambda *args, **kwargs: optional(*args))
 
 def _fixture_events():
     return ValidatedEvents(
@@ -70,7 +89,7 @@ def test_expensive_transform_cache_is_persistent_for_one_hour():
     assert pipeline.aggregate_weekly_performance.cache_expiration.total_seconds() == 3600
     assert pipeline._aggregate_cache_key(
         None, {"validated": _fixture_events(), "week_start": date(2026, 11, 2)}
-    ) == "v1:2026-11-02:" + "a" * 64
+    ) == pipeline.canonical_digest({"version": "v1", "week_start": date(2026, 11, 2), "input_digest": "a" * 64})
 
 
 def test_optional_eval_failure_is_returned_and_does_not_fail_published_flow(monkeypatch):
@@ -126,3 +145,101 @@ def test_critical_task_failure_is_recorded_then_propagated(monkeypatch):
     assert finalizations[0][5] == "PIPELINE_STEP_FAILED"
     assert "ConnectionError" in finalizations[0][6]
     assert "database URL" not in finalizations[0][6]
+
+
+
+def test_main_coordinates_all_business_subflows_with_explicit_inputs(monkeypatch):
+    calls = []
+    week = date(2026, 11, 2)
+    source = [{"event_id": "out-1"}]
+    validated = _fixture_events()
+    aggregates = _aggregate()
+    digest = "b" * 64
+    monkeypatch.setattr(pipeline, "start_pipeline_run_and_acquire_lock", lambda *args: {"acquired": True})
+    results = [source, validated, (aggregates, digest), 1, 1]
+    for name, result in zip(SUBFLOWS, results):
+        def record(*args, _name=name, _result=result):
+            calls.append((_name, args))
+            return _result
+        monkeypatch.setattr(pipeline, name, record)
+    finalizations = []
+    monkeypatch.setattr(pipeline, "finalize_pipeline_run", lambda *args: finalizations.append(args))
+    def optional(*args, **kwargs):
+        calls.append(("evaluate", args))
+        assert kwargs == {"return_state": True}
+        return Completed(data="evidence.json")
+    monkeypatch.setattr(pipeline, "evaluate_weekly_office_program_kpis_flow", optional)
+    result = pipeline.weekly_office_program_performance_flow.fn(week_start=week)
+    run_id = result["run_id"]
+    assert calls == [
+        (SUBFLOWS[0], (week, run_id)),
+        (SUBFLOWS[1], (source, week, run_id)),
+        (SUBFLOWS[2], (validated, week)),
+        (SUBFLOWS[3], (aggregates, validated, digest, week, run_id)),
+        (SUBFLOWS[4], (week, digest, run_id)),
+        ("evaluate", (run_id, week, validated, 1, digest)),
+    ]
+    assert finalizations == [(run_id, week, "Completed", "verify", 1)]
+    assert result["status"] == "Completed"
+
+
+@pytest.mark.parametrize("failed_index,checkpoint", list(enumerate(["extract", "validate", "transform", "stage", "load"])))
+def test_failed_business_subflow_stops_downstream_and_preserves_checkpoint(monkeypatch, failed_index, checkpoint):
+    calls = []
+    finalizations = []
+    monkeypatch.setattr(pipeline, "start_pipeline_run_and_acquire_lock", lambda *args: {"acquired": True})
+    results = [[{}], _fixture_events(), (_aggregate(), "b" * 64), 1, 1]
+    for index, (name, result) in enumerate(zip(SUBFLOWS, results)):
+        def subflow(*args, _index=index, _result=result):
+            calls.append(_index)
+            if _index == failed_index:
+                raise ConnectionError("private connection details")
+            return _result
+        monkeypatch.setattr(pipeline, name, subflow)
+    monkeypatch.setattr(pipeline, "finalize_pipeline_run", lambda *args: finalizations.append(args))
+    with pytest.raises(ConnectionError):
+        pipeline.weekly_office_program_performance_flow.fn(week_start="2026-11-02")
+    assert calls == list(range(failed_index + 1))
+    assert finalizations[0][2:4] == ("Failed", checkpoint)
+    assert "private connection" not in finalizations[0][-1]
+
+
+def test_active_week_lease_skips_all_business_subflows(monkeypatch):
+    monkeypatch.setattr(pipeline, "start_pipeline_run_and_acquire_lock",
+                        lambda *args: {"acquired": False, "owner_run_id": "existing-run"})
+    for name in SUBFLOWS:
+        monkeypatch.setattr(pipeline, name, lambda *args: pytest.fail("Lease prevents subflow execution"))
+    result = pipeline.weekly_office_program_performance_flow.fn(week_start="2026-11-02")
+    assert result["status"] == "Running"
+    assert result["run_id"] == "existing-run"
+
+
+def test_empty_material_source_is_not_published(monkeypatch):
+    monkeypatch.setattr(pipeline, "extract_telemetry_events", lambda *args: [])
+    monkeypatch.setattr(pipeline, "record_extraction_checkpoint", lambda *args: None)
+    with pytest.raises(pipeline.NoPublishableBusinessEvents):
+        pipeline.extract_weekly_office_program_events_flow(date(2026, 11, 2), "run")
+
+
+def test_no_valid_kpi_events_are_not_published(monkeypatch):
+    monkeypatch.setattr(pipeline, "aggregate_weekly_performance", lambda *args: [])
+    with pytest.raises(pipeline.NoPublishableBusinessEvents):
+        pipeline.calculate_weekly_office_program_kpis_flow(_fixture_events(), date(2026, 11, 2))
+
+
+def test_kpi_cache_key_is_safe_for_windows_result_storage():
+    key = pipeline._aggregate_cache_key(None, {"validated": _fixture_events(), "week_start": date(2026, 11, 2)})
+    assert not any(character in key for character in '<>:"/\\|?*')
+
+
+
+def test_kpi_cache_key_changes_with_week_version_and_source_digest(monkeypatch):
+    parameters = {"validated": _fixture_events(), "week_start": date(2026, 11, 2)}
+    original = pipeline._aggregate_cache_key(None, parameters)
+    assert pipeline._aggregate_cache_key(None, parameters) == original
+    assert pipeline._aggregate_cache_key(None, {**parameters, "week_start": date(2026, 11, 9)}) != original
+    from dataclasses import replace
+    changed = replace(parameters["validated"], input_digest="c" * 64)
+    assert pipeline._aggregate_cache_key(None, {**parameters, "validated": changed}) != original
+    monkeypatch.setattr(pipeline, "TRANSFORM_VERSION", "next-version")
+    assert pipeline._aggregate_cache_key(None, parameters) != original

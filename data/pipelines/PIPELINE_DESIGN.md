@@ -277,9 +277,9 @@ completa.
 | Task Prefect | Responsabilidad |
 | --- | --- |
 | `extract_telemetry_events` | Leer por lotes la ventana y los tipos necesarios en modo solo lectura. |
-| `validate_and_deduplicate_events` | Aplicar contratos, allowlists, filtros de producción y deduplicación por `eventId`. |
-| `aggregate_weekly_performance` | Convertir importes y calcular métricas al grano oficina/programa/semana. |
-| `validate_weekly_aggregates` | Validar dimensiones, monedas, importes, conteos y digests. |
+| `validate_weekly_office_program_kpi_events` | Aplicar contratos, allowlists, filtros de producción y deduplicación por `eventId`. |
+| `calculate_material_cost_kits_shortage_and_cost_variance` | Convertir importes y calcular métricas al grano oficina/programa/semana. |
+| `validate_weekly_office_program_kpis` | Validar dimensiones, monedas, importes, conteos y digests. |
 | `stage_weekly_aggregates` | Persistir salida validada asociada a `run_id` para recuperación. |
 | `replace_reporting_partition` | Reemplazar la semana afectada en una sola transacción. |
 | `finalize_pipeline_run` | Registrar checkpoint final, conteos, hashes, duración y estado. |
@@ -362,3 +362,51 @@ necesario.
 - `data/raw/business-performance/` contiene las extracciones temporales y
   `data/eval/business-performance/` los resúmenes de evaluación; sus artefactos
   runtime están excluidos de Git.
+
+## 12. Parte 3: subflows, pruebas y consumo de negocio
+
+El flow principal conserva nombre, parámetros, resultado, lock y auditoría.
+Coordina secuencialmente estos subflows, cada uno con entradas y salidas
+explícitas y sin variables globales de datos compartidas:
+
+| Subflow | Entradas | Salida |
+| --- | --- | --- |
+| `extract_weekly_office_program_events_flow` | `week_start`, `run_id` | Eventos de los cuatro KPI; checkpoint extract. |
+| `validate_weekly_office_program_events_flow` | Eventos, semana, `run_id` | `ValidatedEvents`; checkpoint validate. |
+| `calculate_weekly_office_program_kpis_flow` | Eventos validados, semana | Agregados validados y digest. |
+| `stage_weekly_office_program_kpis_flow` | Agregados, eventos validados, digest, semana, `run_id` | Filas preparadas; checkpoint stage. |
+| `publish_weekly_office_program_kpis_flow` | Semana, digest, `run_id` | Filas publicadas; checkpoint load. |
+| `evaluate_weekly_office_program_kpis_flow` | `run_id`, semana, eventos validados, filas publicadas, digest | Ruta del artefacto de evaluación opcional. |
+
+Los subflows con escritura requieren un registro de auditoría y lease previos;
+pueden ejecutarse de manera independiente con ese contexto explícito. Extracción
+requiere credenciales de lectura y acceso al directorio temporal. El cálculo
+recibe exclusivamente datos validados. No se añaden retries a nivel de flow:
+se conservan los reintentos acotados y la caché de las tasks actuales.
+
+El principal registra `Completed` tras publicar y llama al subflow opcional
+con `return_state=True`. Un estado fallido genera advertencia; los fallos
+críticos se propagan y conservan la fase exacta en la auditoría. Una extracción
+vacía o sin eventos KPI válidos sigue protegiendo la partición publicada.
+
+### Dashboard para Laura y Elena
+
+`/reporting` del backoffice abre la última semana publicada y consulta otras
+mediante un lunes ISO en la URL. Presenta los cuatro nombres exactos del
+briefing, fechas UTC y desglose por oficina/programa. No agrega EUR con USD,
+no dispara corridas y mantiene el acceso admin actual. Sin catálogo de
+programas, conserva sus identificadores; no inventa nombres ni datos.
+
+### Preguntas de diseño y mejoras opcionales
+
+En esta parte se conservan las respuestas implementadas en la Parte 2:
+lock/lease para corridas solapadas (§7), reintentos y staging para recuperación
+(§5 y §7), auditoría/checkpoints/digests para trazabilidad (§6 y §8). No se
+incorpora una mejora opcional nueva: el foco aprobado es subflows, tests y
+dashboard. El heartbeat del colector y la reconciliación automática de eventos
+tardíos mantienen las limitaciones ya documentadas.
+
+La revisión CLI de esta parte detectó que la clave de caché original contenía
+dos puntos, inválidos en archivos Windows. Se conserva la identidad por
+semana/versión/digest, codificada ahora como SHA-256. La prueba de integración
+confirma la existencia del resultado persistido, además del exit code.

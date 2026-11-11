@@ -145,3 +145,32 @@ que la actividad de negocio sea cero. Conserva la partición anterior y deja la
 corrida en estado fallido para reconciliar la ingestión en vez de borrar datos.
 Mientras `telemetry_events` no conserve `received_at` y `ingestion_id`, repara
 semanas con backfill manual y no declares detección automática de eventos tardíos.
+
+## Subflows y dashboard semanal de negocio
+
+Un subflow no sustituye a la lógica pura: agrupa tasks con una responsabilidad
+de orquestación. Pasar semana, run_id y resultados explícitos permite probar y
+reutilizar cada fase. El flow principal conserva la decisión de publicar, el
+lock y el registro terminal. Los checkpoints distinguen extracción, validación,
+transformación, staging y carga aunque las fases vivan ahora en subflows.
+
+Para probar transformaciones decoradas por Prefect, llama a `task.fn(...)`
+con eventos en memoria: ejecutas el cuerpo real sin servidor Prefect, caché ni
+base de datos. Las pruebas de integración sí deben ejecutar el flow real y la
+CLI, porque solo ellas comprueban el comportamiento conjunto de los subflows.
+Una exportación opcional se invoca con `return_state=True` y se inspecciona
+su estado para que un disco lleno no convierta una publicación correcta en un
+fallo de negocio.
+
+El dashboard elige la última semana **publicada**, que puede ser anterior a la
+última semana calendario. Sus fechas se formatean explícitamente en UTC. Cuando
+el usuario cambia de semana, cada respuesta lleva una clave de consulta y las
+respuestas antiguas se ignoran. Así una petición lenta no puede sobrescribir
+la semana seleccionada. Una tabla vacía significa ausencia de datos publicados;
+no equivale a cuatro ceros y nunca justifica inventar actividad.
+
+Una ejecución Prefect puede devolver éxito aunque falle el almacenamiento de
+caché. Su clave se puede usar como nombre de archivo: evita caracteres como
+los dos puntos de una clave compuesta en Windows. Un hash canónico conserva
+la identidad de la entrada y permite verificar en integración que el archivo
+cacheado realmente existe, en lugar de comprobar solo el código de salida.

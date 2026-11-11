@@ -14,4 +14,4 @@ dev = [
 # dependencias distintas, asi que no pueden compartir un unico proceso de
 # pytest: tests/test_suites.py lanza cada suite con su propio `uv run`.
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/test_suites.py"]
