@@ -1,0 +1,15 @@
+# Crontab configuration for Nexova nightly telemetry export (Ticket #DEV-53)
+#
+# Runs every night at 02:00 UTC as an OS-level process completely isolated
+# from the FastAPI server thread/process.
+#
+# Install with:
+#   crontab scripts/crontab.txt
+#
+# Override target date manually for testing/backfill:
+#   TARGET_DATE=2026-11-10 python scripts/nightly_export.py
+
+SHELL=/bin/sh
+PATH=/opt/venv/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+0 2 * * * cd /workspace && /opt/venv/bin/python scripts/nightly_export.py >> /var/log/nightly_export.log 2>&1

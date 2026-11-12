@@ -2,7 +2,23 @@
 
 _Actualizar al cambiar de foco._
 
-## Ahora - Parte 3: subflows y dashboard semanal
+## Ahora — Script nocturno de telemetría (Ticket #DEV-53)
+
+Rama: `feature/nightly-telemetry-export`, desde `origin/main` con el Hito 6 integrado.
+
+- Implementación del script `scripts/nightly_export.py` para ejecución desatendida nocturna.
+- Módulo de control de estado en `services/job_runner/` con la máquina de estados canónica
+  `pending -> processing -> completed | failed` sobre la tabla `job_runs` (migración `003_job_runs.sql`).
+- Distributed lock vía estado `processing` sin tablas de bloqueo adicionales.
+- Idempotencia diaria por `(job_name, target_date)` con estado `completed`.
+- Exportación de telemetría a `data/raw/telemetry_YYYY-MM-DD.csv` como backup/auditoría.
+- Disparo del pipeline en subproceso (`python -m data.pipelines.telemetry_kpi_daily.run --no-prefect`),
+  manteniendo la separación entre `job_runs` y `reporting.pipeline_runs`.
+- Configuración de disparador crontab en `scripts/crontab.txt` programado a las `02:00 UTC`.
+- Batería de pruebas: 8 tests en `tests/pipelines/test_nightly_export.py` en verde.
+
+## Anterior - Parte 3: subflows y dashboard semanal
+
 
 Rama: `feature/business-performance-subflows-dashboard`, desde `origin/main` con
 la Parte 2 integrada mediante PR #36.

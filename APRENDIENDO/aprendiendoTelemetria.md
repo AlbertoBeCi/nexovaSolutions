@@ -174,3 +174,26 @@ caché. Su clave se puede usar como nombre de archivo: evita caracteres como
 los dos puntos de una clave compuesta en Windows. Un hash canónico conserva
 la identidad de la entrada y permite verificar en integración que el archivo
 cacheado realmente existe, en lugar de comprobar solo el código de salida.
+
+## Orquestación nocturna de telemetría y ciclo de vida de tareas en segundo plano
+
+Un proceso en segundo plano (como `scripts/nightly_export.py`) debe concebirse
+alrededor de una máquina de estados canónica:
+
+```text
+pending -> processing -> completed
+                     \-> failed
+```
+
+1. **Distributed lock vía `processing`:** El propio estado `processing` en `job_runs`
+   es el mecanismo de bloqueo. Si una segunda instancia se dispara mientras la anterior
+   aún trabaja, detecta `has_processing_lock` y aborta silenciosamente sin solapamiento
+   ni tablas de locks adicionales.
+2. **Idempotencia por fecha:** `(job_name, target_date)` con `status = 'completed'`
+   evita duplicar trabajo (no relanza el pipeline ni reescribe el CSV de backup).
+3. **Sin registros zombi:** Cualquier fallo no controlado debe atraparse con un bloque
+   `try/except/finally` para transicionar de inmediato a `failed` con su `error_message`,
+   garantizando que ninguna tarea quede permanentemente en `processing` bloqueando ciclos futuros.
+4. **Separación de capas:** `job_runs` se encarga de la orquestación nocturna y el
+   disparo por subproceso; `reporting.pipeline_runs` almacena las fases internas de la ETL.
+

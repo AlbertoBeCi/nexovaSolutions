@@ -8,20 +8,21 @@ dominio, comprobaciones extra antes del commit.
 
 ## Alcance de aplicación (obligatorio)
 
-Cada regla declara su alcance en el frontmatter y en una línea `**Alcance:**` al
-inicio. Tres tipos:
+Cada regla declara su modo de activación (`trigger`) en el frontmatter YAML y en una
+línea `**Alcance:**` al inicio. Modos compatibles con Antigravity:
 
-| `scope` | Cuándo se aplica |
-| --- | --- |
-| `always` | **Siempre activa.** En todo cambio del repo. |
-| `file-pattern` | Cuando el cambio toca rutas que casan con `globs`. |
-| `agent-requested` | Solo cuando el agente (o el desarrollador) la invoca para una tarea concreta. |
+| `trigger` | Cuándo se aplica | Campos requeridos |
+| --- | --- | --- |
+| `always_on` | **Siempre activa.** En todo cambio del repo. | `description` (opcional) |
+| `glob` | Cuando el cambio toca rutas que casan con `globs`. | `globs`, `description` |
+| `model_decision` | Cuando el agente decide que aplica según `description`. | `description` |
+| `manual` | Solo cuando el desarrollador la invoca explícitamente con `@`. | — |
 
 ```markdown
 ---
-rule: <rule-name>
-scope: always | file-pattern | agent-requested
-globs: ["uis/**"]          # solo para file-pattern
+trigger: always_on | glob | model_decision | manual
+globs: "uis/**"            # solo para trigger: glob (lista separada por comas)
+description: "Descripción breve de la regla."
 ---
 
 # <rule-name>
@@ -37,9 +38,9 @@ globs: ["uis/**"]          # solo para file-pattern
 
 ## Reglas actuales
 
-| Regla | Alcance |
+| Regla | Trigger / Alcance |
 | --- | --- |
-| [`idioma-y-dominio.md`](./idioma-y-dominio.md) | `always` |
-| [`uis.md`](./uis.md) | `file-pattern` — `uis/**` |
-| [`services.md`](./services.md) | `file-pattern` — `services/**` |
-| [`testing.md`](./testing.md) | `file-pattern` — `services/**`, `uis/**`, `packages/**` |
+| [`idioma-y-dominio.md`](./idioma-y-dominio.md) | `always_on` |
+| [`uis.md`](./uis.md) | `glob` — `uis/**` |
+| [`services.md`](./services.md) | `glob` — `services/**` |
+| [`testing.md`](./testing.md) | `glob` — `services/**, uis/**, packages/**` |

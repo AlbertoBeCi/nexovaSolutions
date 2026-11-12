@@ -17,5 +17,6 @@ __pycache__/
 services/api/data/
 services/incident-manager-api/data/
 /data/raw/business-performance/
+/data/raw/telemetry_*.csv
 /data/eval/business-performance/
 *.egg-info/

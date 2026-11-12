@@ -61,3 +61,22 @@ respuestas simuladas, errores de API, contraste, fuentes y reutilización de
 precargas. Bloquea las mutaciones reales. Observa INP con CPU ×4 sin simulación de
 red; son observaciones locales, no p75 de campo. La comprobación aislada de la
 ficha fija es de solo lectura y mantiene la caché para verificar las precargas.
+
+## `nightly_export.py` — script nocturno de telemetría y orquestación (Ticket #DEV-53)
+
+Script CLI autónomo diseñado para ejecutarse automáticamente cada noche (mediante `crontab` del sistema o contenedor scheduler dedicado).
+
+- **Ejecución**:
+  ```bash
+  python scripts/nightly_export.py
+  # o con fecha objetivo manual para pruebas o backfill:
+  TARGET_DATE=2026-11-10 python scripts/nightly_export.py
+  ```
+- **Criterios de aceptación implementados**:
+  - **Aislamiento de procesos**: Proceso completamente independiente de la API, sin importar FastAPI ni bloquear hilos HTTP.
+  - **Distributed lock vía `processing`**: Si ya hay una instancia en `processing` para `nightly_export`, las nuevas abortan silenciosamente sin trabajos en paralelo.
+  - **Idempotencia diaria vía `(job_name, target_date)`**: Si ya existe una corrida `completed` para esa fecha, omite la exportación CSV y la ejecución del pipeline.
+  - **Sin registros zombi**: Máquina de estados garantizada (`pending -> processing -> completed | failed`). Toda excepción transiciona a `failed` con mensaje de error y timestamp de finalización.
+  - **Backup CSV**: Exporta eventos UTC a `data/raw/telemetry_YYYY-MM-DD.csv` como respaldo (el pipeline lee de base de datos, no del CSV).
+  - **Subproceso de pipeline**: Invoca `python -m data.pipelines.telemetry_kpi_daily.run --no-prefect` en un subproceso independiente.
+  - **Disparador programado**: Configuración en `scripts/crontab.txt` (`0 2 * * *`).

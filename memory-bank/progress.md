@@ -2,7 +2,17 @@
 
 ## Funciona
 
+- **Script nocturno de telemetría (12/11/2026, Ticket #DEV-53)** — implementado
+  `scripts/nightly_export.py` y `services/job_runner/`: orquestación nocturna con
+  máquina de estados `pending -> processing -> completed | failed`, lock distribuido
+  vía `status = 'processing'`, idempotencia diaria por `(job_name, target_date)`,
+  exportación a `data/raw/telemetry_YYYY-MM-DD.csv` y disparo del pipeline por
+  subproceso (`python -m data.pipelines.telemetry_kpi_daily.run --no-prefect`).
+  Migración `003_job_runs.sql` con índice compuesto. Configuración cron en
+  `scripts/crontab.txt` (02:00 UTC). Suite de pruebas `test_nightly_export.py`: 8 passed.
+
 - **Parte 3 del pipeline de negocio (11/11/2026)** - cinco subflows secuenciales
+
   y evaluación opcional con estado Prefect; CLI preservada. Dashboard admin
   `/reporting` con cuatro KPI exactos, selector semanal en URL, período UTC y
   monedas separadas. 44 pruebas de pipelines, 207 Jest en 23 suites, lint/build
