@@ -24,6 +24,9 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 
 > Integración del 11/11/2026 (Parte 3): **44 pruebas de pipelines** correctas (45,59 s), incluyendo 17 de tasks aisladas y dos ejecuciones CLI reales. Backoffice **207 pruebas en 23 suites** (27,91 s), lint/build y revisión de textos correctos. El ejecutor de raíz completa sus **4 grupos** (143,98 s): API, incident-manager, shared y pipelines. Se conserva la omisión PostgreSQL preexistente; no se añade ningún skip.
 
+> Integración del 12/11/2026 (`feature/nightly-telemetry-export`, Ticket #DEV-53): **8 pruebas** añadidas en `tests/pipelines/test_nightly_export.py` (3,65 s) que verifican la máquina de estados `pending -> processing -> completed | failed`, el distributed lock mediante `status = 'processing'`, idempotencia diaria por `(job_name, target_date)`, ausencia de registros zombi ante excepciones, exportación backup CSV a `data/raw/telemetry_YYYY-MM-DD.csv`, comando CLI con `TARGET_DATE` y coexistencia de `job_runs` con `reporting.pipeline_runs` vía `python -m data.pipelines.telemetry_kpi_daily.run --no-prefect`. Total de pipeline tests: **52 pruebas** (44 + 8).
+
+
 ## 📌 Índice
 
 1. [🏆 Resumen](#-resumen)
@@ -44,7 +47,7 @@ añade cinco pruebas del selector React accesible y tres de las URLs de precarga
 | 🧩 Área | ⌨️ Comando | 🔢 Pruebas | 🚦 Resultado | ⏱️ Tiempo | 📈 Cobertura |
 | --- | --- | ---: | :---: | ---: | ---: |
 | 🐍 `services/api` | `uv run pytest`* | 529 | ✅ 528 · ❌ 0 · ⏭ 1 | 83,83 s | — |
-| 🐍 `data/pipelines` + `tests/pipelines` | `uv run --project services/api python -m pytest tests/pipelines data/pipelines/tests` | 44 | ✅ 44 · ❌ 0 | 45,59 s | — |
+| 🐍 `data/pipelines` + `tests/pipelines` | `uv run --project services/api python -m pytest tests/pipelines data/pipelines/tests` | 52 | ✅ 52 · ❌ 0 | 49,24 s | — |
 | 🐍 `services/incident-manager-api` | `uv run pytest` | 217 | ✅ 217 · ❌ 0 | 1,5 s | 98 % |
 | 🟦 `uis/application` | `npx jest --coverage` | 143 | ✅ 143 · ❌ 0 | 1,1 s | 99,8 % |
 | 🟦 `uis/backoffice` | `npm test -- --runInBand` | 207 | ✅ 207 · ❌ 0 | 27,91 s | — |
