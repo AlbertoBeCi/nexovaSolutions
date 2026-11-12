@@ -62,3 +62,23 @@ flows with mocked responses, API errors, contrast, fonts and preload reuse. It
 blocks real mutations. INP observations use CPU ×4 without network simulation;
 they are local observations, not real-user p75. The isolated read-only check of
 the fixed candidate preserves HTTP caching to verify that preloads are reused.
+
+## `nightly_export.py` — nightly telemetry export and pipeline orchestration (Ticket #DEV-53)
+
+Autonomous CLI script designed to run unattended each night (via system `crontab` or a dedicated scheduler container).
+
+- **Execution**:
+  ```bash
+  python scripts/nightly_export.py
+  # or with manual override for testing / backfill:
+  TARGET_DATE=2026-11-10 python scripts/nightly_export.py
+  ```
+- **Acceptance criteria implemented**:
+  - **Process isolation**: Runs as a completely independent CLI process, never importing FastAPI or blocking HTTP threads.
+  - **Distributed lock via `processing`**: If a run of `nightly_export` is already in state `processing`, subsequent instances abort silently without running tasks in parallel.
+  - **Daily idempotency via `(job_name, target_date)`**: If `nightly_export` has already completed for the given date, it skips re-exporting CSV and triggering the pipeline.
+  - **No zombie rows**: Guaranteed state machine (`pending -> processing -> completed | failed`). Any unhandled error marks the run as `failed` with its error message and finished timestamp.
+  - **Backup export**: Exports UTC events for `target_date` to `data/raw/telemetry_YYYY-MM-DD.csv` (the pipeline reads directly from DB, not from CSV).
+  - **Pipeline subprocess**: Launches `python -m data.pipelines.telemetry_kpi_daily.run --no-prefect` in a dedicated subprocess.
+  - **Schedule config**: Configured via `scripts/crontab.txt` (`0 2 * * *`).
+
