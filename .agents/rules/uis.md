@@ -1,7 +1,7 @@
 ---
-rule: uis
-scope: file-pattern
-globs: ["uis/**"]
+trigger: glob
+globs: "uis/**"
+description: "Reglas y convenciones para aplicaciones frontend en uis/."
 ---
 
 # uis

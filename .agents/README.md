@@ -24,12 +24,12 @@ configuración detallada, agnóstica de herramienta (Claude Code, Cursor, Copilo
 ### `rules/`
 
 Una regla por archivo (kebab-case). Cada una **declara su alcance** —
-`always` · `file-pattern` · `agent-requested` — en el frontmatter y en una línea
+`always_on` · `glob` · `model_decision` · `manual` — en el frontmatter (`trigger`) y en una línea
 `**Alcance:**`. Detalle y plantilla en [`rules/README.md`](./rules/README.md).
 
-Reglas actuales: [`idioma-y-dominio`](./rules/idioma-y-dominio.md) (`always`),
+Reglas actuales: [`idioma-y-dominio`](./rules/idioma-y-dominio.md) (`always_on`),
 [`uis`](./rules/uis.md) (`uis/**`), [`services`](./rules/services.md) (`services/**`),
-[`testing`](./rules/testing.md) (`services/**`, `uis/**`, `packages/**`).
+[`testing`](./rules/testing.md) (`services/**, uis/**, packages/**`).
 
 ### `skills/`
 

@@ -1,7 +1,6 @@
 ---
-rule: idioma-y-dominio
-scope: always
-globs: ["**"]
+trigger: always_on
+description: "Idioma base español y fidelidad al dominio de CONTEXT.md."
 ---
 
 # Idioma y fidelidad al dominio
