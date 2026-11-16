@@ -39,8 +39,9 @@ function isActive(pathname: string, href: string, exact?: boolean): boolean {
 }
 
 const LINK_CLASS =
-  "rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50";
-const ACTIVE_LINK_CLASS = "rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900";
+  "rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors text-foreground-muted hover:bg-surface hover:text-foreground";
+const ACTIVE_LINK_CLASS =
+  "rounded-md px-3 py-2 text-sm font-semibold whitespace-nowrap bg-accent text-accent-ink";
 
 export function NavLinks({ orientation = "vertical" }: { orientation?: "vertical" | "horizontal" }) {
   const pathname = usePathname();
