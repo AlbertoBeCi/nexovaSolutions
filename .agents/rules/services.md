@@ -1,7 +1,7 @@
 ---
-rule: services
-scope: file-pattern
-globs: ["services/**"]
+trigger: glob
+globs: "services/**"
+description: "Reglas y convenciones para servicios backend en services/."
 ---
 
 # services

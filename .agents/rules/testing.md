@@ -1,7 +1,7 @@
 ---
-rule: testing
-scope: file-pattern
-globs: ["services/**", "uis/**", "packages/**"]
+trigger: glob
+globs: "services/**, uis/**, packages/**"
+description: "Reglas de pruebas para services/, uis/ y packages/."
 ---
 
 # testing
