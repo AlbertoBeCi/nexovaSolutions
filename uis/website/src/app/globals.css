@@ -1,58 +1,83 @@
 @import "tailwindcss";
 
-/* Paleta editorial de Nexova (portada desde la landing estatica del Hito 1). */
+/* Sistema visual "Transatlantic Executive Ledger" — Nexova Solutions */
 :root {
-  --bg: #f6f1e7;
-  --bg-alt: #eee6d4;
-  --ink: #1c1a16;
-  --ink-muted: #6b6355;
-  --accent: #2f5233;
-  --accent-strong: #25401f;
-  --accent-soft: #e3e8d9;
+  color-scheme: light dark;
+  --bg: #f4f3ef;
+  --bg-alt: #eae7df;
+  --surface: #ffffff;
+  --surface-inverse: #14281d;
+  --ink: #121513;
+  --ink-muted: #4a524d;
+  --ink-placeholder: #5c645f;
+  --ink-inverse: #f4f3ef;
+  --ink-inverse-muted: #b8c7be;
+  --accent: #1f4e37;
+  --accent-strong: #163a28;
+  --accent-soft: #e0ebe4;
   --accent-ink: #ffffff;
-  --line: #dcd3be;
+  --line: #d2cec4;
 }
 
-/* Modo oscuro: eleccion explicita del usuario (toggle) */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
 :root[data-theme="dark"] {
-  --bg: #16130e;
-  --bg-alt: #201b13;
-  --ink: #f2ecdd;
-  --ink-muted: #b7ad97;
-  --accent: #86c695;
-  --accent-strong: #a3ddb0;
-  --accent-soft: #1f2e1d;
-  --accent-ink: #14120c;
-  --line: #362f20;
+  color-scheme: dark;
+  --bg: #0f1311;
+  --bg-alt: #171d1a;
+  --surface: #141a17;
+  --surface-inverse: #1b2f24;
+  --ink: #edefe9;
+  --ink-muted: #a6b0aa;
+  --ink-placeholder: #8c9891;
+  --ink-inverse: #edefe9;
+  --ink-inverse-muted: #b4c2ba;
+  --accent: #68b684;
+  --accent-strong: #84cc9e;
+  --accent-soft: #1a2d22;
+  --accent-ink: #0c130f;
+  --line: #26302b;
 }
 
-/* Modo oscuro: preferencia del sistema, salvo que el usuario haya fijado "light" */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #16130e;
-    --bg-alt: #201b13;
-    --ink: #f2ecdd;
-    --ink-muted: #b7ad97;
-    --accent: #86c695;
-    --accent-strong: #a3ddb0;
-    --accent-soft: #1f2e1d;
-    --accent-ink: #14120c;
-    --line: #362f20;
+    --bg: #0f1311;
+    --bg-alt: #171d1a;
+    --surface: #141a17;
+    --surface-inverse: #1b2f24;
+    --ink: #edefe9;
+    --ink-muted: #a6b0aa;
+    --ink-placeholder: #8c9891;
+    --ink-inverse: #edefe9;
+    --ink-inverse-muted: #b4c2ba;
+    --accent: #68b684;
+    --accent-strong: #84cc9e;
+    --accent-soft: #1a2d22;
+    --accent-ink: #0c130f;
+    --line: #26302b;
   }
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-bg-alt: var(--bg-alt);
+  --color-surface: var(--surface);
+  --color-surface-inverse: var(--surface-inverse);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
+  --color-ink-placeholder: var(--ink-placeholder);
+  --color-ink-inverse: var(--ink-inverse);
+  --color-ink-inverse-muted: var(--ink-inverse-muted);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
   --color-line: var(--line);
-  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-display: var(--font-libre-baskerville), Georgia, serif;
   --font-sans: var(--font-public-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 body {
@@ -69,14 +94,60 @@ body {
 body,
 header,
 .transition-theme {
-  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+}
+
+/* Micro-interacciones taste-skill (elevación 2px, paso táctil y entrada hero) */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-enter] {
+  animation: hero-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-lift {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-2px);
+}
+
+.btn-tactile {
+  transition: transform 0.14s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.btn-tactile:hover {
+  transform: translateY(-1px);
+}
+
+.btn-tactile:active {
+  transform: translateY(1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
   body,
   header,
-  .transition-theme {
+  .transition-theme,
+  .card-lift,
+  .btn-tactile {
     transition: none;
+  }
+  [data-enter] {
+    animation: none;
+  }
+  .card-lift:hover,
+  .btn-tactile:hover,
+  .btn-tactile:active {
+    transform: none;
   }
   html {
     scroll-behavior: auto;

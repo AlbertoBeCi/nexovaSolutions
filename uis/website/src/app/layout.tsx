@@ -1,18 +1,25 @@
 import type { Metadata } from "next";
-import { Fraunces, Public_Sans } from "next/font/google";
+import { JetBrains_Mono, Libre_Baskerville, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "./_components/site-header";
 import { SiteFooter } from "./_components/site-footer";
 
-const fraunces = Fraunces({
+const libreBaskerville = Libre_Baskerville({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  weight: ["400", "700"],
+  variable: "--font-libre-baskerville",
   display: "swap",
 });
 
 const publicSans = Public_Sans({
   subsets: ["latin"],
   variable: "--font-public-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
   display: "swap",
 });
 
@@ -72,8 +79,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${fraunces.variable} ${publicSans.variable} h-full scroll-smooth antialiased`}
+      className={`${libreBaskerville.variable} ${publicSans.variable} ${jetbrainsMono.variable} h-full scroll-smooth antialiased`}
     >
+      <head>
+        <meta name="color-scheme" content="light dark" />
+      </head>
       <body className="flex min-h-full flex-col bg-bg text-ink">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script

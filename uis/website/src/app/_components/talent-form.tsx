@@ -25,10 +25,10 @@ import {
 } from "@/lib/talent-validation";
 
 const inputClass =
-  "w-full border border-line bg-bg px-4 py-2.5 text-sm text-ink transition-colors placeholder:text-ink-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
-const errorInputClass = "border-red-500 focus:border-red-500 focus:ring-red-500";
+  "min-h-11 w-full border border-line bg-bg px-4 py-2.5 text-sm text-ink transition-colors placeholder:text-ink-placeholder focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+const errorInputClass = "border-red-600 focus:border-red-600 focus:ring-red-600";
 const labelClass =
-  "mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-muted";
+  "mb-2 block text-xs font-semibold uppercase tracking-wider text-ink-muted";
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
