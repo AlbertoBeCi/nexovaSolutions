@@ -146,7 +146,31 @@ function withPolishedErrors<T>(run: () => Promise<T>): Promise<T> {
 
 // ─── Endpoints: incidencias ───────────────────────────────────────────
 
-/** Sube un CSV de tickets de soporte y devuelve el resumen agregado del análisis. */
+interface TaskAcceptedDto {
+  task_id: string;
+  status: string;
+}
+
+interface TaskStatusDto {
+  task_id: string;
+  status: "pending" | "started" | "success" | "failure";
+  result: AnalysisSummaryDto | null;
+  error: string | null;
+  dlq: boolean;
+}
+
+/** Consulta el estado de una tarea asíncrona en GET /tasks/{task_id}. */
+export async function getTaskStatus(taskId: string): Promise<TaskStatusDto> {
+  const response = await apiRequest(
+    `/tasks/${encodeURIComponent(taskId)}`,
+    { method: "GET" },
+    "No se pudo consultar el estado de la tarea.",
+    translateIssue
+  );
+  return (await response.json()) as TaskStatusDto;
+}
+
+/** Sube un CSV de tickets de soporte y espera el resumen agregado de la tarea Celery. */
 export async function analyzeIncidentsCsv(file: File): Promise<IncidentsAnalysisSummary> {
   return withPolishedErrors(async () => {
     const formData = new FormData();
@@ -159,8 +183,23 @@ export async function analyzeIncidentsCsv(file: File): Promise<IncidentsAnalysis
       translateIssue
     );
 
-    const dto = (await response.json()) as AnalysisSummaryDto;
-    return toIncidentsAnalysisSummary(dto);
+    const payload = (await response.json()) as AnalysisSummaryDto | TaskAcceptedDto;
+    if ("task_id" in payload) {
+      const maxPolls = 60;
+      for (let i = 0; i < maxPolls; i += 1) {
+        const task = await getTaskStatus(payload.task_id);
+        if (task.status === "success" && task.result) {
+          return toIncidentsAnalysisSummary(task.result);
+        }
+        if (task.status === "failure") {
+          throw new Error(task.error || "No se pudo analizar el archivo.");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+      throw new Error("El análisis está tardando más de lo esperado.");
+    }
+
+    return toIncidentsAnalysisSummary(payload);
   });
 }
 
