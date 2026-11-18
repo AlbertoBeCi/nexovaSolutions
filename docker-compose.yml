@@ -1,4 +1,16 @@
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - nexova-local
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   api:
     build:
       context: ./services
@@ -17,6 +29,8 @@ services:
       USERS_DB_PATH: /workspace/services/api/data/users.json
       SUPPLIERS_DB_PATH: /data/suppliers.json
       PYTHON_DOTENV_DISABLED: "1"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
     ports:
       - "8000:8000"
     volumes:
@@ -27,6 +41,9 @@ services:
       - api_data:/data
     networks:
       - nexova-local
+    depends_on:
+      redis:
+        condition: service_healthy
     healthcheck:
       test:
         - CMD
@@ -37,6 +54,65 @@ services:
       timeout: 5s
       retries: 12
       start_period: 15s
+
+  worker:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      additional_contexts:
+        monorepo: .
+    command: ["uv", "run", "--no-sync", "celery", "-A", "celery_app:celery_app", "worker", "--loglevel=info", "-Q", "default,dlq"]
+    env_file:
+      - path: .env.example
+        required: true
+      - path: .env
+        required: true
+      - path: ./services/api/.env
+        required: true
+    environment:
+      SUPABASE_DATABASE_URL: ${SUPABASE_DATABASE_URL:?Define SUPABASE_DATABASE_URL en el .env de la raiz}
+      USERS_DB_PATH: /workspace/services/api/data/users.json
+      SUPPLIERS_DB_PATH: /data/suppliers.json
+      PYTHON_DOTENV_DISABLED: "1"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    volumes:
+      - ./services/api:/workspace/services/api
+      - ./services/api/.env.example:/workspace/services/api/.env:ro
+      - ./shared:/workspace/shared
+      - ./packages/shared/nexova_shared:/workspace/packages/shared/nexova_shared
+      - api_data:/data
+    networks:
+      - nexova-local
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  flower:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+      additional_contexts:
+        monorepo: .
+    command: ["uv", "run", "--no-sync", "celery", "-A", "celery_app:celery_app", "flower", "--port=5555"]
+    env_file:
+      - path: .env.example
+        required: true
+      - path: .env
+        required: true
+      - path: ./services/api/.env
+        required: true
+    environment:
+      PYTHON_DOTENV_DISABLED: "1"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    ports:
+      - "5555:5555"
+    networks:
+      - nexova-local
+    depends_on:
+      redis:
+        condition: service_healthy
 
   ui:
     build:

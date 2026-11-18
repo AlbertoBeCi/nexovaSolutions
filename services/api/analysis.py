@@ -28,7 +28,12 @@ from shared.incidents_analysis import (  # noqa: E402
     summary_to_csv_rows,
 )
 
-__all__ = ["InvalidCsvError", "analyze_csv", "summary_to_csv_bytes"]
+__all__ = ["InvalidCsvError", "analyze_csv", "summary_to_csv_bytes", "validate_csv_bytes"]
+
+
+def validate_csv_bytes(raw_bytes: bytes) -> None:
+    """Valida UTF-8 y columnas requeridas antes de encolar el lote en Celery."""
+    load_dataframe(io.BytesIO(raw_bytes))
 
 
 def analyze_csv(raw_bytes: bytes, source_filename: str) -> dict:
