@@ -1,0 +1,17 @@
+{
+  "model": "RandomForestRegressor",
+  "train_period": "2016-01 .. 2023-12",
+  "test_period": "2024-01 .. 2025-12",
+  "train_months": 96,
+  "test_months": 24,
+  "mse_usd2": 1548450954.91,
+  "rmse_usd": 39350.36,
+  "mean_test_revenue_usd": 959363.25,
+  "rmse_pct_of_mean": 4.1,
+  "gini": 0.882,
+  "psi_level": 4.5394,
+  "psi_yoy": 0.0304,
+  "k2_score_r2": 0.7924,
+  "k2_normality_stat": 0.4307,
+  "k2_normality_pvalue": 0.8062
+}
