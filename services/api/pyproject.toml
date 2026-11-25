@@ -17,6 +17,9 @@ dependencies = [
     "sqlmodel>=0.0.48",
     "psycopg2-binary>=2.9.13",
     "prefect>=3",
+    "celery[redis]>=5.4.0",
+    "redis>=5.0.0",
+    "flower>=2.0.1",
     "scikit-learn>=1.7.2",
     "matplotlib>=3.10.9",
     "scipy>=1.15.3",
@@ -65,6 +68,8 @@ py-modules = [
     "inventory_database",
     "seed_inventory",
     "reporting_adapter",
+    "celery_app",
+    "tasks",
 ]
 packages = ["routes"]
 

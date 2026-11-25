@@ -5,11 +5,43 @@ from __future__ import annotations
 
 import csv
 import io
+from types import SimpleNamespace
 
 import pytest
 
+import celery_app as celery_module
 import store
 from analysis import summary_to_csv_bytes
+from routes import tasks as tasks_route
+
+
+@pytest.fixture(autouse=True)
+def eager_celery_for_incidents(monkeypatch):
+    """Run Celery tasks eagerly in-memory and resolve AsyncResult without Redis."""
+    results_by_id: dict[str, SimpleNamespace] = {}
+    orig_delay = celery_module.celery_app.tasks["tasks.analyze_incidents_csv"].delay
+
+    monkeypatch.setattr(celery_module, "_get_redis_client", lambda: None)
+    monkeypatch.setattr(celery_module.celery_app.conf, "task_always_eager", True)
+    monkeypatch.setattr(celery_module.celery_app.conf, "task_eager_propagates", False)
+
+    def tracked_delay(*args, **kwargs):
+        res = orig_delay(*args, **kwargs)
+        results_by_id[str(res.id)] = SimpleNamespace(
+            state=res.state,
+            result=res.result if res.state == "SUCCESS" else None,
+            info=res.result if res.state == "FAILURE" else None,
+        )
+        return res
+
+    monkeypatch.setattr("routes.incidents.analyze_incidents_csv_task.delay", tracked_delay)
+    monkeypatch.setattr(
+        tasks_route,
+        "AsyncResult",
+        lambda task_id, app=None: results_by_id.get(
+            task_id, SimpleNamespace(state="PENDING", result=None, info=None)
+        ),
+    )
 
 COLUMNS = [
     "ticket_id", "date", "client_company", "category", "description",
@@ -38,7 +70,15 @@ def row(**overrides) -> dict:
 def analyze(client, rows: list[dict], filename: str = "tickets.csv", **kwargs):
     content = kwargs.pop("content", None)
     payload = content if content is not None else make_csv(rows)
-    return client.post("/api/incidents/analyze", files={"file": (filename, payload, "text/csv")})
+    res = client.post("/api/incidents/analyze", files={"file": (filename, payload, "text/csv")})
+    if res.status_code == 202:
+        task_id = res.json()["task_id"]
+        task_res = client.get(f"/tasks/{task_id}")
+        assert task_res.status_code == 200
+        body = task_res.json()
+        assert body["status"] == "success"
+        return SimpleNamespace(status_code=200, json=lambda b=body["result"]: b)
+    return res
 
 
 # ─── Camino feliz ───────────────────────────────────────────────────────

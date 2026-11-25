@@ -12,7 +12,9 @@ from sqlmodel import Session
 from inventory_database import get_database_url
 from response_cache import TTLResponseCache
 from routes.telemetry import get_telemetry_session
+from routes.tasks import TaskAcceptedResponse
 from security import get_current_admin
+from tasks import generate_telemetry_report_task
 from telemetry_analysis import (
     auth_failure_rate,
     events_per_day,
@@ -138,3 +140,17 @@ def read_telemetry_report(
             detail="El reporte tecnico de telemetria no esta disponible.",
         ) from exc
     return TelemetryReport.model_validate(result)
+
+
+@router.post("/report", response_model=TaskAcceptedResponse, status_code=202)
+def enqueue_telemetry_report(
+    _admin: Annotated[Any, Depends(get_current_admin)],
+    start_date: datetime | None = Query(default=None),
+    end_date: datetime | None = Query(default=None),
+) -> TaskAcceptedResponse:
+    """Enqueue asynchronous generation of the technical telemetry report (202 Accepted)."""
+    start, end = _utc_window(start_date, end_date)
+    if not get_database_url():
+        raise HTTPException(status_code=503, detail="El almacenamiento de telemetria no esta disponible.")
+    async_result = generate_telemetry_report_task.delay(start.isoformat(), end.isoformat())
+    return TaskAcceptedResponse(task_id=str(async_result.id), status="pending")

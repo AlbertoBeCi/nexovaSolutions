@@ -339,6 +339,7 @@ def test_profile_requires_login(anon_client):
     ("get", "/reporting/weekly-office-program-performance"),
     ("delete", "/users/1"), ("get", "/profiles/me"), ("put", "/profiles/me"),
     ("post", "/auth/change-password"), ("post", "/api/incidents/analyze"),
+    ("get", "/tasks/some-id"), ("get", "/tasks/dlq"),
     ("get", "/api/incidents/results/export"), ("post", "/suppliers"),
     ("patch", "/suppliers/1/rate"),
     ("patch", "/suppliers/1/status"), ("delete", "/suppliers/1"),

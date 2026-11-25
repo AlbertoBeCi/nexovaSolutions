@@ -6,32 +6,29 @@ scripts/analyze.py, para que el CSV se pueda subir desde un frontend o
 cualquier cliente HTTP en lugar de ejecutarse por linea de comandos.
 """
 from __future__ import annotations
-from time import perf_counter
+import uuid
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import Response
 
-import store
-from analysis import InvalidCsvError, analyze_csv, summary_to_csv_bytes
-from models import AnalysisSummary, ErrorResponse
+from analysis import InvalidCsvError, summary_to_csv_bytes, validate_csv_bytes
+from models import ErrorResponse
+from routes.tasks import TaskAcceptedResponse
 from security import get_current_user
-from telemetry_capture import record_analysis
+from tasks import analyze_incidents_csv_task, get_last_result_shared, store_upload_payload
 
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
 
 @router.post(
     "/analyze",
-    response_model=AnalysisSummary,
-    status_code=200,
-    summary="Analiza un CSV de tickets de soporte",
+    response_model=TaskAcceptedResponse,
+    status_code=202,
+    summary="Encola el analisis asincrono de un CSV de tickets de soporte",
     description=(
-        "Requiere login. Recibe un archivo CSV de tickets de soporte "
-        "(multipart/form-data), aplica las 7 reglas de validacion de negocio y "
-        "devuelve un resumen agregado (nunca datos de fila, nunca emails "
-        "individuales). El resultado se guarda en memoria como 'ultimo "
-        "analisis' para poder exportarlo despues con "
-        "GET /api/incidents/results/export."
+        "Requiere login. Valida el archivo CSV de entrada, encola el procesamiento "
+        "en Celery y devuelve inmediatamente 202 Accepted con un `task_id` para "
+        "consultar el estado y resultado en GET /tasks/{task_id}."
     ),
     responses={
         400: {
@@ -43,8 +40,7 @@ router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 )
 async def analyze_incidents(
     file: UploadFile = File(..., description="Archivo CSV de tickets de soporte"),
-) -> AnalysisSummary:
-    started_at = perf_counter()
+) -> TaskAcceptedResponse:
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(
             status_code=400,
@@ -56,13 +52,15 @@ async def analyze_incidents(
         raise HTTPException(status_code=400, detail="El archivo esta vacio.")
 
     try:
-        summary = analyze_csv(raw_bytes, file.filename)
+        # Fast structural check (UTF-8 + required columns) before queuing
+        validate_csv_bytes(raw_bytes)
     except InvalidCsvError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    store.set_last_result(summary)
-    record_analysis(summary, started_at)
-    return store.get_last_result()
+    upload_id = str(uuid.uuid4())
+    store_upload_payload(upload_id, raw_bytes)
+    async_result = analyze_incidents_csv_task.delay(upload_id, file.filename)
+    return TaskAcceptedResponse(task_id=str(async_result.id), status="pending")
 
 
 @router.get(
@@ -88,7 +86,7 @@ async def analyze_incidents(
     dependencies=[Depends(get_current_user)],
 )
 async def export_last_result() -> Response:
-    last_result = store.get_last_result()
+    last_result = get_last_result_shared()
     if last_result is None:
         raise HTTPException(
             status_code=404,
