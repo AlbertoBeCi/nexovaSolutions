@@ -1,0 +1,276 @@
+{
+  "model": "RandomForestRegressor",
+  "baseline_params": {
+    "n_estimators": 300,
+    "max_depth": 6,
+    "min_samples_leaf": 2,
+    "max_features": 1.0,
+    "random_state": 42
+  },
+  "cv_temporal": {
+    "n_splits": 5,
+    "test_size": 12,
+    "folds": [
+      {
+        "train_rows_raw": 36,
+        "train_rows_trainable": 12,
+        "val_rows": 12,
+        "train_start": "2016-01-01",
+        "train_end": "2018-12-01",
+        "val_start": "2019-01-01",
+        "val_end": "2019-12-01",
+        "train_mae_usd": 7794.19,
+        "train_rmse_usd": 9746.52,
+        "train_rmse_yoy": 0.013497,
+        "val_mae_usd": 50797.86,
+        "val_rmse_usd": 60583.36,
+        "val_rmse_pct_of_mean": 7.82,
+        "val_mae_pct_of_mean": 6.56,
+        "val_r2": 0.4764,
+        "fold": 1,
+        "train_idx_min": 0,
+        "train_idx_max": 35,
+        "val_idx_min": 36,
+        "val_idx_max": 47
+      },
+      {
+        "train_rows_raw": 48,
+        "train_rows_trainable": 24,
+        "val_rows": 12,
+        "train_start": "2016-01-01",
+        "train_end": "2019-12-01",
+        "val_start": "2020-01-01",
+        "val_end": "2020-12-01",
+        "train_mae_usd": 12004.27,
+        "train_rmse_usd": 14605.75,
+        "train_rmse_yoy": 0.020115,
+        "val_mae_usd": 26805.03,
+        "val_rmse_usd": 32528.64,
+        "val_rmse_pct_of_mean": 4.14,
+        "val_mae_pct_of_mean": 3.42,
+        "val_r2": 0.8526,
+        "fold": 2,
+        "train_idx_min": 0,
+        "train_idx_max": 47,
+        "val_idx_min": 48,
+        "val_idx_max": 59
+      },
+      {
+        "train_rows_raw": 60,
+        "train_rows_trainable": 36,
+        "val_rows": 12,
+        "train_start": "2016-01-01",
+        "train_end": "2020-12-01",
+        "val_start": "2021-01-01",
+        "val_end": "2021-12-01",
+        "train_mae_usd": 11719.18,
+        "train_rmse_usd": 13839.64,
+        "train_rmse_yoy": 0.01851,
+        "val_mae_usd": 27922.7,
+        "val_rmse_usd": 36317.82,
+        "val_rmse_pct_of_mean": 4.31,
+        "val_mae_pct_of_mean": 3.31,
+        "val_r2": 0.7846,
+        "fold": 3,
+        "train_idx_min": 0,
+        "train_idx_max": 59,
+        "val_idx_min": 60,
+        "val_idx_max": 71
+      },
+      {
+        "train_rows_raw": 72,
+        "train_rows_trainable": 48,
+        "val_rows": 12,
+        "train_start": "2016-01-01",
+        "train_end": "2021-12-01",
+        "val_start": "2022-01-01",
+        "val_end": "2022-12-01",
+        "train_mae_usd": 12347.33,
+        "train_rmse_usd": 14882.11,
+        "train_rmse_yoy": 0.020678,
+        "val_mae_usd": 33383.92,
+        "val_rmse_usd": 40026.17,
+        "val_rmse_pct_of_mean": 4.73,
+        "val_mae_pct_of_mean": 3.94,
+        "val_r2": 0.7277,
+        "fold": 4,
+        "train_idx_min": 0,
+        "train_idx_max": 71,
+        "val_idx_min": 72,
+        "val_idx_max": 83
+      },
+      {
+        "train_rows_raw": 84,
+        "train_rows_trainable": 60,
+        "val_rows": 12,
+        "train_start": "2016-01-01",
+        "train_end": "2022-12-01",
+        "val_start": "2023-01-01",
+        "val_end": "2023-12-01",
+        "train_mae_usd": 12542.76,
+        "train_rmse_usd": 15806.98,
+        "train_rmse_yoy": 0.021532,
+        "val_mae_usd": 28814.27,
+        "val_rmse_usd": 38214.21,
+        "val_rmse_pct_of_mean": 4.21,
+        "val_mae_pct_of_mean": 3.17,
+        "val_r2": 0.835,
+        "fold": 5,
+        "train_idx_min": 0,
+        "train_idx_max": 83,
+        "val_idx_min": 84,
+        "val_idx_max": 95
+      }
+    ],
+    "summary": {
+      "train_rmse_usd": {
+        "mean": 13776.2,
+        "std": 2359.96,
+        "min": 9746.52,
+        "max": 15806.98,
+        "cv_pct": 17.13
+      },
+      "val_rmse_usd": {
+        "mean": 41534.04,
+        "std": 11005.43,
+        "min": 32528.64,
+        "max": 60583.36,
+        "cv_pct": 26.5
+      },
+      "train_mae_usd": {
+        "mean": 11281.55,
+        "std": 1974.97,
+        "min": 7794.19,
+        "max": 12542.76,
+        "cv_pct": 17.51
+      },
+      "val_mae_usd": {
+        "mean": 33544.76,
+        "std": 9963.74,
+        "min": 26805.03,
+        "max": 50797.86,
+        "cv_pct": 29.7
+      },
+      "val_r2": {
+        "mean": 0.74,
+        "std": 0.15,
+        "min": 0.48,
+        "max": 0.85,
+        "cv_pct": 20.76
+      }
+    }
+  },
+  "learning_curve": [
+    {
+      "train_months_raw": 36,
+      "train_months_trainable": 12,
+      "train_end": "2018-12-01",
+      "val_period": "2019-01..2019-12",
+      "train_rmse_usd": 9746.52,
+      "val_rmse_usd": 60583.36,
+      "train_mae_usd": 7794.19,
+      "val_mae_usd": 50797.86
+    },
+    {
+      "train_months_raw": 48,
+      "train_months_trainable": 24,
+      "train_end": "2019-12-01",
+      "val_period": "2020-01..2020-12",
+      "train_rmse_usd": 14605.75,
+      "val_rmse_usd": 32528.64,
+      "train_mae_usd": 12004.27,
+      "val_mae_usd": 26805.03
+    },
+    {
+      "train_months_raw": 60,
+      "train_months_trainable": 36,
+      "train_end": "2020-12-01",
+      "val_period": "2021-01..2021-12",
+      "train_rmse_usd": 13839.64,
+      "val_rmse_usd": 36317.82,
+      "train_mae_usd": 11719.18,
+      "val_mae_usd": 27922.7
+    },
+    {
+      "train_months_raw": 72,
+      "train_months_trainable": 48,
+      "train_end": "2021-12-01",
+      "val_period": "2022-01..2022-12",
+      "train_rmse_usd": 14882.11,
+      "val_rmse_usd": 40026.17,
+      "train_mae_usd": 12347.33,
+      "val_mae_usd": 33383.92
+    },
+    {
+      "train_months_raw": 84,
+      "train_months_trainable": 60,
+      "train_end": "2022-12-01",
+      "val_period": "2023-01..2023-12",
+      "train_rmse_usd": 15806.98,
+      "val_rmse_usd": 38214.21,
+      "train_mae_usd": 12542.76,
+      "val_mae_usd": 28814.27
+    }
+  ],
+  "diagnosis": {
+    "classification": "overfitting",
+    "train_rmse_mean_usd": 13776.2,
+    "val_rmse_mean_usd": 41534.04,
+    "val_rmse_std_usd": 11005.43,
+    "gap_usd": 27757.84,
+    "gap_ratio": 3.01,
+    "rationale": "Existe una brecha amplia y persistente entre entrenamiento ($13,776) y validacion ($41,534, ratio 3.01x), indicando memorizacion parcial del ruido o de la escala nominal en arboles profundos."
+  },
+  "corrective_experiments": [
+    {
+      "candidate": "baseline_actual (depth=6, leaf=2, 13 features)",
+      "classification": "overfitting",
+      "train_rmse_mean_usd": 13776.2,
+      "val_rmse_mean_usd": 41534.04,
+      "val_rmse_std_usd": 11005.43,
+      "val_mae_mean_usd": 33544.76,
+      "val_mae_std_usd": 9963.74,
+      "gap_ratio": 3.01
+    },
+    {
+      "candidate": "regularizacion_moderada (depth=4, leaf=4, sqrt, 13 features)",
+      "classification": "overfitting",
+      "train_rmse_mean_usd": 22866.15,
+      "val_rmse_mean_usd": 43713.62,
+      "val_rmse_std_usd": 7156.29,
+      "val_mae_mean_usd": 36677.25,
+      "val_mae_std_usd": 6065.88,
+      "gap_ratio": 1.91
+    },
+    {
+      "candidate": "regularizacion_fuerte (depth=3, leaf=5, sqrt, 13 features)",
+      "classification": "overfitting",
+      "train_rmse_mean_usd": 25000.95,
+      "val_rmse_mean_usd": 43561.93,
+      "val_rmse_std_usd": 6552.24,
+      "val_mae_mean_usd": 36675.4,
+      "val_mae_std_usd": 5154.08,
+      "gap_ratio": 1.74
+    },
+    {
+      "candidate": "poda_features_nivel + reg (depth=4, leaf=3, 10 features estacionarias)",
+      "classification": "overfitting",
+      "train_rmse_mean_usd": 17677.83,
+      "val_rmse_mean_usd": 40273.22,
+      "val_rmse_std_usd": 11671.17,
+      "val_mae_mean_usd": 33053.8,
+      "val_mae_std_usd": 9953.95,
+      "gap_ratio": 2.28
+    },
+    {
+      "candidate": "alta_complejidad_control (depth=None, leaf=1, 13 features)",
+      "classification": "overfitting",
+      "train_rmse_mean_usd": 11254.47,
+      "val_rmse_mean_usd": 42904.27,
+      "val_rmse_std_usd": 10618.38,
+      "val_mae_mean_usd": 34527.96,
+      "val_mae_std_usd": 9727.6,
+      "gap_ratio": 3.81
+    }
+  ]
+}
